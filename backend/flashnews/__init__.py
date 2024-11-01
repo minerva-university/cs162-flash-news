@@ -41,3 +41,20 @@ def create_app():
     '''
 
     return app
+
+
+'''
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'  # You'll create this route later
+
+    from .user import user_bp
+    app.register_blueprint(user_bp, url_prefix='/user')
+
+    # You'll need to add a user loader for flask-login
+    @login_manager.user_loader
+    def load_user(user_id):
+        from .user import User
+        return User.query.get(int(user_id))
+
+    return app
+'''
