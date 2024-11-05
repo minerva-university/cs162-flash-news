@@ -1,6 +1,6 @@
 from . import db
 from flask_login import UserMixin
-from sqlalchemy import Enum
+from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
 
