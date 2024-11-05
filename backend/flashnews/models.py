@@ -148,3 +148,21 @@ class Follow(db.Model):
         db.Integer, db.ForeignKey("user.user_id"), primary_key=True
     )  # User following
     followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+    commented_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class Like(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), primary_key=True)
+    liked_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class Follow(db.Model):
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.user_id"), primary_key=True
+    )  # User being followed
+    follower_id = db.Column(
+        db.Integer, db.ForeignKey("user.user_id"), primary_key=True
+    )  # User following
+    followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
