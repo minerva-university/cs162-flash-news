@@ -69,18 +69,20 @@ To ensure code consistency, run the following commands before committing:
 
 ### Step 5: Commit and Push Your Changes
 
+Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) to ensure commit messages are clear and structured. Examples include:
+
+- `feat: add new feature to news feed`
+- `fix: correct typo in login page`
+
 When your feature is ready and your branch is in sync, commit your changes with a descriptive message:
 
 ```bash
 git add .
-git commit -m "Brief description of your changes"
+git commit -m "<type>: <description>"
 ```
-
 Then push your branch to the remote repository:
 
-```bash
-git push origin <your-username>/<feature-or-task>
-```
+`git push origin <your-username>/<feature-or-task>`
 
 ### Step 6: Open a Pull Request
 
