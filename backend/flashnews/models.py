@@ -28,15 +28,15 @@ class User(UserMixin, db.Model):
     )
     followers = db.relationship(
         "Follow",
-        foreign_keys="[Follow.followee_id]",
+        foreign_keys="[Follow.user_id]",
         backref="followed_user",
         lazy=True,
         cascade="all, delete-orphan",
     )
-    followees = db.relationship(
+    followings = db.relationship(
         "Follow",
         foreign_keys="[Follow.follower_id]",
-        backref="follower_user",
+        backref="following_user",
         lazy=True,
         cascade="all, delete-orphan",
     )
@@ -65,9 +65,7 @@ class Post(db.Model):
     article_id = db.Column(
         db.Integer, db.ForeignKey("article.article_id"), nullable=False
     )
-    description = db.Column(
-        db.Text
-    )  # Can delete this and add it as a Comment to the post?
+    description = db.Column(db.Text)
     posted_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     categories = db.relationship(
@@ -97,9 +95,7 @@ class CategoryEnum(enum.Enum):
 
 class PostCategory(db.Model):  # Many to Many relationship between posts and categories
     post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), primary_key=True)
-    category = db.Column(
-        Enum(CategoryEnum), primary_key=True
-    )  # I am not sure of this implementation
+    category = db.Column(Enum(CategoryEnum), primary_key=True)
 
 
 class Collection(db.Model):
@@ -138,6 +134,10 @@ class Like(db.Model):
 
 
 class Follow(db.Model):
-    follower_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), primary_key=True)
-    followee_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.user_id"), primary_key=True
+    )  # User being followed
+    follower_id = db.Column(
+        db.Integer, db.ForeignKey("user.user_id"), primary_key=True
+    )  # User following
     followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
