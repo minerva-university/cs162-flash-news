@@ -91,23 +91,26 @@ def get_user_posts(user_id):
         page=page, per_page=per_page, error_out=False
     )
 
-    posts_data = [
-        {
+    posts_data = []
+    for post in paginated_posts.items:
+        is_liked = any(like.user_id == current_user.id for like in post.likes)
+        posts_data.append({
             "post_id": post.post_id,
             "description": post.description,
             "posted_at": post.posted_at,
             "article": {
                 "article_id": post.article.article_id,
-                "title": post.article.title,
                 "link": post.article.link,
+                "source": post.article.source,
+                "title": post.article.title,
                 "caption": post.article.caption,
+                "preview": post.article.preview,
             },
             "categories": [category.category.value for category in post.categories],
             "comments_count": len(post.comments),
             "likes_count": len(post.likes),
+            "is_liked": is_liked
         }
-        for post in paginated_posts.items
-    ]
 
     return (
         jsonify(
@@ -144,8 +147,10 @@ def get_feed():
         page=page, per_page=per_page, error_out=False
     )
 
-    posts_data = [
-        {
+    posts_data = []
+    for post in paginated_posts.items:
+        is_liked = any(like.user_id == current_user.id for like in post.likes)
+        posts_data.append({
             "post_id": post.post_id,
             "user": {
                 "user_id": post.user.user_id,
@@ -158,28 +163,29 @@ def get_feed():
             "posted_at": post.posted_at,
             "article": {
                 "article_id": post.article.article_id,
-                "title": post.article.title,
                 "link": post.article.link,
+                "source": post.article.source,
+                "title": post.article.title,
                 "caption": post.article.caption,
+                "preview": post.article.preview,
             },
             "categories": [category.category.value for category in post.categories],
             "comments_count": len(post.comments),
             "likes_count": len(post.likes),
-        }
-        for post in paginated_posts.items
-    ]
+            "is_liked": is_liked
+        })
 
-    return (
-        jsonify(
-            {
-                "total_posts": paginated_posts.total,
-                "page": paginated_posts.page,
-                "per_page": paginated_posts.per_page,
-                "posts": posts_data,
-            }
-        ),
-        200,
-    )
+        return (
+            jsonify(
+                {
+                    "total_posts": paginated_posts.total,
+                    "page": paginated_posts.page,
+                    "per_page": paginated_posts.per_page,
+                    "posts": posts_data,
+                }
+            ),
+            200,
+        )
 
 
 # Get a single post
@@ -193,6 +199,8 @@ def get_post(post_id):
     if check_post_24h(user=post, post=post):
         return jsonify({"error": "You are not allowed to view this post"}), 403
 
+    is_liked = any(like.user_id == current_user.id for like in post.likes)
+
     post_data = {
         "post_id": post.post_id,
         "user": {
@@ -204,14 +212,17 @@ def get_post(post_id):
         "description": post.description,
         "posted_at": post.posted_at,
         "article": {
-            "article_id": post.article.article_id,
-            "title": post.article.title,
-            "link": post.article.link,
-            "caption": post.article.caption,
+                "article_id": post.article.article_id,
+                "link": post.article.link,
+                "source": post.article.source,
+                "title": post.article.title,
+                "caption": post.article.caption,
+                "preview": post.article.preview,
         },
         "categories": [category.category.value for category in post.categories],
         "comments_count": len(post.comments),
         "likes_count": len(post.likes),
+        "is_liked": is_liked
     }
 
     return jsonify(post_data), 200
