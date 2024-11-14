@@ -19,6 +19,17 @@ def create_app():
 
     db.init_app(app)
 
+    app.register_blueprint(collections)
+
+<<<<<<< HEAD
+=======
+    app.register_blueprint(collections)
+
+    '''
+    This is legacy code from the tutorial. This should be removed.
+
+    # Login authentication
+>>>>>>> e55dc6a (Initial ideas about collections endpoints. Unsynced with Moto)
     login_manager = LoginManager()
     login_manager.init_app(app)
 
