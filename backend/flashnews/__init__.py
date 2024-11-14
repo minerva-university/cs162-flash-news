@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from .collections import collections
 
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
@@ -13,6 +14,8 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
     db.init_app(app)
+
+    app.register_blueprint(collections)
 
     '''
     This is legacy code from the tutorial. This should be removed.
