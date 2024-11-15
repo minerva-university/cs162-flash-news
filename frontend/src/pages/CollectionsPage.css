@@ -1,0 +1,68 @@
+/* Collection Page Styles */
+
+.collections-page {
+max-width: 1200px;
+margin: 0 auto;
+padding: 20px;
+}
+
+.profile-section {
+display: flex;
+align-items: center;
+justify-content: flex-start; 
+gap: 16px;
+margin-bottom: 32px;
+}
+
+.profile-content {
+display: flex;
+flex-direction: column;
+}
+
+.profile-subtext {
+font-size: 0.875rem;
+color: black;
+margin-top: 4px;
+}
+
+.tab-buttons {
+display: flex;
+gap: 8px;
+margin-top: 8px;
+}
+
+.button {
+background-color: #f0f0f0;
+color: black;
+border: none;
+padding: 8px 16px;
+font-size: 0.9rem;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.button:hover {
+background-color: #e0e0e0;
+}
+
+.add-link-button {
+background-color: black;
+color: #f0f0f0;
+border: none;
+padding: 12px 16px;
+border-radius: 6px;
+cursor: pointer;
+margin-left: auto;
+}
+
+.add-link-button:hover {
+background-color: #333;
+}
+
+.divider {
+margin: 0;
+border: 1px solid #e0e0e0;
+width: 100vw;
+left: 0;
+position: absolute;
+}
