@@ -25,4 +25,5 @@ jobs:
         run: npm run lint
 
       - name: Check Prettier formatting
+        working-directory: ./frontend
         run: npx prettier --check .
