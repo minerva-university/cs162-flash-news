@@ -1,0 +1,27 @@
+name: Assign Random Reviewer
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  assign-reviewer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Choose Random Reviewer
+        run: |
+          REVIEWERS=("ucey-star" "avalucianelson" "FlaIespa" "katyaivaniuk" "lewiskyron" "matviikotolyk" "Mykhailo-Chudyk" "nnnour")
+          SELECTED_REVIEWER=${REVIEWERS[$RANDOM % ${#REVIEWERS[@]}]}
+          echo "reviewer=$SELECTED_REVIEWER" >> $GITHUB_ENV
+        id: select-reviewer
+
+      - name: Assign the Reviewer
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers: ["${{ steps.select-reviewer.outputs.reviewer }}"]
+            })
