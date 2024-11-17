@@ -11,8 +11,8 @@ const CollectionDetailModal = ({ type, user }) => {
   // const [loading, setLoading] = useState(true);
   // const [articles, setArticles] = useState([]);
 
-  // Example data --> Will be replaced with actual data from the backend 
-  // TODO: test horizontal scroll with more data 
+  // Example data --> Will be replaced with actual data from the backend
+  // TODO: test horizontal scroll with more data
   const articles = [
     {
       title: "Article Title 1",
@@ -24,29 +24,31 @@ const CollectionDetailModal = ({ type, user }) => {
     {
       title: "Article Title 2",
       source: "Source Name",
-      description: "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      description:
+        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
       category: "Category",
       author: "Author Name",
     },
     {
       title: "Article Title 3",
       source: "Source Name",
-      description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+      description:
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
       category: "Category",
       author: "Author Name",
     },
   ];
 
-  // TODO: Uncomment 
+  // TODO: Uncomment
   // TODO: Add error handling
-  
+
   // const fetchArticles = async (user) => {
   //  // Add user token to headers if necessary + loading functionality + error handling
   //   try {
   //     const response = await fetch(`${<backend_host>}/articles`, {
   //       method: "GET",
   //       headers: {
-  //        HEADERS_WITH_JWT(user), 
+  //        HEADERS_WITH_JWT(user),
   //        "Content-Type": "application/json",
   //       },
   //     });
@@ -69,13 +71,15 @@ const CollectionDetailModal = ({ type, user }) => {
 
   // Use useEffect to call fetchArticles when the component renders
   // useEffect(() => {
-    // fetchArticles();
-  // }, []); 
-
+  // fetchArticles();
+  // }, []);
 
   return (
     <div className="collection-section">
-      <Typography className="collection-title" sx={{ fontSize: "1.8em", fontWeight: "bold", margin: "40px 0"}}>
+      <Typography
+        className="collection-title"
+        sx={{ fontSize: "1.8em", fontWeight: "bold", margin: "40px 0" }}
+      >
         {type} Collections
       </Typography>
       <div className="articles-grid">
@@ -96,10 +100,16 @@ const CollectionDetailModal = ({ type, user }) => {
                 </Typography>
                 <Chip label={article.category} className="category-chip" />
                 <div className="author-section">
-
                   {/* Change according to the type of file for avatar image */}
                   <Avatar sx={{ width: 24, height: 24, bgcolor: "#ddd" }} />
-                  <Typography className="author-name" sx={{ marginLeft: "10px", fontSize: "0.9em", fontWeight: "thin"}}>
+                  <Typography
+                    className="author-name"
+                    sx={{
+                      marginLeft: "10px",
+                      fontSize: "0.9em",
+                      fontWeight: "thin",
+                    }}
+                  >
                     {article.author}
                   </Typography>
                 </div>

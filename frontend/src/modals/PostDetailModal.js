@@ -1,7 +1,6 @@
 import React from "react";
 
 const PostDetailModal = () => {
-
   return (
     <div>
       <h1>Post Detail</h1>
