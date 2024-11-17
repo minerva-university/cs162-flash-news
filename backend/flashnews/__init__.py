@@ -9,35 +9,43 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
 
-    app.config['SECRET_KEY'] = 'dev'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    app.config["SECRET_KEY"] = "dev"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+    app.config["debug"] = True
 
     db.init_app(app)
 
-    '''
-    This is legacy code from the tutorial. This should be removed.
-
-    # Login authentication
     login_manager = LoginManager()
-    login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
 
-
-    # this was a blue print for the user model
     from .models import User
 
     @login_manager.user_loader
     def load_user(user_id):
-        # since the user_id is just the primary key of our user table, use it in the query for the user
         return User.query.get(int(user_id))
 
     # blueprint for auth routes in our app
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
+    # from .auth import auth as auth_blueprint
+    # app.register_blueprint(auth_blueprint)
 
-    # blueprint for non-auth parts of app
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
-    '''
+    # blueprint for user routes in our app
+    # from .user import users as user_blueprint
+    # app.register_blueprint(user_blueprint)
+
+    # blueprint for post routes in our app
+    # from .post import posts as posts_blueprint
+    # app.register_blueprint(posts_blueprint)
+
+    # blueprint for collection routes in our app
+    # from .collections import collections as collections_blueprint
+    # app.register_blueprint(collections_blueprint)
+
+    # Initialize the database
+    with app.app_context():
+        db.create_all()
+
+    @app.route("/")
+    def home():
+        return "Hello, Flask!"
 
     return app
