@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 
 import Avatar from "@mui/material/Avatar";
-import { Box, Modal } from "@mui/material";
+import { Box, Button, Modal } from "@mui/material";
+import TagsController from "../controllers/TagsController";
+import MultipleSelectChip from "../components/MultipleSelectChip";
 
 const style = {
   position: "absolute",
@@ -21,8 +23,24 @@ const style = {
 
 export default function AddPostForm() {
   const profile_picture = ""; // @TODO current user's profile picture
+  const mainTextareaRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  const handleOpen = async () => {
+    // Reset inputs
+    setOpen(true);
+    setSelectedCategories([]);
+
+    // Get all tags in the database
+    const categories = await TagsController.getAll();
+    setCategories(categories);
+
+    if (mainTextareaRef && mainTextareaRef.current)
+      mainTextareaRef.current.focus();
+  };
+
   const handleClose = () => {
     // @TODO: Nicer confirmation modal
     // const confirmation = confirm("Are you sure you want to exit? All changes will be lost.");
@@ -31,24 +49,28 @@ export default function AddPostForm() {
     setOpen(false);
   };
 
+  // const handleTagAdd = (event) => {
+  //   if (event.key === "Enter" && tagInput.trim() !== "") {
+  //     setTagsData([...tags, { key: tags.length, label: tagInput }]);
+  //     setTagInput("");
+  //   }
+  // };
+
+  // const handleTagDelete = (tagToDelete) => () => {
+  //   setTagsData((tags) => tags.filter((tag) => tag.key !== tagToDelete.key));
+  // };
+
   return (
     <Card sx={{ width: "50%", maxWidth: "555px", margin: "0 auto 3rem" }}>
       <CardHeader
         avatar={
-          profile_picture ? (
-            <Avatar
-              src={profile_picture}
-              sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
-            />
-          ) : (
-            <Avatar
-              sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
-            >
-              R
-            </Avatar>
-          )
+          <Avatar
+            src={profile_picture ?? ""}
+            sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
+            aria-label="recipe"
+          >
+            R
+          </Avatar>
         }
         title="What's new and interesting?"
         sx={{ cursor: "pointer", userSelect: "none" }}
@@ -61,25 +83,41 @@ export default function AddPostForm() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          {profile_picture ? (
+          <Box sx={{ display: "flex", border: "1px" }}>
             <Avatar
-              src={profile_picture}
+              src={profile_picture ?? ""}
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
-            />
-          ) : (
-            <Avatar
-              sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
+              aria-label="User Profile"
             >
               R
             </Avatar>
-          )}
+          </Box>
+          {/* Main Textarea */}
           <TextareaAutosize
+            style={{
+              width: "100%",
+              border: "none",
+              outline: "none",
+              marginTop: "1rem",
+            }}
+            ref={mainTextareaRef}
             aria-label="minimum height"
             minRows={3}
             placeholder="What's on your mind?"
           />
+          <Box sx={{ display: "flex" }}>
+            {/* Categories */}
+            <MultipleSelectChip
+              id="categories-list"
+              label="Categories"
+              options={categories}
+              max={5}
+              sx={{ width: "100%" }}
+              onChange={(selected) => setSelectedCategories(selected)}
+            />
+          </Box>
+          {/* Save Post */}
+          <Button sx={{ marginLeft: "auto" }}>Save</Button>
         </Box>
       </Modal>
     </Card>
