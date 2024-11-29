@@ -17,7 +17,7 @@ export default function PostCard({ post }) {
   dayjs.extend(relativeTime);
 
   return (
-    <Card sx={{ width: "50%", maxWidth: "555px", margin: "0 auto 2rem" }}>
+    <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
       <CardHeader
         avatar={
           post.profile_picture ? (
@@ -86,6 +86,12 @@ export default function PostCard({ post }) {
         </IconButton>
         <Button sx={{ marginLeft: "auto !important" }}>
           <Link
+            sx={{
+              color: "inherit",
+              "&:hover": {
+                color: "#F6F5EE", // Beige from palette on hover
+              },
+            }}
             href={post.link}
             underline="none"
             target="_blank"
