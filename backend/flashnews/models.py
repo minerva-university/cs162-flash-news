@@ -14,14 +14,12 @@ class User(UserMixin, db.Model):
     bio_description = db.Column(db.Text)
     profile_picture = db.Column(db.LargeBinary)
 
+    # Cascade delete for all related records except comments
     posts = db.relationship(
         "Post", backref="user", lazy=True, cascade="all, delete-orphan"
     )
     collections = db.relationship(
         "Collection", backref="user", lazy=True, cascade="all, delete-orphan"
-    )
-    comments = db.relationship(
-        "Comment", backref="user", lazy=True, cascade="all, delete-orphan"
     )
     likes = db.relationship(
         "Like", backref="user", lazy=True, cascade="all, delete-orphan"
@@ -40,6 +38,11 @@ class User(UserMixin, db.Model):
         lazy=True,
         cascade="all, delete-orphan",
     )
+
+    # User's comments are not deleted when the user is deleted
+    comments = db.relationship(
+        "Comment", backref="user", lazy=True, cascade="all"
+    )    
 
 
 class Article(db.Model):  # Seperated this from Post considering 3NF.
