@@ -64,8 +64,16 @@ def create_app():
     # from .post import posts as posts_blueprint
     # app.register_blueprint(posts_blueprint)
 
+    # blueprint for comment routes in our app
+    # from .comment import comments as comments_blueprint
+    # app.register_blueprint(comments_blueprint)
+
+    # blueprint for like routes in our app
+    # from .like import likes as likes_blueprint
+    # app.register_blueprint(likes_blueprint)
+
     # blueprint for collection routes in our app
-    # from .collections import collections as collections_blueprint
+    # from .collection import collections as collections_blueprint
     # app.register_blueprint(collections_blueprint)
 
     # Initialize the database
