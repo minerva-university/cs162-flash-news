@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from .collections import collections
+from .collection import collections
 
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
@@ -44,7 +44,7 @@ def create_app():
     app.register_blueprint(posts_blueprint)
 
     # blueprint for collection routes in our app
-    from .collections import collections as collections_blueprint
+    from .collection import collections as collections_blueprint
 
     app.register_blueprint(collections_blueprint)
 
