@@ -1,28 +1,56 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
+from dotenv import load_dotenv
+import os
+from .models import User, RevokedToken
+
+
+# Load environment variables from .env file
+load_dotenv()
 
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
+jwt = JWTManager()
+
+
+@jwt.user_lookup_loader
+def load_user(jwt_header, jwt_data):
+    user_id = jwt_data["sub"]
+    if user_id is not None:
+        return User.query.get(user_id)
+    return None
+
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    """Define how the user object is encoded in the JWT."""
+    return user.user_id
+
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    return RevokedToken.query.filter_by(jti=jti).first() is not None
 
 
 def create_app():
     app = Flask(__name__)
 
-    app.config["SECRET_KEY"] = "dev"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
-    app.config["debug"] = True
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
+        hours=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_HOURS"))
+    )
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(
+        days=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES_DAYS"))
+    )
+    app.config["debug"] = os.getenv("DEBUG").lower() == "true"
 
     db.init_app(app)
-
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-
-    from .models import User
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
+    jwt.init_app(app)  # Initialize JWT
 
     # blueprint for auth routes in our app
     # from .auth import auth as auth_blueprint

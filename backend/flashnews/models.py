@@ -1,11 +1,10 @@
 from . import db
-from flask_login import UserMixin
 from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
 
 
-class User(UserMixin, db.Model):
+class User(db.Model):  # Removed UserMixin
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
@@ -141,3 +140,9 @@ class Follow(db.Model):
         db.Integer, db.ForeignKey("user.user_id"), primary_key=True
     )  # User following
     followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class RevokedToken(db.Model):  # For JWT token revocation
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    jti = db.Column(db.String(120))
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
