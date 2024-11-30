@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from .collection import collections
 
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
@@ -10,9 +9,6 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
 
-    app.config["SECRET_KEY"] = "dev"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
-    app.config["debug"] = True
     app.config["SECRET_KEY"] = "dev"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
     app.config["debug"] = True
@@ -51,5 +47,9 @@ def create_app():
     # Initialize the database
     with app.app_context():
         db.create_all()
+
+    @app.route("/")
+    def home():
+        return "Hello, Flask!"
 
     return app

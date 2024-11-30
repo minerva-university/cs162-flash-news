@@ -102,8 +102,11 @@ class Collection(db.Model):
     collection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     title = db.Column(db.String(100), nullable=False)
+<<<<<<< HEAD
     emoji = db.Column(db.String(10))
     description = db.Column(db.Text)
+=======
+>>>>>>> main
     is_public = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
@@ -111,11 +114,14 @@ class Collection(db.Model):
         "CollectionPost", backref="collection", lazy=True, cascade="all, delete-orphan"
     )
 
+<<<<<<< HEAD
     # Adding a unique constraint to the user_id and title columns
     __table_args__ = (
             db.UniqueConstraint('user_id', 'title', name='unique_user_collection_title'),
         )
 
+=======
+>>>>>>> main
 
 class CollectionPost(
     db.Model
@@ -148,6 +154,7 @@ class Follow(db.Model):
         db.Integer, db.ForeignKey("user.user_id"), primary_key=True
     )  # User following
     followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+<<<<<<< HEAD
 
     commented_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
@@ -166,3 +173,5 @@ class Follow(db.Model):
         db.Integer, db.ForeignKey("user.user_id"), primary_key=True
     )  # User following
     followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+=======
+>>>>>>> main
