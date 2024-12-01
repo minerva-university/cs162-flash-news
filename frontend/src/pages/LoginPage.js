@@ -8,7 +8,6 @@ import {
   Box,
 } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
-import "../App.css";
 
 function LoginPage() {
   return (
@@ -70,7 +69,7 @@ function LoginPage() {
             fullWidth
             sx={{ marginBottom: "1rem" }}
           >
-            Sign In
+            Log In
           </Button>
           <Button
             variant="outlined"
