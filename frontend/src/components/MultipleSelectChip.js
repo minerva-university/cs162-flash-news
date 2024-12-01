@@ -34,6 +34,7 @@ export default function MultipleSelectChip({
   options,
   max = -1,
   onChange,
+  sx
 }) {
   const theme = useTheme();
   const [selected, setSelected] = React.useState([]);
@@ -56,7 +57,7 @@ export default function MultipleSelectChip({
   };
 
   return (
-    <FormControl sx={{ margin: 1, width: "100%" }}>
+    <FormControl sx={{ ...sx, width: "100%" }}>
       <InputLabel id={`${id}-label`}>{label}</InputLabel>
       <Select
         labelId={`${id}-label`}

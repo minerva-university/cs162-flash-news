@@ -91,6 +91,7 @@ export default function AddPostForm() {
             >
               R
             </Avatar>
+            
           </Box>
           {/* Main Textarea */}
           <TextareaAutosize
@@ -99,23 +100,22 @@ export default function AddPostForm() {
               border: "none",
               outline: "none",
               marginTop: "1rem",
+              marginBottom: "1rem",
             }}
             ref={mainTextareaRef}
             aria-label="minimum height"
-            minRows={3}
+            minRows={7}
             placeholder="What's on your mind?"
           />
-          <Box sx={{ display: "flex" }}>
-            {/* Categories */}
-            <MultipleSelectChip
-              id="categories-list"
-              label="Categories"
-              options={categories}
-              max={5}
-              sx={{ width: "100%" }}
-              onChange={(selected) => setSelectedCategories(selected)}
-            />
-          </Box>
+          {/* Categories */}
+          <MultipleSelectChip
+            id="categories-list"
+            label="Select Categor(ies)"
+            options={categories}
+            max={5}
+            sx={{ marginBottom: "1rem" }}
+            onChange={(selected) => setSelectedCategories(selected)}
+          />
           {/* Save Post */}
           <Button sx={{ marginLeft: "auto" }}>Save</Button>
         </Box>
