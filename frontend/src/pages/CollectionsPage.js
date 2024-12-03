@@ -25,7 +25,7 @@ const CollectionsPage = ({ isOwner }) => {
       description: "Stay updated with the latest global events and trends.",
       createdAt: "2024-11-20",
       articlesCount: 3,
-      icon: "📰",
+      emoji: "📰",
       articles: [
         {
           title: "Global Climate Summit Highlights",
@@ -62,7 +62,7 @@ const CollectionsPage = ({ isOwner }) => {
       description: "The latest in AI, software, and hardware advancements.",
       createdAt: "2024-11-15",
       articlesCount: 3,
-      icon: "💻",
+      emoji: "💻",
       articles: [
         {
           title: "AI Breakthrough in 2024",
@@ -102,7 +102,7 @@ const CollectionsPage = ({ isOwner }) => {
       description: "Discover the mysteries of the universe.",
       createdAt: "2024-10-05",
       articlesCount: 2,
-      icon: "🚀",
+      emoji: "🚀",
       articles: [
         {
           title: "Mars Rover Discovers Evidence of Water",
@@ -130,7 +130,7 @@ const CollectionsPage = ({ isOwner }) => {
       description: "Articles to help you lead a healthier life.",
       createdAt: "2024-09-25",
       articlesCount: 2,
-      icon: "🏋️",
+      emoji: "🏋️",
       articles: [
         {
           title: "New Study Links Exercise to Longevity",
@@ -158,7 +158,7 @@ const CollectionsPage = ({ isOwner }) => {
       description: "Explore the best travel destinations and adventure tips.",
       createdAt: "2024-08-30",
       articlesCount: 2,
-      icon: "✈️",
+      emoji: "✈️",
       articles: [
         {
           title: "Top 10 Destinations for 2024",
