@@ -24,7 +24,7 @@ const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
       }}
       onClick={onClick}
     >
-      {/* Icon Section */}
+      {/* Emoji Section */}
       <Box
         sx={{
           display: "flex",
@@ -39,7 +39,7 @@ const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
           color: "#5F848C",
         }}
       >
-        {collection.icon}
+        {collection.emoji}
       </Box>
 
       {/* Name */}
