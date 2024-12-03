@@ -38,6 +38,9 @@ def create_collection():
 @login_required
 def get_collections(user_id):
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
     public_collections = user.collections.filter_by(is_public=True).all()
     private_collections = user.collections.filter_by(is_public=False).all()
 
@@ -70,14 +73,14 @@ def get_collections(user_id):
         return jsonify({
             'public': public_collections_data}), 200
 
-    elif current_user.user_id == user_id:
+    else:
         return jsonify({
             'public': public_collections_data,
             'private': private_collections_data}), 200
 
 # Get posts from a specific collection
 @collections.route('/<int:collection_id>/posts', methods=['GET'])
-@login_required()
+@login_required
 def get_collection_posts(collection_id):
     collection_posts = (
         CollectionPost.query
@@ -101,16 +104,9 @@ def get_collection_posts(collection_id):
 
 
 # Add a post to a collection
-@collections.route('/<int:collection_id>/posts/int:post_id', methods=['POST'])
-@login_required()
+@collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['POST'])
+@login_required
 def add_post_to_collection(collection_id, post_id):
-    '''
-    *** REVIEW NEEDED ***       
-    Understanding checker: Users don't create posts, they only add existing posts to their collections.
-
-    Otherwise, I'd have to modify these lines to create a new post first before adding it to the collection. 
-    And I would be expecting an article link instead of a post_id in the post data.
-    '''
 
     check_post = CollectionPost.query.filter_by(collection_id=collection_id, post_id=post_id).first()
 
