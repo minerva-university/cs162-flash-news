@@ -6,17 +6,17 @@ import Box from "@mui/material/Box";
 import ArticleCard from "../components/ArticleCard";
 
 const CollectionDetailModal = () => {
-  const location = useLocation(); // Access the state passed from navigate
+  const location = useLocation(); 
   const navigate = useNavigate();
-  const articlesSectionRef = useRef(null); // Ref for the articles section
-  const collection = location.state?.collection; // Get the collection data from state
+  const articlesSectionRef = useRef(null); 
+  const collection = location.state?.collection; 
 
   if (!collection) {
     return <Typography>No collection found. Please navigate back.</Typography>;
   }
 
   // const [loading, setLoading] = useState(true);
-  const { name, articles, createdAt, description, icon } = collection;
+  const { name, articles, createdAt, description, emoji } = collection;
 
   // Function to scroll to the articles section
   // TODO: Implement on top of page (also scroll to bottom and top)
@@ -121,7 +121,7 @@ const CollectionDetailModal = () => {
               fontSize: "50px",
             }}
           >
-            {icon}
+            {emoji}
           </Box>
           <Typography
             variant="h4"
