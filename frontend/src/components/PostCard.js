@@ -16,6 +16,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 export default function PostCard({ post }) {
   dayjs.extend(relativeTime);
 
+  const [expanded, setExpanded] = React.useState(false);
+
   return (
     <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
       <CardHeader
@@ -47,14 +49,30 @@ export default function PostCard({ post }) {
       {/* @TODO: Should truncate very long descriptions, when "More" is clicked it'll expand the post */}
       <CardContent>
         {post.description &&
-          post.description.split("\n").map((line, index) => (
-            <Typography
-              variant="body2"
-              sx={{ color: "text.secondary", marginBottom: "1rem" }}
-            >
-              {line}
-            </Typography>
-          ))}
+          post.description.split("\n").map((line, index, arr) => {
+            return (
+              <Typography
+                key={index}
+                variant="body2"
+                sx={{
+                  color: "text.secondary",
+                  marginBottom: "1rem",
+                  display: expanded || index < 3 ? "block" : "none",
+                }}
+              >
+                {line}
+                {index == 2 && arr.length > 3 && !expanded && (
+                  <Typography
+                    variant="body2"
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => setExpanded(true)}
+                  >
+                    ...more
+                  </Typography>
+                )}
+              </Typography>
+            );
+          })}
       </CardContent>
 
       {/* Category Chips */}
