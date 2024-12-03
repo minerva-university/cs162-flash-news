@@ -29,7 +29,6 @@ const style = {
   boxShadow: 24,
   outline: "none",
   p: 4,
-  // padding: "1rem",
   margin: "1rem",
 };
 
@@ -44,6 +43,15 @@ export default function AddPostForm() {
   const [linkError, setLinkError] = useState(false);
 
   const [ogMetadata, setOgMetadata] = useState(null);
+
+  const resetAddPostForm = () => {
+    // Reset data
+    setOgMetadata(null);
+    setLink("");
+    setLinkError(false);
+    setCategories([]);
+    mainTextareaRef.current.value = "";
+  };
 
   const handleOpen = async () => {
     // Reset inputs
@@ -63,12 +71,7 @@ export default function AddPostForm() {
       "Are you sure you want to exit? All changes will be lost."
     );
     if (confirmation) {
-      // Reset data
-      setOgMetadata(null);
-      setLink("");
-      setLinkError(false);
-      setCategories([]);
-      mainTextareaRef.current.value = "";
+      resetAddPostForm();
 
       // Close the modal
       setOpen(false);
@@ -88,12 +91,19 @@ export default function AddPostForm() {
 
     // Save the post
     const post = {
-      content: mainTextareaRef.current.value,
+      ...ogMetadata,
+      article_link: link,
+      post_description: mainTextareaRef.current.value,
       categories: selectedCategories,
       visibility: postVisibility,
     };
-    console.log(post);
-    setOpen(false);
+
+    PostController.createPost(post)
+      .then((response) => {
+        resetAddPostForm();
+        setOpen(false);
+      })
+      .catch((error) => console.error(error));
   };
 
   const handleVisibilityChange = (event) => {
@@ -102,7 +112,7 @@ export default function AddPostForm() {
   };
 
   function isValid(url) {
-    const pattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/;
+    const pattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w]*)*.*$/g;
     return pattern.test(url);
   }
 
@@ -151,7 +161,7 @@ export default function AddPostForm() {
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-        sx={{ overflowY: "scroll" }}
+        sx={{ overflowY: "scroll", marginBottom: "2rem"}}
       >
         <Box sx={style}>
           <Box

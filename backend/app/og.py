@@ -5,7 +5,7 @@ opengraph_bp = Blueprint("opengraph", __name__)
 
 
 # Scrape the URL's opengraph tags
-@opengraph_bp.route("/url", methods=["POST"])
+@opengraph_bp.route("/og", methods=["POST"])
 def scrape():
     data = request.get_json()
     url = data["url"]

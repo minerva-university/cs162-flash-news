@@ -13,9 +13,10 @@ MAX_CATEGORIES = 5  # Maximum number of categories a post can have
 
 # Create a post
 @posts.route("/posts", methods=["POST"])
-@login_required
+# @TODO: Add JWT check decorator
 def create_post():
     data = request.get_json()
+    current_user_id = 1  # @TODO: Get current user from JWT
 
     article_link = data.get("article_link")
     if not article_link:
@@ -27,18 +28,20 @@ def create_post():
     if not article:
         article = Article(
             link=article_link,
-            source=None,  # Implement later
-            title=None,  # Implement later
-            caption=None,  # Implement later
-            preview=None,  # Implement later
+            source=data.get("site_name"),  # og:site_name
+            title=data.get("title"),  # og:title
+            caption=data.get("description"),  # og:description
+            preview=data.get("image"),  # og:image
         )  # What if the automated fields fail? Implement later
         db.session.add(article)
         db.session.commit()
 
     post = Post(
-        user_id=current_user.user_id,
+        user_id=current_user_id,  # @TODO change back to current_user.user_id or JWT equivalent
         article_id=article.article_id,
-        description=data.get("description"),
+        description=data.get(
+            "post_description"
+        ),  # post_ prefix differentiates from og:description
     )
 
     db.session.add(post)
@@ -69,7 +72,7 @@ def create_post():
 
 # Get a single post
 @posts.route("/posts/<int:post_id>", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -109,7 +112,7 @@ def get_post(post_id):
 
 # Delete a post
 @posts.route("/posts/<int:post_id>", methods=["DELETE"])
-@login_required
+# @TODO: Add JWT check decorator
 def delete_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -126,7 +129,7 @@ def delete_post(post_id):
 
 # Update a post
 @posts.route("/posts/<int:post_id>", methods=["PUT"])
-@login_required
+# @TODO: Add JWT check decorator
 def update_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -182,7 +185,7 @@ def update_post(post_id):
 
 # Get feed (posts by followed users) with pagination
 @posts.route("/posts/feed", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_feed():
     # Set pagination parameters
     page = request.args.get("page", 1, type=int)
@@ -247,7 +250,7 @@ def get_feed():
 
 # Get posts (posted by the user) with pagination
 @posts.route("/posts/user/<int:user_id>", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_user_posts(user_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
@@ -306,7 +309,7 @@ def get_user_posts(user_id):
 
 # Get available categories
 @posts.route("/posts/categories", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_categories():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)

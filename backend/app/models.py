@@ -48,7 +48,7 @@ class Article(db.Model):  # Seperated this from Post considering 3NF.
     source = db.Column(db.String)  # Automatically generated from link
     title = db.Column(db.String)  # Automatically generated from link
     caption = db.Column(db.Text)  # Automatically generated from link
-    preview = db.Column(db.LargeBinary)  # Automatically generated from link
+    preview = db.Column(db.String)  # URL of og:image, automatically generated from link
 
     posts = db.relationship(
         "Post", backref="article", lazy=True, cascade="all, delete-orphan"

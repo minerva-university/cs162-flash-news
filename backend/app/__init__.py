@@ -42,16 +42,16 @@ def create_app():
     # app.register_blueprint(user_blueprint)
 
     # blueprint for post routes in our app
-    # from .post import posts as posts_blueprint
-    # app.register_blueprint(posts_blueprint)
+    from .post import posts as posts_blueprint
+    app.register_blueprint(posts_blueprint, url_prefix="/api/")
 
     # blueprint for comment routes in our app
-    # from .comment import comments as comments_blueprint
-    # app.register_blueprint(comments_blueprint)
+    from .comment import comments as comments_blueprint
+    app.register_blueprint(comments_blueprint, url_prefix="/api/")
 
     # blueprint for like routes in our app
-    # from .like import likes as likes_blueprint
-    # app.register_blueprint(likes_blueprint)
+    from .like import likes as likes_blueprint
+    app.register_blueprint(likes_blueprint, url_prefix="/api/")
 
     # blueprint for collection routes in our app
     # from .collection import collections as collections_blueprint
@@ -59,7 +59,7 @@ def create_app():
 
     # blueprint for OpenGraph routes in our app
     from .og import opengraph_bp as og_blueprint
-    app.register_blueprint(og_blueprint, url_prefix="/api/og")
+    app.register_blueprint(og_blueprint, url_prefix="/api/")
 
     # Initialize the database
     with app.app_context():
