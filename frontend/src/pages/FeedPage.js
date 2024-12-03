@@ -7,16 +7,20 @@ import AddPostForm from "../forms/AddPostForm";
 const FeedPage = () => {
   const [posts, setPosts] = useState(null);
 
-  useEffect(() => {
+  const getPosts = async () => {
     PostController.getAll().then((posts) => {
       setPosts(posts);
     });
+  };
+
+  useEffect(() => {
+    getPosts();
   }, []);
 
   return (
     <Box style={{ padding: 20 }}>
-      <AddPostForm />
-      {posts && 
+      <AddPostForm onPostAdded={getPosts} />
+      {posts &&
         posts.posts.map((post) => <PostCard key={post.post_id} post={post} />)}
     </Box>
   );

@@ -38,16 +38,23 @@ export default function PostCard({ post }) {
         title={post.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
-      <CardMedia sx={{ height: 300 }} image={post.article.preview} title={post.article.title} />
+      <CardMedia
+        sx={{ height: 300 }}
+        image={post.article.preview}
+        title={post.article.title}
+      />
 
       {/* @TODO: Should truncate very long descriptions, when "More" is clicked it'll expand the post */}
       <CardContent>
-        <Typography
-          variant="body2"
-          sx={{ color: "text.secondary", marginBottom: "1rem" }}
-        >
-          {post.description}
-        </Typography>
+        {post.description &&
+          post.description.split("\n").map((line, index) => (
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", marginBottom: "1rem" }}
+            >
+              {line}
+            </Typography>
+          ))}
       </CardContent>
 
       {/* Category Chips */}

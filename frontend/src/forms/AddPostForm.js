@@ -32,7 +32,7 @@ const style = {
   margin: "1rem",
 };
 
-export default function AddPostForm() {
+export default function AddPostForm({ onPostAdded }) {
   const profile_picture = ""; // @TODO current user's profile picture
   const mainTextareaRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -101,6 +101,10 @@ export default function AddPostForm() {
     PostController.createPost(post)
       .then((response) => {
         resetAddPostForm();
+        
+        // Refresh the feed using the callback function
+        if (onPostAdded) onPostAdded();
+        
         setOpen(false);
       })
       .catch((error) => console.error(error));
@@ -161,7 +165,7 @@ export default function AddPostForm() {
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-        sx={{ overflowY: "scroll", marginBottom: "2rem"}}
+        sx={{ overflowY: "scroll", marginBottom: "2rem" }}
       >
         <Box sx={style}>
           <Box
