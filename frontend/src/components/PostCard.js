@@ -38,7 +38,7 @@ export default function PostCard({ post }) {
         title={post.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
-      <CardMedia sx={{ height: 300 }} image={post.preview} title={post.title} />
+      <CardMedia sx={{ height: 300 }} image={post.article.preview} title={post.article.title} />
 
       {/* @TODO: Should truncate very long descriptions, when "More" is clicked it'll expand the post */}
       <CardContent>
@@ -86,7 +86,7 @@ export default function PostCard({ post }) {
         </IconButton>
         <Button sx={{ marginLeft: "auto !important" }}>
           <Link
-            href={post.link}
+            href={post.article.link}
             underline="none"
             target="_blank"
             rel="noopener"

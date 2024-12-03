@@ -10,13 +10,14 @@ posts = Blueprint("post", __name__)
 
 MAX_CATEGORIES = 5  # Maximum number of categories a post can have
 
+current_user_id = 1  # @TODO: Get current user from JWT
+
 
 # Create a post
 @posts.route("/posts", methods=["POST"])
 # @TODO: Add JWT check decorator
 def create_post():
     data = request.get_json()
-    current_user_id = 1  # @TODO: Get current user from JWT
 
     article_link = data.get("article_link")
     if not article_link:
@@ -183,7 +184,7 @@ def update_post(post_id):
     return jsonify({"message": "Post updated successfully"}), 200
 
 
-# Get feed (posts by followed users) with pagination
+# Get feed (posts by self + followed users) with pagination
 @posts.route("/posts/feed", methods=["GET"])
 # @TODO: Add JWT check decorator
 def get_feed():
@@ -193,7 +194,10 @@ def get_feed():
 
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
 
-    followed_users = [follow.user_id for follow in current_user.followings]
+    followed_users = [
+        current_user_id, 
+        # (follow.user_id for follow in current_user.followings) # @TODO: Implement this once we have JWT
+    ]
 
     # Query posts by followed users from the last 24 hours
     posts_query = Post.query.filter(
