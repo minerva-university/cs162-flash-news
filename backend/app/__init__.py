@@ -25,28 +25,28 @@ def create_app():
         return User.query.get(int(user_id))
 
     # blueprint for auth routes in our app
-    # from .auth import auth as auth_blueprint
-    # app.register_blueprint(auth_blueprint)
+    from .auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     # blueprint for user routes in our app
-    # from .user import users as user_blueprint
-    # app.register_blueprint(user_blueprint)
+    from .user import users as user_blueprint
+    app.register_blueprint(user_blueprint)
 
     # blueprint for post routes in our app
-    # from .post import posts as posts_blueprint
-    # app.register_blueprint(posts_blueprint)
+    from .post import posts as posts_blueprint
+    app.register_blueprint(posts_blueprint)
 
     # blueprint for comment routes in our app
-    # from .comment import comments as comments_blueprint
-    # app.register_blueprint(comments_blueprint)
+    from .comment import comments as comments_blueprint
+    app.register_blueprint(comments_blueprint)
 
     # blueprint for like routes in our app
-    # from .like import likes as likes_blueprint
-    # app.register_blueprint(likes_blueprint)
+    from .like import likes as likes_blueprint
+    app.register_blueprint(likes_blueprint)
 
     # blueprint for collection routes in our app
-    # from .collection import collections as collections_blueprint
-    # app.register_blueprint(collections_blueprint)
+    from .collection import collections as collections_blueprint
+    app.register_blueprint(collections_blueprint)
 
     # Initialize the database
     with app.app_context():
