@@ -57,13 +57,13 @@ def create_post():
             )
         for category in categories:
             # Check if the category exists and add it to the PostCategory table
-            if category in CategoryEnum.__members__:
+            if category.upper() in CategoryEnum.__members__:
                 post_category = PostCategory(
                     post_id=post.post_id,
-                    category=CategoryEnum[category],
+                    category=CategoryEnum[category.upper()],
                 )
                 db.session.add(post_category)
-    db.session.commit()
+        db.session.commit()
 
     return (
         jsonify({"message": "Post created successfully", "post_id": post.post_id}),
@@ -82,7 +82,9 @@ def get_post(post_id):
     if check_post_24h(user=post, post=post):
         return jsonify({"error": "You are not allowed to view this post"}), 403
 
-    is_liked = any(like.user_id == current_user.id for like in post.likes)
+    # @TODO: Change back to this later
+    # is_liked = any(like.user_id == current_user.id for like in post.likes)
+    is_liked = any(like.user_id == current_user_id for like in post.likes)
 
     post_data = {
         "post_id": post.post_id,
@@ -211,7 +213,8 @@ def get_feed():
 
     posts_data = []
     for post in paginated_posts.items:
-        is_liked = any(like.user_id == current_user.id for like in post.likes)
+        # is_liked = any(like.user_id == current_user.id for like in post.likes)
+        is_liked = any(like.user_id == current_user_id for like in post.likes)
         posts_data.append(
             {
                 "post_id": post.post_id,
@@ -277,7 +280,8 @@ def get_user_posts(user_id):
 
     posts_data = []
     for post in paginated_posts.items:
-        is_liked = any(like.user_id == current_user.id for like in post.likes)
+        # is_liked = any(like.user_id == current_user.id for like in post.likes)
+        is_liked = any(like.user_id == current_user_id for like in post.likes)
         posts_data.append(
             {
                 "post_id": post.post_id,

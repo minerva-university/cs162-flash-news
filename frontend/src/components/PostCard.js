@@ -12,11 +12,23 @@ import { Box, Button, IconButton, Link } from "@mui/material";
 import { ChatBubble, ThumbUp } from "@mui/icons-material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import PostController from "../controllers/PostController";
 
 export default function PostCard({ post }) {
   dayjs.extend(relativeTime);
 
   const [expanded, setExpanded] = React.useState(false);
+  const [liked, setLiked] = React.useState(post.is_liked);
+
+  const handleLike = () => {
+    const newLikeStatus = !liked;
+    PostController.likeOrUnlikePost(post.post_id, newLikeStatus)
+      .then(() => {
+        setLiked(newLikeStatus);
+        post.likes_count += newLikeStatus ? 1 : -1;
+      })
+      .catch((error) => console.error(error));
+  };
 
   return (
     <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
@@ -37,7 +49,7 @@ export default function PostCard({ post }) {
             </Avatar>
           )
         }
-        title={post.username}
+        title={post.user.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
       <CardMedia
@@ -85,6 +97,7 @@ export default function PostCard({ post }) {
               label={category}
               variant="outlined"
               size="small"
+              sx={{ marginRight: "0.5rem" }}
             />
           ))}
         </Box>
@@ -94,29 +107,38 @@ export default function PostCard({ post }) {
       <CardActions>
         <IconButton
           aria-label="like"
-          color={post.liked ? "secondary" : "inherit"}
-          onClick={() => {
-            console.log("Like this post");
-          }}
+          color={liked ? "primary" : "inherit"}
+          onClick={handleLike}
         >
-          <ThumbUp />
+          <ThumbUp sx={{ marginRight: "0.5rem" }} />
+          <Typography variant="body2">
+            {post.likes_count != 0 && post.likes_count}
+          </Typography>
         </IconButton>
         <IconButton
           aria-label="like"
+          sx={{ color: "inherit" }}
           onClick={() => {
             console.log("Comment on post");
           }}
         >
-          <ChatBubble />
+          <ChatBubble sx={{ marginRight: "0.5rem" }} />
+          <Typography variant="body2">
+            {post.comments_count != 0 && post.comments_count}
+          </Typography>
         </IconButton>
-        <Button sx={{ marginLeft: "auto !important" }}>
+        <Button
+          sx={{
+            marginLeft: "auto !important",
+            "&:hover": {
+              color: "#F6F5EE", // Beige from palette on hover
+            },
+          }}
+        >
           <Link
             href={post.article.link}
             sx={{
               color: "inherit",
-              "&:hover": {
-                color: "#F6F5EE", // Beige from palette on hover
-              },
             }}
             underline="none"
             target="_blank"

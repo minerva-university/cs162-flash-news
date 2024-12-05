@@ -4,7 +4,6 @@ const DB_HOST = "http://127.0.0.1:5000/api";
 
 class PostController {
   static async getAll() {
-
     const response = await fetch(`${DB_HOST}/posts/feed`, {
       method: "GET",
       headers: { "content-type": "application/json" }
@@ -35,19 +34,19 @@ class PostController {
     }
   }
 
-  static async likePost(post_id) {
-    console.log("@TODO IMPLEMENT");
-    // const response = await fetch(`${DB_HOST}/lists`, {
-    //   method: "GET",
-    //   headers: HEADERS_WITH_JWT(user),
-    // });
+  static async likeOrUnlikePost(post_id, is_liked) {
+    const response = await fetch(`${DB_HOST}/likes/${post_id}`, {
+      method: is_liked ? "POST" : "DELETE",
+      // headers: HEADERS_WITH_JWT(user),
+      headers: { "content-type": "application/json" },
+    });
 
-    // const responseBody = await response.json();
-    // if (response?.ok) {
-    //   return responseBody;
-    // } else {
-    //   throw new Error(`${responseBody.message}`);
-    // }
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
   }
 
   static async getOGMetadata(url) {
