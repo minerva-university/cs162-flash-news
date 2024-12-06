@@ -1,24 +1,31 @@
 import * as React from "react";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import CardMedia from "@mui/material/CardMedia";
-import Chip from "@mui/material/Chip";
-import Typography from "@mui/material/Typography";
+import { useNavigate } from "react-router-dom";
 
-import Avatar from "@mui/material/Avatar";
-import { Box, Button, IconButton, Link } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  Link,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  Chip,
+  Typography,
+} from "@mui/material";
 import { ChatBubble, ThumbUp } from "@mui/icons-material";
+import PostController from "../controllers/PostController";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import PostController from "../controllers/PostController";
 
 export default function PostCard({ post }) {
   dayjs.extend(relativeTime);
 
   const [expanded, setExpanded] = React.useState(false);
   const [liked, setLiked] = React.useState(post.is_liked);
+  const navigate = useNavigate();
 
   const handleLike = () => {
     const newLikeStatus = !liked;
@@ -45,20 +52,21 @@ export default function PostCard({ post }) {
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
               aria-label="recipe"
             >
-              R
+              {post.user.username[0].toUpperCase()}
             </Avatar>
           )
         }
         title={post.user.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
+      {/* @todo: should probably render placeholder image if image doesn't load */}
       <CardMedia
         sx={{ height: 300 }}
         image={post.article.preview}
         title={post.article.title}
       />
 
-      {/* @TODO: Should truncate very long descriptions, when "More" is clicked it'll expand the post */}
+      {/* Post Description */}
       <CardContent>
         {post.description &&
           post.description.split("\n").map((line, index, arr) => {
@@ -118,9 +126,7 @@ export default function PostCard({ post }) {
         <IconButton
           aria-label="like"
           sx={{ color: "inherit" }}
-          onClick={() => {
-            console.log("Comment on post");
-          }}
+          onClick={() => navigate(`/post/${post.post_id}`)}
         >
           <ChatBubble sx={{ marginRight: "0.5rem" }} />
           <Typography variant="body2">

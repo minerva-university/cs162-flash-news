@@ -111,7 +111,6 @@ export default function AddPostForm({ onPostAdded }) {
   };
 
   const handleVisibilityChange = (event) => {
-    console.log(event.target.value);
     setPostVisibility(event.target.value);
   };
 
@@ -136,7 +135,6 @@ export default function AddPostForm({ onPostAdded }) {
   const getOGMetadata = async (url) => {
     PostController.getOGMetadata(url)
       .then((metadata) => {
-        console.log(metadata);
         setOgMetadata(metadata);
       })
       .catch((error) => console.error(error));

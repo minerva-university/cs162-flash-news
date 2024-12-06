@@ -6,7 +6,22 @@ class PostController {
   static async getAll() {
     const response = await fetch(`${DB_HOST}/posts/feed`, {
       method: "GET",
-      headers: { "content-type": "application/json" }
+      headers: { "content-type": "application/json" },
+      // headers: HEADERS_WITH_JWT(user),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  static async getPost(post_id) {
+    const response = await fetch(`${DB_HOST}/posts/${post_id}`, {
+      method: "GET",
+      headers: { "content-type": "application/json" },
       // headers: HEADERS_WITH_JWT(user),
     });
 
