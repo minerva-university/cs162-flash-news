@@ -4,11 +4,11 @@ from . import db
 from .models import Post, Like
 from .utils import check_post_24h
 
-likes = Blueprint("like", __name__)
+likes = Blueprint("like", __name__, url_prefix='/api/likes')
 
 
 # Get likes on a post
-@likes.route("/likes/<int:post_id>", methods=["GET"])
+@likes.route("/<int:post_id>", methods=["GET"])
 def get_likes(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -20,7 +20,9 @@ def get_likes(post_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    paginated_likes = post.likes.paginate(page=page, per_page=per_page, error_out=False)
+    paginated_likes = Like.query.filter_by(post_id=post_id).order_by(Like.liked_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
 
     likes_data = [
         {
@@ -45,12 +47,16 @@ def get_likes(post_id):
 
 
 # Like a post
-@likes.route("/likes/<int:post_id>", methods=["POST"])
+@likes.route("/<int:post_id>", methods=["POST"])
 @login_required
 def give_like(post_id):
     post = Post.query.get(post_id)
     if not post:
         return jsonify({"error": "Post not found"}), 404
+
+    existing_like = Like.query.filter_by(user_id=current_user.user_id, post_id=post_id).first()
+    if existing_like:
+        return jsonify({"error": "You have already liked this post"}), 400
 
     if check_post_24h(post):
         return jsonify({"error": "You are not allowed to like this post"}), 403
@@ -63,7 +69,7 @@ def give_like(post_id):
 
 
 # Unlike a post
-@likes.route("/likes/<int:post_id>", methods=["DELETE"])
+@likes.route("/<int:post_id>", methods=["DELETE"])
 @login_required
 def remove_like(post_id):
     post_like = Like.query.filter_by(

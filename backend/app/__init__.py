@@ -25,11 +25,11 @@ def create_app():
         return User.query.get(int(user_id))
 
     # blueprint for auth routes in our app
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
+    #from .auth import auth as auth_blueprint
+    #app.register_blueprint(auth_blueprint)
 
     # blueprint for user routes in our app
-    from .user import users as user_blueprint
+    from .user2 import user_bp as user_blueprint
     app.register_blueprint(user_blueprint)
 
     # blueprint for post routes in our app

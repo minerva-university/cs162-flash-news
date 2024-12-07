@@ -1,14 +1,12 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, UTC
 from bson import ObjectId
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from .models import User
 
 # Initialize blueprint
 user_bp = Blueprint('user', __name__)
-
-# Database collection reference (assuming MongoDB but we use sqlite, sqlalchemy)
-users = db.users
 
 @user_bp.route('/register', methods=['POST'])
 def register():
@@ -16,7 +14,7 @@ def register():
         data = request.get_json()
         
         # Check if user already exists
-        if users.find_one({'email': data['email']}):
+        if User.query.filter_by(email=data['email']).first():
             return jsonify({'error': 'Email already registered'}), 400
         
         # Create new user document
@@ -34,8 +32,8 @@ def register():
             'following': [],
             'saved_posts': [],
             'interests': data.get('interests', []),
-            'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow()
+            'created_at': datetime.now(UTC),
+            'updated_at': datetime.now(UTC)
         }
         
         result = users.insert_one(new_user)
@@ -102,7 +100,7 @@ def update_profile():
             'profile.profile_picture': data.get('profile_picture'),
             'profile.location': data.get('location'),
             'interests': data.get('interests'),
-            'updated_at': datetime.utcnow()
+            'updated_at': datetime.now(UTC)
         }
         
         # Remove None values

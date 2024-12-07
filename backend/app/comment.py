@@ -4,11 +4,11 @@ from . import db
 from .models import Post, Comment
 from .utils import check_post_24h
 
-comments = Blueprint("comment", __name__)
+comments = Blueprint("comment", __name__, url_prefix='/api/comments')
 
 
 # Get comments on a post
-@comments.route("/comments/<int:post_id>", methods=["GET"])
+@comments.route("/<int:post_id>", methods=["GET"])
 @login_required
 def get_comments(post_id):
     post = Post.query.get(post_id)
@@ -24,7 +24,7 @@ def get_comments(post_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    paginated_comments = post.comments.paginate(
+    paginated_comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.commented_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )
 
@@ -36,7 +36,7 @@ def get_comments(post_id):
                 "username": comment.user.username,
                 "profile_picture": comment.user.profile_picture,
             },
-            "comment": comment.comment,
+            "comment": comment.content,
             "commented_at": comment.commented_at,
         }
         for comment in paginated_comments.items
@@ -56,7 +56,7 @@ def get_comments(post_id):
 
 
 # Create a comment on a post
-@comments.route("/comments/<int:post_id>", methods=["POST"])
+@comments.route("/<int:post_id>", methods=["POST"])
 @login_required
 def create_comment(post_id):
     post = Post.query.get(post_id)
@@ -72,7 +72,7 @@ def create_comment(post_id):
         return jsonify({"error": "Comment is required"}), 400
 
     post_comment = Comment(
-        user_id=current_user.user_id, post_id=post_id, comment=comment
+        user_id=current_user.user_id, post_id=post_id, content=comment
     )
     db.session.add(post_comment)
     db.session.commit()
@@ -89,7 +89,7 @@ def create_comment(post_id):
 
 
 # Update a comment on a post
-@comments.route("/comments/<int:comment_id>", methods=["PUT"])
+@comments.route("/<int:comment_id>", methods=["PUT"])
 @login_required
 def update_comment(comment_id):
     post_comment = Comment.query.get(comment_id)
@@ -107,14 +107,14 @@ def update_comment(comment_id):
     if not comment:
         return jsonify({"error": "Comment is required"}), 400
 
-    post_comment.comment = comment
+    post_comment.content = comment
     db.session.commit()
 
     return jsonify({"message": "Comment updated successfully"}), 200
 
 
 # Delete a comment on a post
-@comments.route("/comments/<int:comment_id>", methods=["DELETE"])
+@comments.route("/<int:comment_id>", methods=["DELETE"])
 @login_required
 def delete_comment(comment_id):
     post_comment = Comment.query.get(comment_id)

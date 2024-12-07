@@ -10,11 +10,23 @@ collections = Blueprint('collections', __name__, url_prefix='/api/collections')
 @collections.route('/', methods=['POST'])
 @login_required
 def create_collection():
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'Authentication required'}), 401
     data = request.get_json()
 
     # Validate required fields
     if not data.get('title'):
         return jsonify({'error': 'Collection title is required'}), 400
+
+    # Validate data types
+    if not isinstance(data.get('title'), str):
+        return jsonify({'error': 'Title must be a string'}), 400
+        
+    if 'is_public' in data and not isinstance(data['is_public'], bool):
+        return jsonify({'error': 'is_public must be a boolean'}), 400
+    
+    if 'emoji' in data and not isinstance(data['emoji'], str):
+        return jsonify({'error': 'Emoji must be a string'}), 400
 
     collection = Collection(
         title=data.get('title'),
@@ -29,7 +41,7 @@ def create_collection():
     
     return jsonify({
         'message': 'Collection created successfully',
-        'collection_id': collection.id
+        'collection_id': collection.collection_id
     }), 201
 
 
@@ -41,8 +53,9 @@ def get_collections(user_id):
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    public_collections = user.collections.filter_by(is_public=True).all()
-    private_collections = user.collections.filter_by(is_public=False).all()
+    # Filter collections after getting them from user
+    public_collections = [c for c in user.collections if c.is_public]
+    private_collections = [c for c in user.collections if not c.is_public]
 
     '''
     # Less efficient way to get collections
@@ -52,7 +65,7 @@ def get_collections(user_id):
     '''
 
     public_collections_data = [{
-        'id': collection.id,
+        'id': collection.collection_id,
         'title': collection.title,
         'description': collection.description,
         'emoji': collection.emoji,
@@ -61,7 +74,7 @@ def get_collections(user_id):
     } for collection in public_collections]
 
     private_collections_data = [{
-        'id': collection.id,
+        'id': collection.collection_id,
         'title': collection.title,
         'emoji': collection.emoji,
         'description': collection.description,
@@ -89,16 +102,15 @@ def get_collection_posts(collection_id):
 
     posts_data = []
 
-    # This needs Moto's code to be merged first to work
     for collection in collection_posts:
-        response = get_post(collection.post_id)
+        response, status_code = get_post(collection.post_id)
 
         # Check if post exists
-        if response.status_code == 200:
+        if status_code == 200:
             posts_data.append(response.json)
         
         else:
-            return response
+            return response, status_code
             
     return jsonify(posts_data), 200
 
@@ -148,7 +160,7 @@ def update_collection(collection_id):
 @login_required
 def delete_collection(collection_id):
     collection = Collection.query.filter_by(
-        id=collection_id, 
+        collection_id=collection_id, 
         user_id=current_user.user_id
     ).first_or_404()
 
@@ -166,7 +178,7 @@ def remove_post_from_collection(collection_id, post_id):
     # Check if user owns the collection
     
     if not (Collection.query
-            .filter_by(id=collection_id, user_id=current_user.user_id)
+            .filter_by(collection_id=collection_id, user_id=current_user.user_id)
             .first()):
         return jsonify({'error': 'Collection not found'}), 404
 
