@@ -10,10 +10,12 @@ posts = Blueprint("post", __name__)
 
 MAX_CATEGORIES = 5  # Maximum number of categories a post can have
 
+current_user_id = 1  # @TODO: Get current user from JWT
+
 
 # Create a post
 @posts.route("/posts", methods=["POST"])
-@login_required
+# @TODO: Add JWT check decorator
 def create_post():
     data = request.get_json()
 
@@ -27,18 +29,20 @@ def create_post():
     if not article:
         article = Article(
             link=article_link,
-            source=None,  # Implement later
-            title=None,  # Implement later
-            caption=None,  # Implement later
-            preview=None,  # Implement later
+            source=data.get("site_name"),  # og:site_name
+            title=data.get("title"),  # og:title
+            caption=data.get("description"),  # og:description
+            preview=data.get("image"),  # og:image
         )  # What if the automated fields fail? Implement later
         db.session.add(article)
         db.session.commit()
 
     post = Post(
-        user_id=current_user.user_id,
+        user_id=current_user_id,  # @TODO change back to current_user.user_id or JWT equivalent
         article_id=article.article_id,
-        description=data.get("description"),
+        description=data.get(
+            "post_description"
+        ),  # post_ prefix differentiates from og:description
     )
 
     db.session.add(post)
@@ -53,13 +57,13 @@ def create_post():
             )
         for category in categories:
             # Check if the category exists and add it to the PostCategory table
-            if category in CategoryEnum.__members__:
+            if category.upper() in CategoryEnum.__members__:
                 post_category = PostCategory(
                     post_id=post.post_id,
-                    category=CategoryEnum[category],
+                    category=CategoryEnum[category.upper()],
                 )
                 db.session.add(post_category)
-    db.session.commit()
+        db.session.commit()
 
     return (
         jsonify({"message": "Post created successfully", "post_id": post.post_id}),
@@ -69,7 +73,7 @@ def create_post():
 
 # Get a single post
 @posts.route("/posts/<int:post_id>", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -78,7 +82,9 @@ def get_post(post_id):
     if check_post_24h(user=post, post=post):
         return jsonify({"error": "You are not allowed to view this post"}), 403
 
-    is_liked = any(like.user_id == current_user.id for like in post.likes)
+    # @TODO: Change back to this later
+    # is_liked = any(like.user_id == current_user.id for like in post.likes)
+    is_liked = any(like.user_id == current_user_id for like in post.likes)
 
     post_data = {
         "post_id": post.post_id,
@@ -109,7 +115,7 @@ def get_post(post_id):
 
 # Delete a post
 @posts.route("/posts/<int:post_id>", methods=["DELETE"])
-@login_required
+# @TODO: Add JWT check decorator
 def delete_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -126,7 +132,7 @@ def delete_post(post_id):
 
 # Update a post
 @posts.route("/posts/<int:post_id>", methods=["PUT"])
-@login_required
+# @TODO: Add JWT check decorator
 def update_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -180,9 +186,9 @@ def update_post(post_id):
     return jsonify({"message": "Post updated successfully"}), 200
 
 
-# Get feed (posts by followed users) with pagination
+# Get feed (posts by self + followed users) with pagination
 @posts.route("/posts/feed", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_feed():
     # Set pagination parameters
     page = request.args.get("page", 1, type=int)
@@ -190,7 +196,10 @@ def get_feed():
 
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
 
-    followed_users = [follow.user_id for follow in current_user.followings]
+    followed_users = [
+        current_user_id, 
+        # (follow.user_id for follow in current_user.followings) # @TODO: Implement this once we have JWT
+    ]
 
     # Query posts by followed users from the last 24 hours
     posts_query = Post.query.filter(
@@ -204,7 +213,8 @@ def get_feed():
 
     posts_data = []
     for post in paginated_posts.items:
-        is_liked = any(like.user_id == current_user.id for like in post.likes)
+        # is_liked = any(like.user_id == current_user.id for like in post.likes)
+        is_liked = any(like.user_id == current_user_id for like in post.likes)
         posts_data.append(
             {
                 "post_id": post.post_id,
@@ -247,7 +257,7 @@ def get_feed():
 
 # Get posts (posted by the user) with pagination
 @posts.route("/posts/user/<int:user_id>", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_user_posts(user_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
@@ -270,7 +280,8 @@ def get_user_posts(user_id):
 
     posts_data = []
     for post in paginated_posts.items:
-        is_liked = any(like.user_id == current_user.id for like in post.likes)
+        # is_liked = any(like.user_id == current_user.id for like in post.likes)
+        is_liked = any(like.user_id == current_user_id for like in post.likes)
         posts_data.append(
             {
                 "post_id": post.post_id,
@@ -306,7 +317,7 @@ def get_user_posts(user_id):
 
 # Get available categories
 @posts.route("/posts/categories", methods=["GET"])
-@login_required
+# @TODO: Add JWT check decorator
 def get_categories():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)

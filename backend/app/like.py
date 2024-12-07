@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
 from . import db
 from .models import Post, Like
 from .utils import check_post_24h
 
 likes = Blueprint("like", __name__)
+
+current_user_id = 1  # @TODO UPDATE AFTER JWT IMPLEMENTATION
 
 
 # Get likes on a post
@@ -46,16 +47,20 @@ def get_likes(post_id):
 
 # Like a post
 @likes.route("/likes/<int:post_id>", methods=["POST"])
-@login_required
+# @TODO: Implement JWT auth decorator
 def give_like(post_id):
     post = Post.query.get(post_id)
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if check_post_24h(post):
-        return jsonify({"error": "You are not allowed to like this post"}), 403
+    # if check_post_24h(post):
+    #     return jsonify({"error": "You are not allowed to like this post"}), 403
 
-    post_like = Like(user_id=current_user.user_id, post_id=post_id)
+    post_like = Like(
+        user_id=current_user_id,
+        post_id=post_id,
+        # user_id=current_user.user_id,
+    )
     db.session.add(post_like)
     db.session.commit()
 
@@ -64,19 +69,21 @@ def give_like(post_id):
 
 # Unlike a post
 @likes.route("/likes/<int:post_id>", methods=["DELETE"])
-@login_required
+# @TODO: Implement JWT auth decorator
 def remove_like(post_id):
     post_like = Like.query.filter_by(
-        user_id=current_user.user_id, post_id=post_id
+        user_id=current_user_id,
+        # user_id=current_user.user_id,
+        post_id=post_id,
     ).first()
     if not post_like:
         return jsonify({"error": "Like not found"}), 404
 
-    if check_post_24h(post_like.post):
-        return (
-            jsonify({"error": "You are not allowed to remove like on this post"}),
-            403,
-        )
+    # if check_post_24h(post_like.post):
+    #     return (
+    #         jsonify({"error": "You are not allowed to remove like on this post"}),
+    #         403,
+    #     )
 
     db.session.delete(post_like)
     db.session.commit()
