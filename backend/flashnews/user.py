@@ -13,6 +13,14 @@ from .models import User, Follow
 user_bp = Blueprint('user', __name__)
 
 
+# Utility function for consistent success handling
+def create_success_response(message, status_code=200, data=None):
+    return jsonify({
+        'status': 'success',
+        'message': message,
+        'data': data
+    }), status_code
+
 # Utility function for consistent error handling
 def create_error_response(message, status_code=400, details=None):
     return jsonify({
@@ -26,13 +34,13 @@ def create_error_response(message, status_code=400, details=None):
 # Get (view) user's profile 
 @user_bp.route('/user', methods=['GET'])
 @jwt_required()
-def get_profile():
+def get_profile(): 
     try:
         current_user_id = get_jwt_identity()
         user = User.query.get(current_user_id)
 
         if not user:
-            return jsonify({'error': 'User not found'}), 404
+            return create_error_response('User not found', 404)
 
         user_data = {
             'user_id': user.user_id,
@@ -42,12 +50,7 @@ def get_profile():
             'profile_picture': user.profile_picture,
             'created_at': user.created_at
         }
-
-        return jsonify({
-            'status': 'success',
-            'message': 'User profile fetched successfully',
-            'data': user_data
-        }), 200
+        return create_success_response('User profile fetched successfully', 200, user_data)
     
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -64,11 +67,11 @@ def get_profile():
 @jwt_required()
 def update_profile():
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+        current_user_id = get_jwt_identity() 
+        user = User.query.get(current_user_id) 
         
         if not user:
-            return jsonify({'error': 'User not found'}), 404
+            return create_error_response('User not found', 404)
 
         data = request.get_json()
         new_username = data.get('username', user.username)
@@ -79,13 +82,13 @@ def update_profile():
         if new_username != user.username:
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user:
-                return jsonify({'error': 'Username already exists'}), 400
+                return create_error_response('Username already exists', 400)
 
         # Check if the new email already exists
         if new_email != user.email:
             existing_email_user = User.query.filter_by(email=new_email).first()
             if existing_email_user:
-                return jsonify({'error': 'Email already exists'}), 400
+                return create_error_response('Email already exists', 400)
 
         user.username = new_username
         user.bio_description = data.get('bio_description', user.bio_description)
@@ -93,10 +96,16 @@ def update_profile():
         user.email = new_email if new_email != user.email else user.email # Only update if new email is provided
         db.session.commit()
 
-        return jsonify({
-            'status': 'success',
-            'message': 'Profile updated successfully'
-        }), 200
+        updated_user_data = {
+            'user_id': user.user_id,
+            'username': user.username,
+            'email': user.email,
+            'bio_description': user.bio_description,
+            'profile_picture': user.profile_picture,
+            'created_at': user.created_at
+        }
+
+        return create_success_response('Profile updated successfully', 200, updated_user_data)
 
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -125,10 +134,7 @@ def delete_user():
         db.session.delete(user)
         db.session.commit()
 
-        return jsonify({
-            'status': 'success',
-            'message': 'User account deleted successfully'
-        }), 200
+        return create_success_response('User account deleted successfully', 200) 
 
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -165,7 +171,7 @@ def follow_user(user_id):
         db.session.add(new_follow)
         db.session.commit()
 
-        return jsonify({'message': 'Successfully followed the user'}), 200
+        return create_success_response('Successfully followed the user', 200)
 
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -180,9 +186,9 @@ def follow_user(user_id):
 
 # Unfollow user route
 @user_bp.route('/unfollow/<int:user_id>', methods=['POST'])
-@jwt_required()
+@jwt_required() 
 def unfollow_user(user_id):
-    try:
+    try: 
         current_user_id = get_jwt_identity()
 
         # Ensure the user cannot unfollow themselves
@@ -203,7 +209,7 @@ def unfollow_user(user_id):
         db.session.delete(existing_follow)
         db.session.commit()
 
-        return jsonify({'message': 'Successfully unfollowed the user'}), 200
+        return create_success_response('Successfully unfollowed the user', 200)
 
     except SQLAlchemyError as e:
         db.session.rollback()
