@@ -34,7 +34,7 @@ export default function MultipleSelectChip({
   options,
   max = -1,
   onChange,
-  sx
+  sx,
 }) {
   const theme = useTheme();
   const [selected, setSelected] = React.useState([]);

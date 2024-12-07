@@ -68,7 +68,7 @@ export default function AddPostForm({ onPostAdded }) {
 
   const handleClose = () => {
     const confirmation = window.confirm(
-      "Are you sure you want to exit? All changes will be lost."
+      "Are you sure you want to exit? All changes will be lost.",
     );
     if (confirmation) {
       resetAddPostForm();
@@ -101,10 +101,10 @@ export default function AddPostForm({ onPostAdded }) {
     PostController.createPost(post)
       .then((response) => {
         resetAddPostForm();
-        
+
         // Refresh the feed using the callback function
         if (onPostAdded) onPostAdded();
-        
+
         setOpen(false);
       })
       .catch((error) => console.error(error));
