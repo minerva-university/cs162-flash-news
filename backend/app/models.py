@@ -102,12 +102,19 @@ class Collection(db.Model):
     collection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     title = db.Column(db.String(100), nullable=False)
+    emoji = db.Column(db.String(10))
+    description = db.Column(db.Text)
     is_public = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     posts = db.relationship(
         "CollectionPost", backref="collection", lazy=True, cascade="all, delete-orphan"
     )
+
+    # Adding a unique constraint to the user_id and title columns
+    __table_args__ = (
+            db.UniqueConstraint('user_id', 'title', name='unique_user_collection_title'),
+        )
 
 
 class CollectionPost(

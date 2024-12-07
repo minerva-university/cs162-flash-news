@@ -54,8 +54,8 @@ def create_app():
     app.register_blueprint(likes_blueprint, url_prefix="/api/")
 
     # blueprint for collection routes in our app
-    # from .collection import collections as collections_blueprint
-    # app.register_blueprint(collections_blueprint)
+    from .collection import collections as collections_blueprint
+    app.register_blueprint(collections_blueprint)
 
     # blueprint for OpenGraph routes in our app
     from .og import opengraph_bp as og_blueprint
