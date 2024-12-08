@@ -1,36 +1,50 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "./App.css";
 import FeedPage from "./pages/FeedPage";
 import CollectionsPage from "./pages/CollectionsPage";
+import CollectionDetailModal from "./modals/CollectionDetailModal";
 import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import Header from "./components/Header";
+import PostDetailPage from "./pages/PostDetailPage";
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#456268",
+      main: "#5F848C",
     },
     secondary: {
-      main: "#79a3b1",
+      main: "#FCF8EC",
     },
   },
 });
 
 function App() {
+  const location = useLocation();
+  const publicRoutes = ["/login", "/signup"];
+
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/feed" element={<FeedPage />} />
-            <Route path="/collections" element={<CollectionsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/signup" element={<SignupPage />} />
-          </Routes>
-        </BrowserRouter>
+        {!publicRoutes.includes(location.pathname) && <Header />}
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/feed" element={<FeedPage />} />
+          <Route path="/post/:id" element={<PostDetailPage />} />
+          {/* TODO: add functionality for "isOwner" prop */}
+          <Route
+            path="/collections"
+            element={<CollectionsPage isOwner={true} />}
+          />
+          <Route
+            path="/collections/:id/:title"
+            element={<CollectionDetailModal isOwner={true} />}
+          />
+          <Route path="/profile" element={<ProfilePage isOwner={true} />} />
+          <Route path="/signup" element={<SignupPage />} />
+        </Routes>
       </ThemeProvider>
     </div>
   );
