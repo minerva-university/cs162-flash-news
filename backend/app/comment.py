@@ -6,25 +6,26 @@ from .utils import check_post_24h
 
 comments = Blueprint("comment", __name__)
 
+current_user_id = 1
 
 # Get comments on a post
 @comments.route("/comments/<int:post_id>", methods=["GET"])
-@login_required
+# @TODO: add JWT decorator
 def get_comments(post_id):
     post = Post.query.get(post_id)
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if check_post_24h(post):
-        return (
-            jsonify({"error": "You are not allowed to view comments on this post"}),
-            403,
-        )
+    # if check_post_24h(post):
+    #     return (
+    #         jsonify({"error": "You are not allowed to view comments on this post"}),
+    #         403,
+    #     )
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    paginated_comments = post.comments.paginate(
+    paginated_comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.commented_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )
 
@@ -36,7 +37,7 @@ def get_comments(post_id):
                 "username": comment.user.username,
                 "profile_picture": comment.user.profile_picture,
             },
-            "comment": comment.comment,
+            "comment": comment.content,
             "commented_at": comment.commented_at,
         }
         for comment in paginated_comments.items
@@ -57,14 +58,14 @@ def get_comments(post_id):
 
 # Create a comment on a post
 @comments.route("/comments/<int:post_id>", methods=["POST"])
-@login_required
+# @TODO: add JWT decorator
 def create_comment(post_id):
     post = Post.query.get(post_id)
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if check_post_24h(post):
-        return jsonify({"error": "You are not allowed to comment on this post"}), 403
+    # if check_post_24h(post):
+    #     return jsonify({"error": "You are not allowed to comment on this post"}), 403
 
     data = request.get_json()
     comment = data.get("comment")
@@ -72,7 +73,10 @@ def create_comment(post_id):
         return jsonify({"error": "Comment is required"}), 400
 
     post_comment = Comment(
-        user_id=current_user.user_id, post_id=post_id, comment=comment
+        # user_id=current_user.user_id,
+        user_id=current_user_id,
+        post_id=post_id,
+        content=comment # <-- this was originally comment=comment, which is wrong
     )
     db.session.add(post_comment)
     db.session.commit()
@@ -90,7 +94,7 @@ def create_comment(post_id):
 
 # Update a comment on a post
 @comments.route("/comments/<int:comment_id>", methods=["PUT"])
-@login_required
+# @TODO: add JWT decorator
 def update_comment(comment_id):
     post_comment = Comment.query.get(comment_id)
     if not post_comment:
@@ -107,7 +111,7 @@ def update_comment(comment_id):
     if not comment:
         return jsonify({"error": "Comment is required"}), 400
 
-    post_comment.comment = comment
+    post_comment.content = comment
     db.session.commit()
 
     return jsonify({"message": "Comment updated successfully"}), 200
@@ -115,7 +119,7 @@ def update_comment(comment_id):
 
 # Delete a comment on a post
 @comments.route("/comments/<int:comment_id>", methods=["DELETE"])
-@login_required
+# @TODO: add JWT decorator
 def delete_comment(comment_id):
     post_comment = Comment.query.get(comment_id)
     if not post_comment:

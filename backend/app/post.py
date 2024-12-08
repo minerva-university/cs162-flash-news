@@ -79,8 +79,8 @@ def get_post(post_id):
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if check_post_24h(user=post, post=post):
-        return jsonify({"error": "You are not allowed to view this post"}), 403
+    # if check_post_24h(post=post):
+    #     return jsonify({"error": "You are not allowed to view this post"}), 403
 
     # @TODO: Change back to this later
     # is_liked = any(like.user_id == current_user.id for like in post.likes)

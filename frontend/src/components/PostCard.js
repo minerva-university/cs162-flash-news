@@ -39,18 +39,19 @@ export default function PostCard({ post }) {
 
   return (
     <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
+      {/* @TODO: Link to the user profile page */}
       <CardHeader
         avatar={
           post.profile_picture ? (
             <Avatar
               src={post.profile_picture}
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
+              aria-label="Profile Picture"
             />
           ) : (
             <Avatar
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
+              aria-label="Profile Picture"
             >
               {post.user.username[0].toUpperCase()}
             </Avatar>
@@ -59,12 +60,13 @@ export default function PostCard({ post }) {
         title={post.user.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
-      {/* @todo: should probably render placeholder image if image doesn't load */}
-      <CardMedia
-        sx={{ height: 300 }}
-        image={post.article.preview}
-        title={post.article.title}
-      />
+      <Link href={`/post/${post.post_id}`} title="View post details" underline="none">
+        {/* @todo: should probably render placeholder image if image doesn't load */}
+        <CardMedia
+          sx={{ height: 300 }}
+          image={post.article.preview}
+        />
+      </Link>
 
       {/* Post Description */}
       <CardContent>
@@ -94,7 +96,6 @@ export default function PostCard({ post }) {
             );
           })}
       </CardContent>
-
       {/* Category Chips */}
       {/* @TODO: Make it clickable */}
       {post.categories && (
