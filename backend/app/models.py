@@ -47,7 +47,7 @@ class Article(db.Model):  # Seperated this from Post considering 3NF.
     source = db.Column(db.String)  # Automatically generated from link
     title = db.Column(db.String)  # Automatically generated from link
     caption = db.Column(db.Text)  # Automatically generated from link
-    preview = db.Column(db.LargeBinary)  # Automatically generated from link
+    preview = db.Column(db.String)  # URL of og:image, automatically generated from link
 
     posts = db.relationship(
         "Post", backref="article", lazy=True, cascade="all, delete-orphan"
@@ -101,11 +101,18 @@ class Collection(db.Model):
     collection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     title = db.Column(db.String(100), nullable=False)
+    emoji = db.Column(db.String(10))
+    description = db.Column(db.Text)
     is_public = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     posts = db.relationship(
         "CollectionPost", backref="collection", lazy=True, cascade="all, delete-orphan"
+    )
+
+    # Adding a unique constraint to the user_id and title columns
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "title", name="unique_user_collection_title"),
     )
 
 

@@ -1,46 +1,32 @@
-// src/modals/CollectionDetailModal.js
-import React, { useEffect, useState } from "react";
-import Avatar from "@mui/material/Avatar";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import React, { useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import "./CollectionDetailModal.css";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import ArticleCard from "../components/ArticleCard";
 
-const CollectionDetailModal = ({ type, user }) => {
+const CollectionDetailModal = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const articlesSectionRef = useRef(null);
+  const collection = location.state?.collection;
+
+  if (!collection) {
+    return <Typography>No collection found. Please navigate back.</Typography>;
+  }
+
   // const [loading, setLoading] = useState(true);
-  // const [articles, setArticles] = useState([]);
+  const { name, articles, createdAt, description, emoji } = collection;
 
-  // Example data --> Will be replaced with actual data from the backend
-  // TODO: test horizontal scroll with more data
-  const articles = [
-    {
-      title: "Article Title 1",
-      source: "Source Name",
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      category: "Category",
-      author: "Author Name",
-    },
-    {
-      title: "Article Title 2",
-      source: "Source Name",
-      description:
-        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      category: "Category",
-      author: "Author Name",
-    },
-    {
-      title: "Article Title 3",
-      source: "Source Name",
-      description:
-        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-      category: "Category",
-      author: "Author Name",
-    },
-  ];
+  // Function to scroll to the articles section
+  // TODO: Implement on top of page (also scroll to bottom and top)
+  const scrollToArticles = () => {
+    articlesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // TODO: Uncomment
   // TODO: Add error handling
+  // Might be unnecessary if articles are fetched in the collections page (parent component)
 
   // const fetchArticles = async (user) => {
   //  // Add user token to headers if necessary + loading functionality + error handling
@@ -75,50 +61,199 @@ const CollectionDetailModal = ({ type, user }) => {
   // }, []);
 
   return (
-    <div className="collection-section">
-      <Typography
-        className="collection-title"
-        sx={{ fontSize: "1.8em", fontWeight: "bold", margin: "40px 0" }}
+    <Box
+      sx={{
+        padding: "32px",
+        backgroundColor: "#f4f3ef",
+        minHeight: "100vh",
+      }}
+    >
+      {/* Back to Collections Button */}
+      <Button
+        onClick={() => navigate("/collections")}
+        variant="contained"
+        sx={{
+          marginBottom: "32px",
+          backgroundColor: "#5F848C",
+          color: "#FCF8EC",
+          fontFamily: "'Raleway', sans-serif",
+          padding: "8px 16px",
+          fontWeight: "bold",
+          borderRadius: "20px",
+          "&:hover": {
+            backgroundColor: "#456268",
+          },
+        }}
       >
-        {type} Collections
+        Back to Collections
+      </Button>
+
+      {/* Header Section */}
+      <Box
+        sx={{
+          display: "flex",
+          gap: "48px",
+          padding: "24px",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "48px",
+        }}
+      >
+        {/* Title Section */}
+        <Box
+          sx={{
+            flex: "1",
+            padding: "24px",
+            borderRadius: "8px",
+            background: "linear-gradient(135deg, #79A3B1, #5F848C)",
+            color: "#FCF8EC",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "16px",
+            height: "300px",
+          }}
+        >
+          <Box
+            sx={{
+              fontSize: "50px",
+            }}
+          >
+            {emoji}
+          </Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: "bold",
+              fontFamily: "'Roboto', serif",
+              marginBottom: "8px",
+            }}
+          >
+            {name}
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: "1rem",
+              fontFamily: "'Raleway', sans-serif",
+              marginBottom: "16px",
+            }}
+          >
+            {description ||
+              "Stay updated with the latest global events and trends."}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: "0.9rem",
+              fontFamily: "'Lato', sans-serif",
+              color: "#D0E8F2",
+            }}
+          >
+            Created on: {new Date(createdAt || Date.now()).toLocaleDateString()}
+          </Typography>
+        </Box>
+
+        {/* Article  Preview*/}
+        {/* TODO: change the fetching logic to be the most recent */}
+        <Box
+          sx={{
+            flex: "2",
+            padding: "16px",
+            backgroundColor: "#FFFFFF",
+            borderRadius: "8px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            height: "100%",
+          }}
+        >
+          <Box
+            component="img"
+            src={articles[0]?.image || "https://via.placeholder.com/600x300"}
+            alt={`Featured ${articles[0]?.title}`}
+            sx={{
+              width: "100%",
+              height: "auto",
+              maxHeight: "200px",
+              objectFit: "cover",
+              borderRadius: "8px",
+            }}
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              fontFamily: "'Roboto', serif",
+              color: "#333",
+            }}
+          >
+            {articles[0]?.title}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: "1rem",
+              fontFamily: "'Lato', sans-serif",
+              color: "#666",
+            }}
+          >
+            {articles[0]?.description}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontStyle: "italic", color: "#999" }}
+          >
+            by {articles[0]?.author || "Unknown Author"}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Divider */}
+      <Box
+        sx={{
+          borderTop: "1px solid #D0D0D0",
+          marginY: "32px",
+          width: "100%",
+        }}
+      ></Box>
+
+      {/* More Articles */}
+      <Typography
+        variant="h5"
+        sx={{
+          fontWeight: "bold",
+          fontFamily: "'Roboto', serif",
+          marginBottom: "16px",
+          color: "#333",
+          textAlign: "center",
+        }}
+      >
+        More Articles
       </Typography>
-      <div className="articles-grid">
-        {/* TODO: Add loader when fetching articles */}
-        {articles.map((article, index) => (
-          <Card key={index} className="article-card">
-            <div className="article-card-content">
-              <div className="article-image"></div>
-              <CardContent className="article-details">
-                <Typography variant="h6" className="article-title">
-                  {article.title}
-                </Typography>
-                <Typography variant="body2" className="source">
-                  {article.source}
-                </Typography>
-                <Typography variant="body2" className="description">
-                  {article.description}
-                </Typography>
-                <Chip label={article.category} className="category-chip" />
-                <div className="author-section">
-                  {/* Change according to the type of file for avatar image */}
-                  <Avatar sx={{ width: 24, height: 24, bgcolor: "#ddd" }} />
-                  <Typography
-                    className="author-name"
-                    sx={{
-                      marginLeft: "10px",
-                      fontSize: "0.9em",
-                      fontWeight: "thin",
-                    }}
-                  >
-                    {article.author}
-                  </Typography>
-                </div>
-              </CardContent>
-            </div>
-          </Card>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: "24px",
+          alignItems: "start",
+        }}
+      >
+        {articles.slice(1).map((article, index) => (
+          <ArticleCard
+            key={index}
+            article={article}
+            isOwner={true} // TODO: check user ownership
+            // TODO: Implement edit and delete functionality (log for now)
+            onEdit={(article) => console.log("Edit clicked for", article)}
+            onDelete={(article) => console.log("Delete clicked for", article)}
+          />
         ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
