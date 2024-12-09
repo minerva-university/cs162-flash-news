@@ -9,20 +9,22 @@ const CollectionDetailModal = () => {
   const location = useLocation(); 
   const navigate = useNavigate();
   const articlesSectionRef = useRef(null); 
-  const collection = location.state?.collection; 
+  const collection = location.state?.collection;
+  const username = location.state?.username;
+
 
   if (!collection) {
     return <Typography>No collection found. Please navigate back.</Typography>;
   }
 
   // const [loading, setLoading] = useState(true);
-  const { name, articles, createdAt, description, emoji } = collection;
+  const { title, articles =[], createdAt, description, emoji } = collection;
 
   // Function to scroll to the articles section
   // TODO: Implement on top of page (also scroll to bottom and top)
-  const scrollToArticles = () => {
-    articlesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // const scrollToArticles = () => {
+  //  articlesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  // };
 
   // TODO: Uncomment
   // TODO: Add error handling
@@ -70,7 +72,7 @@ const CollectionDetailModal = () => {
     >
       {/* Back to Collections Button */}
       <Button
-        onClick={() => navigate("/collections")}
+        onClick={() => navigate(`/user/${username}/collections`)}
         variant="contained"
         sx={{
           marginBottom: "32px",
@@ -131,7 +133,7 @@ const CollectionDetailModal = () => {
               marginBottom: "8px",
             }}
           >
-            {name}
+            {title}
           </Typography>
           <Typography
             variant="body1"

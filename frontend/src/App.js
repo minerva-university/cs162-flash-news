@@ -8,6 +8,7 @@ import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Header from "./components/Header";
+import SettingsPage from "./pages/SettingsPage";
 
 const theme = createTheme({
   palette: {
@@ -24,23 +25,22 @@ function App() {
   const location = useLocation();
   const publicRoutes = ["/login", "/signup"];
 
+  const currentUser = {
+    user_id: 1, // Hardcoded user ID
+    username: "testuser", // Hardcoded username
+  };
+
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        {!publicRoutes.includes(location.pathname) && <Header />}
+        {!publicRoutes.includes(location.pathname) && <Header currentUser={currentUser} />}
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
-          {/* TODO: add functionality for "isOwner" prop */}
-          <Route
-            path="/collections"
-            element={<CollectionsPage isOwner={true} />}
-          />
-          <Route
-            path="/collections/:id/:title"
-            element={<CollectionDetailModal isOwner={true} />}
-          />
-          <Route path="/profile" element={<ProfilePage isOwner={true} />} />
+          <Route path="/user/:username/collections" element={<CollectionsPage currentUser={currentUser} />} />
+          <Route path="/collections/:id/:title" element={<CollectionDetailModal currentUser={currentUser} />} />
+          <Route path="/:username/settings" element={<SettingsPage />} />
+          <Route path="/:username/profile" element={<ProfilePage currentUser={currentUser} />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </ThemeProvider>

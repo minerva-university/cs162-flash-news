@@ -13,6 +13,15 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     bio_description = db.Column(db.Text)
     profile_picture = db.Column(db.LargeBinary)
+    tags = db.Column(db.Text, nullable=True)  # TO-DO: Revisit the idea of tags as a list (normalization?)
+
+    @property
+    def tags_list(self):
+        return self.tags.split(",") if self.tags else []
+
+    @tags_list.setter
+    def tags_list(self, value):
+        self.tags = ",".join(value)
 
     posts = db.relationship(
         "Post", backref="user", lazy=True, cascade="all, delete-orphan"

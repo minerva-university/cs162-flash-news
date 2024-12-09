@@ -3,69 +3,53 @@ from flask_login import UserMixin, current_user
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Blueprint, jsonify, request, abort
-from __init__ import db
+from .models import User, Follow
+import json
+from . import db
 
-# User Model
-class User(UserMixin, db.Model):
-    __tablename__ = 'users'
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    bio = db.Column(db.Text, nullable=True)
-    profile_picture = db.Column(db.String(255), nullable=True)
-
-    # Relationships
-    posts = relationship('Post', back_populates='author')
-    followers = relationship(
-        'Follow', 
-        foreign_keys='Follow.followed_id', 
-        back_populates='followed',
-        cascade='all, delete-orphan'
-    )
-    following = relationship(
-        'Follow', 
-        foreign_keys='Follow.follower_id', 
-        back_populates='follower',
-        cascade='all, delete-orphan'
-    )
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-# Follow Model for implementing follow/unfollow functionality
-class Follow(db.Model):
-    __tablename__ = 'follows'
-
-    id = db.Column(db.Integer, primary_key=True)
-    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    follower = relationship('User', foreign_keys=[follower_id], back_populates='following')
-    followed = relationship('User', foreign_keys=[followed_id], back_populates='followers')
 
 # User Blueprint
-user_bp = Blueprint('user', __name__)
+user_bp = Blueprint('user', __name__, url_prefix='/api/user')
 
-@user_bp.route('/profile', methods=['GET'])
-def get_user_profile():
-    """Get current user's profile"""
-    if not current_user.is_authenticated:
-        return jsonify({"error": "Unauthorized"}), 401
+@user_bp.route('/users/<string:username>', methods=['GET'])
+def get_user_by_username(username):
+    try:
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify({'user_id': user.user_id, 'username': user.username}), 200
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'message': str(e)}), 500
+
+
+@user_bp.route('/profile/<string:username>', methods=['GET'])
+def get_user_profile(username):
+    """Get user profile by username"""
+    try:
+        # Query user by username
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        tags = json.loads(user.tags) if user.tags else []
+
+        # Ensure all fields are safely serialized
+        return jsonify({
+            "id": user.user_id,
+            "username": user.username,
+            "email": user.email,
+            "bio": user.bio_description if user.bio_description else "",  # Handle None values
+            "profile_picture": user.profile_picture if user.profile_picture else "",  # Handle None value
+            "tags": tags,
+        }), 200
     
-    return jsonify({
-        "id": current_user.id,
-        "username": current_user.username,
-        "email": current_user.email,
-        "bio": current_user.bio,
-        "profile_picture": current_user.profile_picture
-    })
+    except Exception as e:
+        # Add detailed error logging for debugging
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Server error", "message": str(e)}), 500
 
-@user_bp.route('/profile', methods=['PUT'])
+@user_bp.route('/update_profile', methods=['PUT'])
 def update_user_profile():
     """Update current user's profile"""
     if not current_user.is_authenticated:

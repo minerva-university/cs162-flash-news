@@ -5,6 +5,8 @@ from flask_login import LoginManager
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
 
+# https://stackoverflow.com/a/78849992/11620221
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
@@ -13,23 +15,40 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
     app.config["debug"] = True
 
+    # https://stackoverflow.com/a/40365514/11620221
+    # Don't be strict about trailing slashes in routes
+    app.url_map.strict_slashes = False
+
+    # Allow CORS for all API routes
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={
+            r"/api/*": {
+                "origins": "*",
+                "methods": ["GET", "POST", "PUT", "DELETE"],
+            }
+        },
+    )
+
     db.init_app(app)
 
+    '''
     login_manager = LoginManager()
     login_manager.init_app(app)
 
     from .models import User
-
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+    '''
 
     # blueprint for auth routes in our app
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
+    #from .auth import auth as auth_blueprint
+    #app.register_blueprint(auth_blueprint)
 
     # blueprint for user routes in our app
-    from .user import users as user_blueprint
+    from .user2 import user_bp as user_blueprint
     app.register_blueprint(user_blueprint)
 
     # blueprint for post routes in our app
