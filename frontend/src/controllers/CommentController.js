@@ -35,7 +35,7 @@ class CommentController {
   }
 
   static async deleteComment(comment_id) {
-    const response = await fetch(`${DB_HOST}/likes/${comment_id}`, {
+    const response = await fetch(`${DB_HOST}/comments/${comment_id}`, {
       method: "DELETE",
       // headers: HEADERS_WITH_JWT(user),
       headers: { "content-type": "application/json" },

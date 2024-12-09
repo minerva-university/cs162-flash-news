@@ -60,12 +60,13 @@ export default function PostCard({ post }) {
         title={post.user.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
-      <Link href={`/post/${post.post_id}`} title="View post details" underline="none">
+      <Link
+        href={`/post/${post.post_id}`}
+        title="View post details"
+        underline="none"
+      >
         {/* @todo: should probably render placeholder image if image doesn't load */}
-        <CardMedia
-          sx={{ height: 300 }}
-          image={post.article.preview}
-        />
+        <CardMedia sx={{ height: 300 }} image={post.article.preview} />
       </Link>
 
       {/* Post Description */}
@@ -84,13 +85,12 @@ export default function PostCard({ post }) {
               >
                 {line}
                 {index == 2 && arr.length > 3 && !expanded && (
-                  <Typography
-                    variant="body2"
-                    sx={{ cursor: "pointer" }}
+                  <span
+                    style={{ cursor: "pointer" }}
                     onClick={() => setExpanded(true)}
                   >
                     ...more
-                  </Typography>
+                  </span>
                 )}
               </Typography>
             );

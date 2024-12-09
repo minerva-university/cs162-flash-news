@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import {Card, CardHeader} from "@mui/material";
+import React, { useRef, useState } from "react";
+import { Card, CardHeader } from "@mui/material";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 
 import Avatar from "@mui/material/Avatar";
@@ -137,7 +137,11 @@ export default function AddPostForm({ onPostAdded }) {
       .then((metadata) => {
         setOgMetadata(metadata);
       })
-      .catch((error) => setLinkError("Could not get link details. You can still create a post though!"));
+      .catch((error) =>
+        setLinkError(
+          "Could not get link details. You can still create a post though!",
+        ),
+      );
   };
 
   return (
@@ -193,12 +197,12 @@ export default function AddPostForm({ onPostAdded }) {
               onKeyDown={(e) =>
                 e.key === "Enter" && getOGMetadata(e.target.value)
               }
-              error={linkError != ""}
+              error={linkError !== ""}
               helperText={linkError}
               required
             />
           </Box>
-          {link != "" && (
+          {link !== "" && (
             <>
               {/* OG Image (if any) */}
               {ogMetadata?.image && (

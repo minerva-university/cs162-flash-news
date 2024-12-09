@@ -6,6 +6,7 @@ import ThemedButton from "../components/ThemedButton";
 import CommentController from "../controllers/CommentController";
 
 export default function AddCommentForm({ post, onCommentAdded }) {
+  const CURRENT_USERNAME = "lmao8109"; // @TODO: Replace with the currently logged in user's username (get from localStorage)
   const profile_picture = ""; // @TODO current user's profile picture
   const mainTextareaRef = useRef(null);
 
@@ -37,11 +38,11 @@ export default function AddCommentForm({ post, onCommentAdded }) {
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
               aria-label="Profile Picture"
             >
-              {"XXXTODO"[0].toUpperCase()}
+              {CURRENT_USERNAME[0].toUpperCase()}
             </Avatar>
           )
         }
-        title={"XXXTODO"}
+        title={CURRENT_USERNAME}
       />
       <CardContent>
         {/* Main Textarea */}

@@ -1,10 +1,6 @@
 import { useState } from "react";
-import {
-  IconButton,
-  Menu,
-  MenuItem,
-} from "@mui/material";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { IconButton, Menu, MenuItem } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 export default function EditDeleteMenu({ id, onClose }) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -19,8 +15,10 @@ export default function EditDeleteMenu({ id, onClose }) {
   };
 
   return (
-    <IconButton aria-label="settings" onClick={handleClick}>
-      <MoreVertIcon />
+    <>
+      <IconButton aria-label="settings" onClick={handleClick}>
+        <MoreVertIcon />
+      </IconButton>
       <Menu
         id={`edit-menu-${id}`}
         anchorEl={anchorEl}
@@ -33,6 +31,6 @@ export default function EditDeleteMenu({ id, onClose }) {
         <MenuItem onClick={() => handleClose("edit")}>Edit</MenuItem>
         <MenuItem onClick={() => handleClose("delete")}>Delete</MenuItem>
       </Menu>
-    </IconButton>
+    </>
   );
 }

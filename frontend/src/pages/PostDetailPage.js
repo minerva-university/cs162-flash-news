@@ -1,5 +1,8 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import CommentController from "../controllers/CommentController";
 import PostController from "../controllers/PostController";
 
 import {
@@ -11,15 +14,16 @@ import {
   CardContent,
   CardHeader,
   CardActions,
-  Chip,
   Typography,
 } from "@mui/material";
 import AddCommentForm from "../forms/AddCommentForm";
 import dayjs from "dayjs";
-import CommentController from "../controllers/CommentController";
 import EditDeleteMenu from "../components/EditDeleteMenu";
+import UsernameAndOPChip from "../components/UsernameAndOPChip";
 
 const PostDetailPage = () => {
+  const navigate = useNavigate();
+  const CURRENT_USERNAME = "lmao8109"; // @TODO: Replace with the currently logged in user's username (get from localStorage)
   const { id } = useParams(); // from URL params
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -31,7 +35,7 @@ const PostDetailPage = () => {
         comment,
         user: {
           // @TODO: Replace with the currently logged in user's data
-          username: "XXXTODO",
+          username: CURRENT_USERNAME,
           profile_picture: "https://source.unsplash.com/random",
         },
         created_at: new Date().toISOString(),
@@ -41,11 +45,31 @@ const PostDetailPage = () => {
   };
 
   const handlePostEditOrDelete = (postID, selectedItem) => {
-    console.log(`Post ID: ${postID}, Selected Item: ${selectedItem}`);
-  }
+    if (selectedItem === "delete") {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this post? This cannot be undone!"
+      );
+      if (confirmDelete) {
+        PostController.deletePost(postID).then(() => navigate("/feed"));
+      }
+    }
+  };
   const handleCommentEditOrDelete = (commentID, selectedItem) => {
+    if (selectedItem === "delete") {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this comment?"
+      );
+      if (confirmDelete) {
+        CommentController.deleteComment(commentID).then(() =>
+          setComments(
+            comments.filter((comment) => comment.comment_id !== commentID)
+          )
+        );
+      }
+    }
+
     console.log(`Comment ID: ${commentID}, Selected Item: ${selectedItem}`);
-  }
+  };
 
   const getAllCommentsForPost = () => {
     if (!id) return;
@@ -57,9 +81,7 @@ const PostDetailPage = () => {
       .catch((error) => console.log(error));
   };
 
-  useEffect(() => {
-    if (!id) return;
-
+  const getPostDetails = () => {
     // Get the post's details
     PostController.getPost(id)
       .then((response) => {
@@ -67,6 +89,12 @@ const PostDetailPage = () => {
         getAllCommentsForPost();
       })
       .catch((error) => console.log(error));
+  };
+
+  useEffect(() => {
+    if (!id) return;
+
+    getPostDetails();
   }, [id]);
 
   return post ? (
@@ -144,23 +172,15 @@ const PostDetailPage = () => {
                 )
               }
               title={
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center" }}
-                >
-                  {post?.user.username}
-                  <Chip
-                    sx={{ marginLeft: "0.5rem" }}
-                    label="OP"
-                    variant="outlined"
-                    size="small"
-                  />
-                </Typography>
+                <UsernameAndOPChip username={post?.user.username} isOP={true} />
               }
               // @TODO: Only show if the current post belongs to the currently logged in user
               action={
-                post?.user.username == "lmao8109" && (
-                  <EditDeleteMenu id={post.post_id} onClose={handlePostEditOrDelete}/>
+                post?.user.username === CURRENT_USERNAME && (
+                  <EditDeleteMenu
+                    id={post.post_id}
+                    onClose={handlePostEditOrDelete}
+                  />
                 )
               }
             />
@@ -187,82 +207,76 @@ const PostDetailPage = () => {
           <AddCommentForm post={post} onCommentAdded={handleAddComment} />
 
           {/* Comments Section (desc order of created_at) */}
-          <Typography
-            variant="h6"
-            sx={{ marginTop: "2rem", marginBottom: "1rem" }}
-          >
-            Recent Comments
-          </Typography>
-          {comments &&
-            comments.length > 0 &&
-            comments.map((comment, index) => (
-              <Card>
-                <CardHeader
-                  avatar={
-                    comment.user.profile_picture ? (
-                      <Avatar
-                        src={comment.user.profile_picture}
-                        sx={(theme) => ({
-                          bgcolor: theme.palette.primary.main,
-                        })}
-                        aria-label="Profile Picture"
-                      />
-                    ) : (
-                      <Avatar
-                        sx={(theme) => ({
-                          bgcolor: theme.palette.primary.main,
-                        })}
-                        aria-label="Profile Picture"
-                      >
-                        {comment.user.username[0].toUpperCase()}
-                      </Avatar>
-                    )
-                  }
-                  title={
-                    comment.user.username == post.user.username ? (
-                      <Typography
-                        variant="body2"
-                        sx={{ display: "flex", alignItems: "center" }}
-                      >
-                        {post?.user.username}
-                        <Chip
-                          sx={{ marginLeft: "0.5rem" }}
-                          label="OP"
-                          variant="outlined"
-                          size="small"
+          {comments && comments.length > 0 && (
+            <>
+              <Typography
+                variant="h6"
+                sx={{ marginTop: "2rem", marginBottom: "1rem" }}
+              >
+                Recent Comments
+              </Typography>
+
+              {comments.map((comment, index) => (
+                <Card key={`comment-${index}`}>
+                  <CardHeader
+                    avatar={
+                      comment.user.profile_picture ? (
+                        <Avatar
+                          src={comment.user.profile_picture}
+                          sx={(theme) => ({
+                            bgcolor: theme.palette.primary.main,
+                          })}
+                          aria-label="Profile Picture"
                         />
-                      </Typography>
-                    ) : (
-                      comment.user.username
-                    )
-                  }
-                  subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
-                  // @TODO: Only show if the current comment belongs to the currently logged in user
-                  action={
-                    post?.user.username == "lmao8109" && (
-                      <EditDeleteMenu id={comment.comment_id} onClose={handleCommentEditOrDelete}/>
-                    )
-                  }
-                />
-                <CardContent>
-                  {comment.comment &&
-                    comment.comment.split("\n").map((line, index) => {
-                      return (
-                        <Typography
-                          key={index}
-                          variant="body2"
-                          sx={{
-                            color: "text.secondary",
-                            marginBottom: "1rem",
-                          }}
+                      ) : (
+                        <Avatar
+                          sx={(theme) => ({
+                            bgcolor: theme.palette.primary.main,
+                          })}
+                          aria-label="Profile Picture"
                         >
-                          {line}
-                        </Typography>
-                      );
-                    })}
-                </CardContent>
-              </Card>
-            ))}
+                          {comment.user.username[0].toUpperCase()}
+                        </Avatar>
+                      )
+                    }
+                    title={
+                      <UsernameAndOPChip
+                        username={comment.user.username}
+                        isOP={comment.user.username === post.user.username}
+                      />
+                    }
+                    subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
+                    // @TODO: Only show if the current comment belongs to the currently logged in user
+                    action={
+                      post?.user.username === CURRENT_USERNAME && (
+                        <EditDeleteMenu
+                          id={comment.comment_id}
+                          onClose={handleCommentEditOrDelete}
+                        />
+                      )
+                    }
+                  />
+                  <CardContent>
+                    {comment.comment &&
+                      comment.comment.split("\n").map((line, index) => {
+                        return (
+                          <Typography
+                            key={index}
+                            variant="body2"
+                            sx={{
+                              color: "text.secondary",
+                              marginBottom: "1rem",
+                            }}
+                          >
+                            {line}
+                          </Typography>
+                        );
+                      })}
+                  </CardContent>
+                </Card>
+              ))}
+            </>
+          )}
         </Box>
 
         {/* Second Column - The article details */}

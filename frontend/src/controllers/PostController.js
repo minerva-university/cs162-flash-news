@@ -18,8 +18,8 @@ class PostController {
     }
   }
 
-  static async getPost(post_id) {
-    const response = await fetch(`${DB_HOST}/posts/${post_id}`, {
+  static async getPost(postID) {
+    const response = await fetch(`${DB_HOST}/posts/${postID}`, {
       method: "GET",
       headers: { "content-type": "application/json" },
       // headers: HEADERS_WITH_JWT(user),
@@ -49,8 +49,23 @@ class PostController {
     }
   }
 
-  static async likeOrUnlikePost(post_id, is_liked) {
-    const response = await fetch(`${DB_HOST}/likes/${post_id}`, {
+  static async deletePost(postID) {
+    const response = await fetch(`${DB_HOST}/posts/${postID}`, {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      // headers: HEADERS_WITH_JWT(user),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  static async likeOrUnlikePost(postID, is_liked) {
+    const response = await fetch(`${DB_HOST}/likes/${postID}`, {
       method: is_liked ? "POST" : "DELETE",
       // headers: HEADERS_WITH_JWT(user),
       headers: { "content-type": "application/json" },
