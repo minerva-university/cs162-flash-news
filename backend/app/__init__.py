@@ -27,7 +27,7 @@ def load_user(jwt_header, jwt_data):
 
 
 @jwt.user_identity_loader
-def user_identity_lookup(user):
+def user_identity_lookup(identity):
     """Define how the user object is encoded in the JWT."""
     # User id is likely to be an integer already (i.e we already have the user id)
     # If user is already an ID (integer), return it directly
@@ -66,9 +66,10 @@ def create_app():
     CORS(
         app,
         resources={
-            r"/api/*": {
-                "origins": "*",
+            r"/*": {
+                "origins": ["http://localhost:3000"],
                 "methods": ["GET", "POST", "PUT", "DELETE"],
+                "allow_headers": ["Content-Type", "Authorization"],                
             }
         },
     )
@@ -106,8 +107,9 @@ def create_app():
 
     app.register_blueprint(og_blueprint, url_prefix="/api/")
 
-    # Initialize the database
+    # Avoids circular imports by importing models in this format
     with app.app_context():
-        db.create_all()
+        from .models import User, RevokedToken  # Import models lazily
+        db.create_all()  # Create all tables in the database
 
     return app

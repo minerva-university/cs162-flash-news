@@ -1,3 +1,4 @@
 flash_env/
 **/__pycache__/
 *.DS_Store
+backend/venv/

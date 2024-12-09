@@ -1,28 +1,10 @@
-from . import db
 from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
-from sqlalchemy.types import DateTime
-from sqlalchemy.types import TypeDecorator
+from . import db
 
 
-class TZDateTime(TypeDecorator):
-    impl = DateTime
-    
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            if value.tzinfo is None:
-                value = value.replace(tzinfo=datetime.timezone.utc)
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            if value.tzinfo is None:
-                value = value.replace(tzinfo=datetime.timezone.utc)
-        return value
-    
-
-class User(db.Model):
+class User(db.Model):  # Removed UserMixin
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)

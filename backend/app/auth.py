@@ -32,14 +32,13 @@ def validate_password(password):
 
 def validate_email(email):
     """Validate the email address using a regular expression."""
-    # email_regex = r"^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$"\
-    email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    email_regex = r"^((?!\.)[a-zA-Z0-9_.-]*[^.])(@[a-zA-Z0-9-]+)(\.[a-zA-Z0-9-.]+)$" # character \w-_ was causing an error, so regex has been updated.
     if not re.match(email_regex, email, re.IGNORECASE):
         return False, "Invalid email address."
     return True, None
 
 
-@auth.route("/register", methods=["POST"])
+@auth.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json()
     username = data.get("username")
@@ -79,7 +78,7 @@ def register():
                     "refresh_token": refresh_token}), 201
 
 
-@auth.route("/login", methods=["POST"])
+@auth.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
     email = data.get("email")
@@ -95,7 +94,14 @@ def login():
 
     access_token = create_access_token(identity=user.user_id)
     refresh_token = create_refresh_token(identity=user.user_id)
-    return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+
+    # Includes username and profile picture as Pei suggested
+    return jsonify({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "username": user.username,
+        "profile_picture": user.profile_picture  # Ensure this field exists in the User model
+    }), 200
 
 
 @auth.route("/logout", methods=["POST"])
