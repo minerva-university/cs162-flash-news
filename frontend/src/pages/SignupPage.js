@@ -6,6 +6,8 @@ import {
   Checkbox,
   FormControlLabel,
   Box,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import "../App.css";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +19,13 @@ function SignupPage() {
     password: "",
     agreeToTerms: false,
   });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
@@ -28,45 +35,53 @@ function SignupPage() {
     }));
   };
 
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, password, agreeToTerms } = formData;
-
-    // Check if the user has agreed to the terms
+  
     if (!agreeToTerms) {
-      alert("You must agree to the Terms and Conditions.");
+      setSnackbar({
+        open: true,
+        message: "You must agree to the Terms and Conditions.",
+        severity: "error",
+      });
       return;
     }
-
+  
     try {
-      // Make the API call to register
       const response = await fetch("http://127.0.0.1:5000/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: name, // Matches the backend field 'username'
+          username: name,
           email: email,
           password: password,
         }),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
-        // Handle backend errors
         throw new Error(data.message || "Failed to register");
       }
-
-      // Handle success
-      alert("Signup successful! You can now log in.");
-      console.log("Signup response:", data);
-
-      // Redirect to login page
-      navigate("/login"); // Update this with your login route
-
-      // Optionally reset the form
+  
+      setSnackbar({
+        open: true,
+        message: "Signup successful! You can now log in.",
+        severity: "success",
+      });
+  
+      // Delay navigation to allow Snackbar to display
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000); // Redirect after 3 seconds
+  
       setFormData({
         name: "",
         email: "",
@@ -74,10 +89,14 @@ function SignupPage() {
         agreeToTerms: false,
       });
     } catch (error) {
-      // Display error to the user
-      alert(`Signup failed: ${error.message}`);
+      setSnackbar({
+        open: true,
+        message: `Signup failed: ${error.message}`,
+        severity: "error",
+      });
     }
   };
+  
 
   return (
     <Box
@@ -90,6 +109,21 @@ function SignupPage() {
         backgroundColor: "#f5f5f5",
       }}
     >
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={10000} // Lasts 10 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
       <Box
         sx={{
           maxWidth: "400px",

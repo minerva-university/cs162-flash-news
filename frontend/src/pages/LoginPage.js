@@ -7,6 +7,8 @@ import {
   Checkbox,
   FormControlLabel,
   Box,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 function LoginPage() {
@@ -14,6 +16,12 @@ function LoginPage() {
     email: "",
     password: "",
     remember: false,
+  });
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info", // info, success, error, warning
   });
 
   const navigate = useNavigate();
@@ -24,6 +32,10 @@ function LoginPage() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const handleSubmit = async (e) => {
@@ -52,11 +64,23 @@ function LoginPage() {
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
 
-      // Navigate to a protected page (e.g., dashboard)
-      alert("Login successful!");
-      navigate("/dashboard");
+      // Display success message
+      setSnackbar({
+        open: true,
+        message: "Login successful! Redirecting...",
+        severity: "success",
+      });
+
+      // Navigate to a protected page (e.g., dashboard) after a delay
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 3000);
     } catch (error) {
-      alert(`Login failed: ${error.message}`);
+      setSnackbar({
+        open: true,
+        message: `Login failed: ${error.message}`,
+        severity: "error",
+      });
     }
   };
 
@@ -137,6 +161,22 @@ function LoginPage() {
           </Button>
         </Box>
       </Box>
+
+      {/* Snackbar for feedback */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
