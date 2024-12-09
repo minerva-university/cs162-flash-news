@@ -1,7 +1,7 @@
-from . import db
 from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
+from . import db
 
 
 class User(db.Model):  # Removed UserMixin

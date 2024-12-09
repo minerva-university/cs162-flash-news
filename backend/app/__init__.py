@@ -4,7 +4,6 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
-from .models import User, RevokedToken
 
 
 # Load environment variables from .env file
@@ -27,9 +26,10 @@ def load_user(jwt_header, jwt_data):
 
 
 @jwt.user_identity_loader
-def user_identity_lookup(user):
+def user_identity_lookup(identity):
     """Define how the user object is encoded in the JWT."""
-    return user.user_id
+    return identity  # Simply return the identity
+
 
 
 @jwt.token_in_blocklist_loader
@@ -60,9 +60,10 @@ def create_app():
     CORS(
         app,
         resources={
-            r"/api/*": {
-                "origins": "*",
+            r"/*": {
+                "origins": ["http://localhost:3000"],
                 "methods": ["GET", "POST", "PUT", "DELETE"],
+                "allow_headers": ["Content-Type", "Authorization"],                
             }
         },
     )
@@ -71,8 +72,8 @@ def create_app():
     jwt.init_app(app)  # Initialize JWT
 
     # blueprint for auth routes in our app
-    # from .auth import auth as auth_blueprint
-    # app.register_blueprint(auth_blueprint)
+    from .auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     # blueprint for user routes in our app
     # from .user import users as user_blueprint
@@ -103,8 +104,9 @@ def create_app():
 
     app.register_blueprint(og_blueprint, url_prefix="/api/")
 
-    # Initialize the database
+    # Avoids circular imports by importing models in this format
     with app.app_context():
-        db.create_all()
+        from .models import User, RevokedToken  # Import models lazily
+        db.create_all()  # Create all tables in the database
 
     return app

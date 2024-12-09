@@ -11,6 +11,7 @@ from flask_jwt_extended import (
 from .models import User, RevokedToken
 from . import db
 
+
 auth = Blueprint("auth", __name__)
 
 
@@ -32,7 +33,7 @@ def validate_password(password):
 
 def validate_email(email):
     """Validate the email address using a regular expression."""
-    email_regex = r"^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$"
+    email_regex = email_regex = r"^((?!\.)[a-zA-Z0-9_.-]*[^.])(@[a-zA-Z0-9-]+)(\.[a-zA-Z0-9-.]+)$" # character \w-_ was causing an error, so regex has been updated.
     if not re.match(email_regex, email, re.IGNORECASE):
         return False, "Invalid email address."
     return True, None
