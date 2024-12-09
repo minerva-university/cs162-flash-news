@@ -8,6 +8,7 @@ import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Header from "./components/Header";
+import SettingsPage from "./pages/SettingsPage";
 import PostDetailPage from "./pages/PostDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import WelcomePage from "./pages/WelcomePage";
@@ -31,22 +32,16 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        {!publicRoutes.includes(location.pathname) && <Header />}
+        {!publicRoutes.includes(location.pathname) && <Header currentUser={currentUser} />}
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
-          <Route
-            path="/user/:username/collections"
-            element={<CollectionsPage />}
-          />
-          <Route
-            path="/collections/:id/:title"
-            element={<CollectionDetailModal />}
-          />
+          <Route path="/user/:username/collections" element={<CollectionsPage />} />
+          <Route path="/collections/:id/:title" element={<CollectionDetailModal  />} />
           <Route path="/:username/settings" element={<SettingsPage />} />
-          <Route path="/:username/profile" element={<ProfilePage />} />
+          <Route path="/:username/profile" element={<ProfilePage currentUser={currentUser} />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </ThemeProvider>

@@ -6,10 +6,8 @@ from dotenv import load_dotenv
 import os
 from flask_cors import CORS  # https://stackoverflow.com/a/78849992/11620221
 
-
 # Load environment variables from .env file
 load_dotenv()
-
 
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
