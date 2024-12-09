@@ -139,7 +139,6 @@ class Collection(db.Model):
     __table_args__ = (
             db.UniqueConstraint('user_id', 'title', name='unique_user_collection_title'),
         )
-    )
 
     # Adding a unique constraint to the user_id and title columns
     __table_args__ = (

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, UTC
+from datetime import datetime
 from bson import ObjectId
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from .models import User
@@ -100,7 +100,7 @@ def update_profile():
             'profile.profile_picture': data.get('profile_picture'),
             'profile.location': data.get('location'),
             'interests': data.get('interests'),
-            'updated_at': datetime.now(UTC)
+            'updated_at': datetime.utcnow()
         }
         
         # Remove None values

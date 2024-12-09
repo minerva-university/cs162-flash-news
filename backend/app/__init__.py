@@ -7,6 +7,7 @@ from flask_cors import CORS
 
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
+login_manager = LoginManager()
 
 
 def create_app():
@@ -15,6 +16,10 @@ def create_app():
     app.config["SECRET_KEY"] = "dev"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
     app.config["debug"] = True
+
+    #Flask login @TODO: remove when switching to JWT
+    login_manager.init_app(app)
+
 
     # https://stackoverflow.com/a/40365514/11620221
     # Don't be strict about trailing slashes in routes

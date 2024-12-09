@@ -48,7 +48,7 @@ def get_likes(post_id):
 
 
 # Like a post
-@likes.route("/likes/<int:post_id>", methods=["POST"])
+@likes.route("/<int:post_id>", methods=["POST"])
 # @TODO: Implement JWT auth decorator
 def give_like(post_id):
     post = Post.query.get(post_id)
@@ -74,7 +74,7 @@ def give_like(post_id):
 
 
 # Unlike a post
-@likes.route("/likes/<int:post_id>", methods=["DELETE"])
+@likes.route("/<int:post_id>", methods=["DELETE"])
 # @TODO: Implement JWT auth decorator
 def remove_like(post_id):
     post_like = Like.query.filter_by(
