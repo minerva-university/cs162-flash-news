@@ -91,7 +91,14 @@ def login():
 
     access_token = create_access_token(identity=user.user_id)
     refresh_token = create_refresh_token(identity=user.user_id)
-    return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+
+    # Includes username and profile picture as Pei suggested
+    return jsonify({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "username": user.username,
+        "profile_picture": user.profile_picture  # Ensure this field exists in the User model
+    }), 200
 
 
 @auth.route("/logout", methods=["POST"])
