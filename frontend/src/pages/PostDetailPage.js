@@ -11,11 +11,13 @@ import {
   CardContent,
   CardHeader,
   CardActions,
+  Chip,
   Typography,
 } from "@mui/material";
 import AddCommentForm from "../forms/AddCommentForm";
 import dayjs from "dayjs";
 import CommentController from "../controllers/CommentController";
+import EditDeleteMenu from "../components/EditDeleteMenu";
 
 const PostDetailPage = () => {
   const { id } = useParams(); // from URL params
@@ -38,6 +40,13 @@ const PostDetailPage = () => {
     ]);
   };
 
+  const handlePostEditOrDelete = (postID, selectedItem) => {
+    console.log(`Post ID: ${postID}, Selected Item: ${selectedItem}`);
+  }
+  const handleCommentEditOrDelete = (commentID, selectedItem) => {
+    console.log(`Comment ID: ${commentID}, Selected Item: ${selectedItem}`);
+  }
+
   const getAllCommentsForPost = () => {
     if (!id) return;
 
@@ -51,6 +60,7 @@ const PostDetailPage = () => {
   useEffect(() => {
     if (!id) return;
 
+    // Get the post's details
     PostController.getPost(id)
       .then((response) => {
         setPost(response);
@@ -133,7 +143,26 @@ const PostDetailPage = () => {
                   </Avatar>
                 )
               }
-              title={post?.user.username}
+              title={
+                <Typography
+                  variant="body2"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  {post?.user.username}
+                  <Chip
+                    sx={{ marginLeft: "0.5rem" }}
+                    label="OP"
+                    variant="outlined"
+                    size="small"
+                  />
+                </Typography>
+              }
+              // @TODO: Only show if the current post belongs to the currently logged in user
+              action={
+                post?.user.username == "lmao8109" && (
+                  <EditDeleteMenu id={post.post_id} onClose={handlePostEditOrDelete}/>
+                )
+              }
             />
             <CardContent>
               {post?.description &&
@@ -189,8 +218,31 @@ const PostDetailPage = () => {
                       </Avatar>
                     )
                   }
-                  title={comment.user.username}
+                  title={
+                    comment.user.username == post.user.username ? (
+                      <Typography
+                        variant="body2"
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        {post?.user.username}
+                        <Chip
+                          sx={{ marginLeft: "0.5rem" }}
+                          label="OP"
+                          variant="outlined"
+                          size="small"
+                        />
+                      </Typography>
+                    ) : (
+                      comment.user.username
+                    )
+                  }
                   subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
+                  // @TODO: Only show if the current comment belongs to the currently logged in user
+                  action={
+                    post?.user.username == "lmao8109" && (
+                      <EditDeleteMenu id={comment.comment_id} onClose={handleCommentEditOrDelete}/>
+                    )
+                  }
                 />
                 <CardContent>
                   {comment.comment &&
