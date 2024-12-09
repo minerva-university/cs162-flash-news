@@ -89,7 +89,6 @@ def login():
         return jsonify({"message": "Missing email or password"}), 400
 
     user = User.query.filter_by(email=email).first()
-    print(user)
 
     if not user or not check_password_hash(user.password, password):
         return jsonify({"message": "Invalid credentials"}), 401

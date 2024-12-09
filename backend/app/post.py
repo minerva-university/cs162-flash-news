@@ -39,7 +39,7 @@ def create_post():
         user_id=get_jwt_identity(),
         article_id=article.article_id,
         description=data.get(
-            "description"
+            "post_description"
         ),  # post_ prefix differentiates from og:description
     )
 

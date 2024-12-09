@@ -64,7 +64,6 @@ def give_like(post_id):
     post_like = Like(
         user_id=get_jwt_identity(),
         post_id=post_id,
-        # user_id=current_user.user_id,
     )
     db.session.add(post_like)
     db.session.commit()
