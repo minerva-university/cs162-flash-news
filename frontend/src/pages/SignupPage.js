@@ -42,7 +42,7 @@ function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, password, agreeToTerms } = formData;
-  
+
     if (!agreeToTerms) {
       setSnackbar({
         open: true,
@@ -51,7 +51,7 @@ function SignupPage() {
       });
       return;
     }
-  
+
     try {
       const response = await fetch("http://127.0.0.1:5000/register", {
         method: "POST",
@@ -64,24 +64,24 @@ function SignupPage() {
           password: password,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.message || "Failed to register");
       }
-  
+
       setSnackbar({
         open: true,
         message: "Signup successful! You can now log in.",
         severity: "success",
       });
-  
+
       // Delay navigation to allow Snackbar to display
       setTimeout(() => {
         navigate("/login");
       }, 3000); // Redirect after 3 seconds
-  
+
       setFormData({
         name: "",
         email: "",
@@ -96,7 +96,6 @@ function SignupPage() {
       });
     }
   };
-  
 
   return (
     <Box
