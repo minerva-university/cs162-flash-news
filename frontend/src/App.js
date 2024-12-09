@@ -11,6 +11,7 @@ import Header from "./components/Header";
 import PostDetailPage from "./pages/PostDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import WelcomePage from "./pages/WelcomePage";
+import SettingsPage from "./pages/SettingsPage";
 
 const theme = createTheme({
   palette: {
@@ -30,22 +31,16 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        {!publicRoutes.includes(location.pathname) && <Header />}
+        {!publicRoutes.includes(location.pathname) && <Header currentUser={currentUser} />}
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
-          <Route
-            path="/user/:username/collections"
-            element={<CollectionsPage />}
-          />
-          <Route
-            path="/collections/:id/:title"
-            element={<CollectionDetailModal />}
-          />
+          <Route path="/user/:username/collections" element={<CollectionsPage currentUser={currentUser} />} />
+          <Route path="/collections/:id/:title" element={<CollectionDetailModal currentUser={currentUser} />} />
           <Route path="/:username/settings" element={<SettingsPage />} />
-          <Route path="/:username/profile" element={<ProfilePage />} />
+          <Route path="/:username/profile" element={<ProfilePage currentUser={currentUser} />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </ThemeProvider>
