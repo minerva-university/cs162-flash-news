@@ -151,5 +151,5 @@ class Follow(db.Model):
 
 class RevokedToken(db.Model):  # For JWT token revocation
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    jti = db.Column(db.String(120))
+    jti = db.Column(db.String(120), index=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
