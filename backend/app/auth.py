@@ -39,7 +39,7 @@ def validate_email(email):
     return True, None
 
 
-@auth.route("/register", methods=["POST"])
+@auth.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json()
     username = data.get("username")
@@ -75,7 +75,7 @@ def register():
     return jsonify({"message": "User registered successfully"}), 201
 
 
-@auth.route("/login", methods=["POST"])
+@auth.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
     email = data.get("email")
