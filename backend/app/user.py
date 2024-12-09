@@ -8,26 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from . import db
 from .models import User, Follow 
+from .utils import create_success_response, create_error_response 
 
 # Initialize blueprint
 user_bp = Blueprint('user', __name__)
-
-
-# Utility function for consistent success handling
-def create_success_response(message, status_code=200, data=None):
-    return jsonify({
-        'status': 'success',
-        'message': message,
-        'data': data
-    }), status_code
-
-# Utility function for consistent error handling
-def create_error_response(message, status_code=400, details=None):
-    return jsonify({
-        'status': 'error',
-        'message': message,
-        'details': details
-    }), status_code
 
 
 
