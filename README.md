@@ -1,6 +1,10 @@
 # Flash News Project
 
-Flash News is a web application designed to allow users to share and explore news articles through a social feed. It provides features like collections, tags, and the ability to follow users for a more curated news-sharing experience.
+Flash News is a web application designed to allow users to share and explore news articles through a social feed. Posts on Flash News are ephemeral, disappearing after 24 hours, creating a sense of immediacy and anchoring users in the present moment. The platform provides features like collections, tags, and the ability to follow users for a more curated news-sharing experience.
+
+Flash News addresses the issue of echo chambers and political polarity by allowing users to see the news articles their friends, peers, or public figures are consuming. This app serves as a medium for broadening perspectives by offering insight into the sources and narratives shaping others' viewpoints. It is distinct from other social media platforms as it focuses solely on news sharing without the distractions of memes, videos, or unrelated content.
+
+The app is particularly useful for intellectually curious and politically engaged users who wish to share thought-provoking journalism or gain a mental map of the ideologies within their social circles. By fostering an environment for sharing and exploring news, Flash News aims to spark meaningful conversations both online and offline.
 
 ## Table of Contents
 
