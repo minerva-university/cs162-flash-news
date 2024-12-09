@@ -1,7 +1,7 @@
 import pytest
 from .. import db
 from ..models import Collection, CollectionPost, Post, User, Article
-from flask_login import logout_user
+from flask_jwt_extended import create_access_token
 
 
 def test_create_collection_all_fields(client):
@@ -38,8 +38,7 @@ def test_create_collection_no_title(client):
 
 
 def test_create_collection_not_logged_in(client):
-    with client.application.test_request_context():
-        logout_user()
+    client.environ_base.pop('HTTP_AUTHORIZATION', None)
     
     data = {'title': 'My Collection'}
     response = client.post('/api/collections/', json=data)
@@ -92,9 +91,8 @@ def test_get_nonexistent_user_collections(client):
 
 
 def test_get_collections_not_logged_in(client):
-    with client.application.test_request_context():
-        logout_user()
-        
+    client.environ_base.pop('HTTP_AUTHORIZATION', None)
+    
     response = client.get('/api/collections/user/1')
     assert response.status_code == 401
 
@@ -168,7 +166,6 @@ def test_add_post_to_collection(client):
 
     response = client.post(f'/api/collections/{collection.collection_id}/posts/{post.post_id}')
     assert response.status_code == 200
-
     # Try adding same post again
     response = client.post(f'/api/collections/{collection.collection_id}/posts/{post.post_id}')
     assert response.status_code == 200
@@ -192,7 +189,7 @@ def test_update_collection(client):
     assert updated.title == 'New Title'
     assert updated.emoji == '🌟'
 
-
+# Test deleting a collection
 def test_delete_collection(client):
     collection = Collection(title='To Delete', user_id=1)
     db.session.add(collection)

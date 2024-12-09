@@ -1,5 +1,4 @@
 from . import db
-from flask_login import UserMixin
 from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
@@ -23,11 +22,7 @@ class TZDateTime(TypeDecorator):
         return value
     
 
-class User(UserMixin, db.Model):
-    # Added the get_id method: for flask_login purposes
-    def get_id(self):
-        return str(self.user_id)
-
+class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
@@ -146,6 +141,7 @@ class Collection(db.Model):
         )
 
 
+
 class CollectionPost(
     db.Model
 ):  # Many to Many relationship between posts and collections
@@ -176,4 +172,10 @@ class Follow(db.Model):
     follower_id = db.Column(
         db.Integer, db.ForeignKey("user.user_id"), primary_key=True
     )  # User following
-    followed_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
+    followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class RevokedToken(db.Model):  # For JWT token revocation
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    jti = db.Column(db.String(120), index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))

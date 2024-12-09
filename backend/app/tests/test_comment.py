@@ -82,8 +82,7 @@ def test_get_comments_nonexistent_post(client):
 
 # Test that users can't view comments if they're not logged in
 def test_get_comments_not_logged_in(client):
-    with client.application.test_request_context():
-        logout_user()
+    client.environ_base.pop('HTTP_AUTHORIZATION', None)
     
     response = client.get('/api/comments/1')
     assert response.status_code == 401

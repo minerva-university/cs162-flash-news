@@ -44,8 +44,7 @@ def test_create_post_too_many_categories(client):
 
 # Test that you can't create a post without being logged in (security)
 def test_create_post_not_logged_in(client):
-    with client.application.test_request_context():
-        logout_user()
+    client.environ_base.pop('HTTP_AUTHORIZATION', None)
     
     data = {
         'article_link': 'http://example.com/article'
@@ -155,10 +154,8 @@ def test_get_feed(client):
     db.session.add(follow)
     db.session.commit()
 
-    # Ensure we are still logged into client
-    with client.application.test_request_context():
-        login_user(current_user)
-        response = client.get('/api/posts/feed')
+
+    response = client.get('/api/posts/feed')
 
     assert response.status_code == 200
     assert 'posts' in response.json
@@ -217,7 +214,7 @@ def test_view_post_after_24h(client):
     db.session.add(post)
     db.session.commit()
 
-    post.posted_at = datetime.now(timezone.utc) - timedelta(hours=25)
+    post.posted_at = (datetime.now(timezone.utc) - timedelta(hours=25))
     db.session.commit()
 
     response = client.get(f'/api/posts/{post.post_id}')

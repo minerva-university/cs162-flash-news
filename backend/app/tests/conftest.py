@@ -1,7 +1,8 @@
 import pytest
 from backend.app import create_app, db
 from backend.app.models import User
-from flask_login import login_user
+from werkzeug.security import generate_password_hash
+from flask_jwt_extended import create_access_token
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -36,7 +37,6 @@ def setup_db(app_dict):
 
 @pytest.fixture
 def test_user(app_dict):
-    # Create a test user
     db = app_dict['db']
     app = app_dict['app']
 
@@ -48,17 +48,16 @@ def test_user(app_dict):
                 db.session.delete(existing_user)
                 db.session.commit()
 
-            # Create new user
+            # Create new user with hashed password
             user = User(
                 email='test@test.com',
                 username='testuser',
-                password='password123'
+                password=generate_password_hash('password123')
             )
 
             db.session.add(user)
             db.session.commit()
 
-            # Verify the user was created
             created_user = User.query.filter_by(email='test@test.com').first()
             if not created_user:
                 raise Exception("Failed to create test user")
@@ -77,26 +76,12 @@ def client(app_dict, test_user):
     db = app_dict['db']
     client = app.test_client()
     
-    with app.test_request_context():
-        # This uses flask_login
-        login_user(test_user)
-    
-    # Start the session
-    #client.get('/')
-
-    '''
-    # Set session cookie to maintain user's logged-in status
-    with client.session_transaction() as session:
-        session['_user_id'] = session_data['_user_id']
-    '''
-
-    '''
-    This works but essentially bypasses the @login_required decorator from flask_login
-    with client.session_transaction() as sess:
-        sess['_user_id'] = str(test_user.user_id)
-    '''
+    # Create access token for test user
+    with app.app_context():
+        access_token = create_access_token(identity=test_user.user_id)
+        # Set the Authorization header for subsequent requests
+        client.environ_base['HTTP_AUTHORIZATION'] = f'Bearer {access_token}'
     
     yield client
     # Cleanup
     db.session.rollback()
-    
