@@ -7,14 +7,15 @@ import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 
-const pages = [
-  { name: "Home", path: "/feed" },
-  { name: "Collections", path: "/collections" },
-  { name: "Profile", path: "/profile" },
-];
 
-function Header() {
+function Header({ currentUser }) {
   const navigate = useNavigate();
+  const pages = [
+    { name: "Home", path: "/feed" },
+    { name: "Collections", path: `/user/${currentUser.username}/collections` },
+    { name: "Profile", path: `${currentUser.username}/profile` },
+  ];
+  
 
   return (
     <AppBar position="static">

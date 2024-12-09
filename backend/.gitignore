@@ -1,0 +1,11 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Flask specific
+instance/
+
+# dotenv
+.env
+
+# Virtual environment
+.venv/

@@ -8,6 +8,7 @@ import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Header from "./components/Header";
+import PostDetailPage from "./pages/PostDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 
 const theme = createTheme({
@@ -37,6 +38,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
+          <Route path="/post/:id" element={<PostDetailPage />} />
           <Route path="/user/:username/collections" element={<CollectionsPage currentUser={currentUser} />} />
           <Route path="/collections/:id/:title" element={<CollectionDetailModal currentUser={currentUser} />} />
           <Route path="/:username/settings" element={<SettingsPage />} />

@@ -1,23 +1,23 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
-import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import Button from "@mui/material/Button";
 import ArticleCard from "../components/ArticleCard";
+import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
 
-// TODO: Replace with actual user data fetched from the backend
-const user = {
-  username: "Username",
-  bio: "Experienced in political journalism",
-  tags: ["Journalist", "Contributor"],
-};
-
-const ProfilePage = ({ isOwner }) => {
+const ProfilePage = ({ currentUser }) => {
+  const DB_HOST = "http://127.0.0.1:5000/api";
+  const { username } = useParams();
   const navigate = useNavigate();
+
+  const [profileData, setProfileData] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Handle collection click event (navigate to collection page)
   const handleCollectionClick = (collection) => {
@@ -325,6 +325,54 @@ const ProfilePage = ({ isOwner }) => {
     },
   ];
 
+  // Fetch profile data
+  const fetchProfileData = async () => {
+    try {
+      const response = await fetch(`${DB_HOST}/user/profile/${username}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setProfileData(data);
+        setIsOwner(currentUser?.username === username);
+      } else {
+        console.error("Failed to fetch profile data:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfileData();
+  }, [username]);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <Box sx={{ textAlign: "center", marginTop: "40px" }}>
+        <Typography variant="h5" sx={{ color: "gray" }}>
+          User not found.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -359,55 +407,73 @@ const ProfilePage = ({ isOwner }) => {
               variant="h5"
               sx={{
                 fontWeight: "bold",
-                color: "#fff",
+                color: "#D9EAF3",
               }}
             >
-              {user.username}
+              {profileData.username}
             </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                gap: "8px",
-                marginTop: "8px",
-              }}
-            >
-              {user.tags.map((tag, index) => (
-                <Chip
-                  key={index}
-                  label={tag}
-                  sx={{
-                    backgroundColor: "#D9EAF3",
-                    color: "#5F848C",
-                    fontWeight: "bold",
-                  }}
-                />
-              ))}
-            </Box>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#F6F5EE",
-                marginTop: "8px",
-              }}
-            >
-              {user.bio}
-            </Typography>
+            {profileData.bio_description ? (
+              <Typography
+                sx={{
+                  fontSize: "1rem",
+                  color: "#a6b2bb",
+                  fontFamily: "'Roboto', sans-serif",
+                }}
+              >
+                {profileData.bio_description}
+              </Typography>
+            ) : (
+              <Typography
+                sx={{
+                  fontSize: "0.9rem",
+                  color: "#a6b2bb",
+                  fontStyle: "italic",
+                  fontFamily: "'Roboto', sans-serif",
+                }}
+              >
+                No bio available.
+              </Typography>
+            )}
+            {profileData.tags.length > 0 && (
+              <Box sx={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                {profileData.tags.map((tag, index) => (
+                  <Typography
+                    key={index}
+                    sx={{
+                      backgroundColor: "#D9EAF3",
+                      color: "#5F848C",
+                      borderRadius: "12px",
+                      padding: "4px 8px",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    {tag}
+                  </Typography>
+                ))}
+              </Box>
+            )}
           </Box>
         </Box>
 
-        {/* Edit Profile Button */}
-        <Button
-          sx={{
-            backgroundColor: "#D9EAF3",
-            color: "#5F848C",
-            fontWeight: "bold",
-            "&:hover": {
-              backgroundColor: "#002040",
-            },
-          }}
-        >
-          Edit Profile
-        </Button>
+        {/* Settings Button */}
+        {isOwner && (
+          <Button
+            variant="contained"
+            startIcon={<Settings />}
+            sx={{
+              backgroundColor: "#D9EAF3",
+              color: "#5F848C",
+              fontWeight: "bold",
+              fontFamily: "'Raleway', sans-serif",
+              "&:hover": {
+                backgroundColor: "#6b949c",
+              },
+            }}
+            onClick={() => navigate(`/${username}/settings`)}
+          >
+            Settings
+          </Button>
+        )}
       </Box>
 
       {/* Most Recent Posts Section */}
@@ -440,7 +506,7 @@ const ProfilePage = ({ isOwner }) => {
           {sharedPosts.slice(0, 3).map(
             (
               post,
-              index, // Show only 3 posts
+              index, 
             ) => (
               <Box
                 key={index}
@@ -449,7 +515,7 @@ const ProfilePage = ({ isOwner }) => {
                   margin: "0 10px",
                 }}
               >
-                <PostCard post={post} />
+                {/* <PostCard post={post} /> */}
               </Box>
             ),
           )}
@@ -532,17 +598,16 @@ const ProfilePage = ({ isOwner }) => {
         ))}
       </Box>
 
-      {/* Divider */}
-      <Divider
-        sx={{
-          margin: "40px 0",
-          backgroundColor: "#266a7a",
-          opacity: 0.5,
-        }}
-      />
-
       {isOwner && (
         <>
+          {/* Divider */}
+          <Divider
+            sx={{
+              margin: "40px 0",
+              backgroundColor: "#266a7a",
+              opacity: 0.5,
+            }}
+          />
           {/* All Articles Section */}
           <Typography
             variant="h4"

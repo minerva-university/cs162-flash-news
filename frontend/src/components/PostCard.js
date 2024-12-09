@@ -1,20 +1,43 @@
 import * as React from "react";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import CardMedia from "@mui/material/CardMedia";
-import Chip from "@mui/material/Chip";
-import Typography from "@mui/material/Typography";
+import { useNavigate } from "react-router-dom";
 
-import Avatar from "@mui/material/Avatar";
-import { Box, Button, IconButton, Link } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  Link,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  Chip,
+  Typography,
+} from "@mui/material";
 import { ChatBubble, ThumbUp } from "@mui/icons-material";
+import PostController from "../controllers/PostController";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, currentUser }) {
   dayjs.extend(relativeTime);
+
+  const [expanded, setExpanded] = React.useState(false);
+  const [liked, setLiked] = React.useState(post.is_liked);
+  const navigate = useNavigate();
+
+  const handleLike = () => {
+    const newLikeStatus = !liked;
+    PostController.likeOrUnlikePost(post.post_id, newLikeStatus)
+      .then(() => {
+        setLiked(newLikeStatus);
+        post.likes_count += newLikeStatus ? 1 : -1;
+      })
+      .catch((error) => console.error(error));
+  };
+
+  console.log("post username", post.user.username[0])
 
   return (
     <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
@@ -31,23 +54,47 @@ export default function PostCard({ post }) {
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
               aria-label="recipe"
             >
-              R
+              {post.user.username[0].toUpperCase()}
             </Avatar>
           )
         }
-        title={post.username}
+        title={post.user.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
-      <CardMedia sx={{ height: 300 }} image={post.preview} title={post.title} />
+      {/* @todo: should probably render placeholder image if image doesn't load */}
+      <CardMedia
+        sx={{ height: 300 }}
+        image={post.article.preview}
+        title={post.article.title}
+      />
 
-      {/* @TODO: Should truncate very long descriptions, when "More" is clicked it'll expand the post */}
+      {/* Post Description */}
       <CardContent>
-        <Typography
-          variant="body2"
-          sx={{ color: "text.secondary", marginBottom: "1rem" }}
-        >
-          {post.description}
-        </Typography>
+        {post.description &&
+          post.description.split("\n").map((line, index, arr) => {
+            return (
+              <Typography
+                key={index}
+                variant="body2"
+                sx={{
+                  color: "text.secondary",
+                  marginBottom: "1rem",
+                  display: expanded || index < 3 ? "block" : "none",
+                }}
+              >
+                {line}
+                {index == 2 && arr.length > 3 && !expanded && (
+                  <Typography
+                    variant="body2"
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => setExpanded(true)}
+                  >
+                    ...more
+                  </Typography>
+                )}
+              </Typography>
+            );
+          })}
       </CardContent>
 
       {/* Category Chips */}
@@ -60,6 +107,7 @@ export default function PostCard({ post }) {
               label={category}
               variant="outlined"
               size="small"
+              sx={{ marginRight: "0.5rem" }}
             />
           ))}
         </Box>
@@ -69,30 +117,37 @@ export default function PostCard({ post }) {
       <CardActions>
         <IconButton
           aria-label="like"
-          color={post.liked ? "secondary" : "inherit"}
-          onClick={() => {
-            console.log("Like this post");
-          }}
+          color={liked ? "primary" : "inherit"}
+          onClick={handleLike}
         >
-          <ThumbUp />
+          <ThumbUp sx={{ marginRight: "0.5rem" }} />
+          <Typography variant="body2">
+            {post.likes_count != 0 && post.likes_count}
+          </Typography>
         </IconButton>
         <IconButton
           aria-label="like"
-          onClick={() => {
-            console.log("Comment on post");
+          sx={{ color: "inherit" }}
+          onClick={() => navigate(`/post/${post.post_id}`)}
+        >
+          <ChatBubble sx={{ marginRight: "0.5rem" }} />
+          <Typography variant="body2">
+            {post.comments_count != 0 && post.comments_count}
+          </Typography>
+        </IconButton>
+        <Button
+          sx={{
+            marginLeft: "auto !important",
+            "&:hover": {
+              color: "#F6F5EE", // Beige from palette on hover
+            },
           }}
         >
-          <ChatBubble />
-        </IconButton>
-        <Button sx={{ marginLeft: "auto !important" }}>
           <Link
+            href={post.article.link}
             sx={{
               color: "inherit",
-              "&:hover": {
-                color: "#F6F5EE", // Beige from palette on hover
-              },
             }}
-            href={post.link}
             underline="none"
             target="_blank"
             rel="noopener"

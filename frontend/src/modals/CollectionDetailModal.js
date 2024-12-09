@@ -6,7 +6,7 @@ import Box from "@mui/material/Box";
 import ArticleCard from "../components/ArticleCard";
 
 const CollectionDetailModal = () => {
-  const location = useLocation(); 
+  const location = useLocation();
   const navigate = useNavigate();
   const articlesSectionRef = useRef(null); 
   const collection = location.state?.collection;

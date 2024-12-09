@@ -5,7 +5,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
+const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {  
   return (
     <Box
       sx={{
@@ -20,7 +20,7 @@ const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
           transform: "translateY(-8px)",
           boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
         },
-        position: "relative", // Needed for positioning buttons
+        position: "relative", 
       }}
       onClick={onClick}
     >
@@ -52,7 +52,7 @@ const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
           color: "#333",
         }}
       >
-        {collection.name}
+        {collection.title}
       </Typography>
 
       {/* Description */}
@@ -76,7 +76,7 @@ const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
           fontFamily: "'Lato', sans-serif",
         }}
       >
-        {collection.articlesCount} articles
+        {collection.articles_count} articles
       </Typography>
 
       {/* Edit and Delete Buttons */}
