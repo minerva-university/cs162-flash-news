@@ -73,13 +73,13 @@ function SignupPage() {
 
       setSnackbar({
         open: true,
-        message: "Signup successful! You can now log in.",
+        message: "Signup successful! You are being redirected to your feed.",
         severity: "success",
       });
 
       // Delay navigation to allow Snackbar to display
       setTimeout(() => {
-        navigate("/login");
+        navigate("/feed");
       }, 3000); // Redirect after 3 seconds
 
       setFormData({
@@ -198,6 +198,14 @@ function SignupPage() {
             Sign Up
           </Button>
         </Box>
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ marginTop: "1rem", cursor: "pointer" }}
+          onClick={() => navigate("/login")} // Navigate to the login page
+        >
+          Already have an account? Log in here.
+        </Typography>
       </Box>
     </Box>
   );

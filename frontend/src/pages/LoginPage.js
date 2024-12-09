@@ -73,7 +73,7 @@ function LoginPage() {
 
       // Navigate to a protected page (e.g., dashboard) after a delay
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/feed");
       }, 3000);
     } catch (error) {
       setSnackbar({
@@ -160,6 +160,14 @@ function LoginPage() {
             Log In
           </Button>
         </Box>
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ marginTop: "1rem", cursor: "pointer" }}
+          onClick={() => navigate("/signup")} // Navigate to the signup page
+        >
+          Don't have an account? Sign up here.
+        </Typography>
       </Box>
 
       {/* Snackbar for feedback */}
