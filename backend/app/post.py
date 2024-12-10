@@ -118,7 +118,7 @@ def delete_post(post_id):
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if post.user_id != get_jwt_identity():
+    if post.user_id != int(get_jwt_identity()):
         return jsonify({"error": "You are not allowed to delete this post"}), 403
 
     db.session.delete(post)
@@ -128,14 +128,14 @@ def delete_post(post_id):
 
 
 # Update a post
-@posts.route("/posts/<int:post_id>", methods=["PUT"])
+@posts.route("/<int:post_id>", methods=["PUT"])
 @jwt_required()
 def update_post(post_id):
     post = Post.query.get(post_id)
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if post.user_id != get_jwt_identity():
+    if post.user_id != int(get_jwt_identity()):
         return jsonify({"error": "You are not allowed to update this post"}), 403
 
     data = request.get_json()
