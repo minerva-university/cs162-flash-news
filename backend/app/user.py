@@ -47,7 +47,7 @@ def create_error_response(message, status_code=400, details=None):
 
 
 # Get (view) user's profile 
-@user_bp.route('/profile', methods=['GET'])
+@user_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_profile(): 
     try:
@@ -86,7 +86,7 @@ def get_profile():
         return create_error_response('An unexpected error occurred', 500, str(e))
 
 # Update user profile
-@user_bp.route('/profile', methods=['PUT'])
+@user_bp.route('/', methods=['PUT'])
 @jwt_required()
 def update_profile():
     try:
@@ -161,7 +161,7 @@ def update_profile():
         return create_error_response('An unexpected error occurred', 500, str(e))
 
 # Delete user profile
-@user_bp.route('/profile', methods=['DELETE'])
+@user_bp.route('/', methods=['DELETE'])
 @jwt_required()
 def delete_user():
     try:

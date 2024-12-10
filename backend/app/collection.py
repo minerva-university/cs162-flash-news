@@ -10,8 +10,8 @@ collections = Blueprint('collections', __name__, url_prefix='/api/collections')
 import logging
 
 # Create a new collection
-@collections.route('/create', methods=['POST'])
-@jwt_required
+@collections.route('/', methods=['POST'])
+@jwt_required()
 def create_collection():
 
     user_id = get_jwt_identity()  
@@ -54,7 +54,7 @@ def create_collection():
 
 # Get user's collections
 @collections.route('/user/<int:user_id>', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_collections(user_id):
 
     current_user_id = get_jwt_identity()  
@@ -71,7 +71,8 @@ def get_collections(user_id):
     print(f"Public collections fetched: {len(public_collections)}")
 
     private_collections = []
-    if current_user_id == user_id:  # Fetch private collections only if the user is the owner
+    if int(current_user_id) == int(user_id):  # Fetch private collections only if the user is the owner
+        print("Fetching private collections")
         private_collections = Collection.query.filter_by(user_id=user_id, is_public=False).all()
         print(f"Private collections fetched: {len(private_collections)}")
 
@@ -109,7 +110,7 @@ def get_collections(user_id):
 
 # Get posts from a specific collection
 @collections.route('/<int:collection_id>/posts', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_collection_posts(collection_id):
 
     collection_posts = (
@@ -138,8 +139,8 @@ def get_collection_posts(collection_id):
 
 
 # Add a post to a collection
-@collections.route('/<int:collection_id>/posts/add/<int:post_id>', methods=['POST'])
-@jwt_required
+@collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['POST'])
+@jwt_required()
 def add_post_to_collection(collection_id, post_id):
     
     check_post = CollectionPost.query.filter_by(collection_id=collection_id, post_id=post_id).first()
@@ -159,7 +160,7 @@ def add_post_to_collection(collection_id, post_id):
 
 # Update a collection
 @collections.route('/update/<int:collection_id>', methods=['PUT'])
-@jwt_required
+@jwt_required()
 def update_collection(collection_id):
 
     print(f"Received PUT request for collection ID: {collection_id}")
@@ -196,7 +197,7 @@ def update_collection(collection_id):
 
 # Delete a collection
 @collections.route('/delete/<int:collection_id>', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def delete_collection(collection_id):
 
     collection = Collection.query.get_or_404(collection_id)
@@ -207,8 +208,8 @@ def delete_collection(collection_id):
 
 
 # Remove a post from a collection
-@collections.route('/<int:collection_id>/posts/remove/<int:post_id>', methods=['DELETE'])
-@jwt_required
+@collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['DELETE'])
+@jwt_required()
 def remove_post_from_collection(collection_id, post_id):
 
     user_id = get_jwt_identity()
