@@ -157,7 +157,7 @@ def add_post_to_collection(collection_id, post_id):
 def update_collection(collection_id):
     data = request.get_json()
     collection = Collection.query.filter_by(
-        collection_id=collection_id, user_id=get_jwt_identity()
+        collection_id=collection_id, user_id=int(get_jwt_identity())
     ).first_or_404()
 
     collection.title = data.get("title", collection.title)
