@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from . import db
 from .models import Post, Article, PostCategory, CategoryEnum
 from .utils import check_post_24h
+from flask_jwt_extended import jwt_required
 
 posts = Blueprint("post", __name__)
 
@@ -15,7 +16,7 @@ current_user_id = 1  # @TODO: Get current user from JWT
 
 # Create a post
 @posts.route("/posts", methods=["POST"])
-# @TODO: Add JWT check decorator
+@jwt_required()
 def create_post():
     data = request.get_json()
 
@@ -73,7 +74,7 @@ def create_post():
 
 # Get a single post
 @posts.route("/posts/<int:post_id>", methods=["GET"])
-# @TODO: Add JWT check decorator
+@jwt_required()
 def get_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -115,7 +116,7 @@ def get_post(post_id):
 
 # Delete a post
 @posts.route("/posts/<int:post_id>", methods=["DELETE"])
-# @TODO: Add JWT check decorator
+@jwt_required()
 def delete_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -132,7 +133,7 @@ def delete_post(post_id):
 
 # Update a post
 @posts.route("/posts/<int:post_id>", methods=["PUT"])
-# @TODO: Add JWT check decorator
+@jwt_required()
 def update_post(post_id):
     post = Post.query.get(post_id)
     if not post:
@@ -188,7 +189,7 @@ def update_post(post_id):
 
 # Get feed (posts by self + followed users) with pagination
 @posts.route("/posts/feed", methods=["GET"])
-# @TODO: Add JWT check decorator
+@jwt_required()
 def get_feed():
     # Set pagination parameters
     page = request.args.get("page", 1, type=int)
@@ -257,7 +258,7 @@ def get_feed():
 
 # Get posts (posted by the user) with pagination
 @posts.route("/posts/user/<int:user_id>", methods=["GET"])
-# @TODO: Add JWT check decorator
+@jwt_required()
 def get_user_posts(user_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
@@ -317,7 +318,7 @@ def get_user_posts(user_id):
 
 # Get available categories
 @posts.route("/posts/categories", methods=["GET"])
-# @TODO: Add JWT check decorator
+@jwt_required()
 def get_categories():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
