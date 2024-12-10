@@ -6,7 +6,6 @@ from .utils import check_post_24h
 
 comments = Blueprint("comment", __name__, url_prefix='/api/comments')
 
-current_user_id = 1
 
 # Get comments on a post
 @comments.route("/<int:post_id>", methods=["GET"])
