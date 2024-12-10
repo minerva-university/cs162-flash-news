@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 def test_create_post_success(client):
     data = {
         'article_link': 'http://example.com/article',
-        'description': 'Test post description',
+        'post_description': 'Test post description',
         'categories': ['TECH', 'SCIENCE']
     }
     response = client.post('/api/posts/', json=data)
