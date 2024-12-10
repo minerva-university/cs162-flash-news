@@ -8,12 +8,13 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 
 
-function Header({ currentUser }) {
+function Header() {
+  const username = localStorage.getItem("username"); // Get username from local storage to be used in the header
   const navigate = useNavigate();
   const pages = [
     { name: "Home", path: "/feed" },
-    { name: "Collections", path: `/user/${currentUser.username}/collections` },
-    { name: "Profile", path: `${currentUser.username}/profile` },
+    { name: "Collections", path: `/user/${username}/collections` }, 
+    { name: "Profile", path: `${username}/profile` },
   ];
   
 
