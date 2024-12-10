@@ -45,7 +45,9 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 
 def create_app():
     app = Flask(__name__)
+    from .config import Config
 
+    app.config.from_object(Config)
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
         "DATABASE_URI", "sqlite:///db.sqlite"

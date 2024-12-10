@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import db
 from .models import Collection, CollectionPost, User
 from .post import get_post
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 collections = Blueprint("collections", __name__, url_prefix="/api/collections")
 
