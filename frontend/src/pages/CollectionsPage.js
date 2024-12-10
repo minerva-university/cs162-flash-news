@@ -267,7 +267,7 @@ const CollectionsPage = () => {
     } catch (error) {
       console.error("Error deleting collection:", error);
     }
-  };
+  };  
 
   // Filter collections by title
   const filteredPublicCollections = publicCollections.filter(
