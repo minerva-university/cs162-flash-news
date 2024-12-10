@@ -1,13 +1,14 @@
-// import { DB_HOST, HEADERS_WITH_JWT } from "./config.ts";
-
-const DB_HOST = "http://127.0.0.1:5000/api";
+import { DB_HOST, HEADERS_WITH_JWT } from "./config.ts";
 
 class PostController {
+  static get accessToken() {
+    return localStorage.getItem("access_token");
+  }
+
   static async getAll() {
     const response = await fetch(`${DB_HOST}/posts/feed`, {
       method: "GET",
-      headers: { "content-type": "application/json" },
-      // headers: HEADERS_WITH_JWT(user),
+      headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
     const responseBody = await response.json();
@@ -21,8 +22,7 @@ class PostController {
   static async getPost(postID) {
     const response = await fetch(`${DB_HOST}/posts/${postID}`, {
       method: "GET",
-      headers: { "content-type": "application/json" },
-      // headers: HEADERS_WITH_JWT(user),
+      headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
     const responseBody = await response.json();
@@ -37,8 +37,7 @@ class PostController {
     const response = await fetch(`${DB_HOST}/posts`, {
       method: "POST",
       body: JSON.stringify(post),
-      headers: { "content-type": "application/json" },
-      // headers: HEADERS_WITH_JWT(user),
+      headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
     const responseBody = await response.json();
@@ -52,8 +51,7 @@ class PostController {
   static async deletePost(postID) {
     const response = await fetch(`${DB_HOST}/posts/${postID}`, {
       method: "DELETE",
-      headers: { "content-type": "application/json" },
-      // headers: HEADERS_WITH_JWT(user),
+      headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
     const responseBody = await response.json();
@@ -67,8 +65,7 @@ class PostController {
   static async likeOrUnlikePost(postID, is_liked) {
     const response = await fetch(`${DB_HOST}/likes/${postID}`, {
       method: is_liked ? "POST" : "DELETE",
-      // headers: HEADERS_WITH_JWT(user),
-      headers: { "content-type": "application/json" },
+      headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
     const responseBody = await response.json();
@@ -85,8 +82,7 @@ class PostController {
     const response = await fetch(`${DB_HOST}/og`, {
       method: "POST",
       body: JSON.stringify({ url }),
-      headers: { "content-type": "application/json" },
-      // headers: HEADERS_WITH_JWT(user),
+      headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
     const responseBody = await response.json();

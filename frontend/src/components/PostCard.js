@@ -84,7 +84,7 @@ export default function PostCard({ post }) {
                 }}
               >
                 {line}
-                {index == 2 && arr.length > 3 && !expanded && (
+                {index === 2 && arr.length > 3 && !expanded && (
                   <span
                     style={{ cursor: "pointer" }}
                     onClick={() => setExpanded(true)}
@@ -121,7 +121,7 @@ export default function PostCard({ post }) {
         >
           <ThumbUp sx={{ marginRight: "0.5rem" }} />
           <Typography variant="body2">
-            {post.likes_count != 0 && post.likes_count}
+            {post.likes_count !== 0 && post.likes_count}
           </Typography>
         </IconButton>
         <IconButton
@@ -131,7 +131,7 @@ export default function PostCard({ post }) {
         >
           <ChatBubble sx={{ marginRight: "0.5rem" }} />
           <Typography variant="body2">
-            {post.comments_count != 0 && post.comments_count}
+            {post.comments_count !== 0 && post.comments_count}
           </Typography>
         </IconButton>
         <Button
