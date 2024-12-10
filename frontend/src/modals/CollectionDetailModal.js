@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -9,18 +9,75 @@ import ArticleCard from "../components/ArticleCard";
 
 // TODO: Add functionality for fetching articles --> Consider data from posts and adapt to article card 
 const CollectionDetailModal = () => {
+  const DB_HOST = "http://127.0.0.1:5000/api";
   const location = useLocation();
   const navigate = useNavigate();
+  
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const collection = location.state?.collection;
   const username = location.state?.username;
-
+  const { title, createdAt, description, emoji } = collection;
 
   if (!collection) {
     return <Typography>No collection found. Please navigate back.</Typography>;
   }
 
-  // const [loading, setLoading] = useState(true);
-  const { title, articles =[], createdAt, description, emoji } = collection;
+  // Fetch articles for the collection
+  useEffect(() => {
+    const fetchArticles = async () => {
+      if (!collection) return; // Guard condition inside the hook
+
+      try {
+        setLoading(true);
+        const accessToken = localStorage.getItem("access_token");
+
+        const response = await fetch(
+          `${DB_HOST}/collections/${collection.collection_id}/posts`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch articles");
+        }
+
+        const postsData = await response.json();
+
+        // Map posts to articles and sort by `posted_at` (most recent first)
+        const articlesData = postsData
+          .map((post) => ({
+            title: post.article.title,
+            source: post.article.source,
+            description: post.article.caption || post.description,
+            category: post.categories.join(", "),
+            author: post.user.username,
+            image: post.article.preview,
+            link: post.article.link,
+            posted_at: new Date(post.posted_at),
+          }))
+          .sort((a, b) => b.posted_at - a.posted_at);
+
+        setArticles(articlesData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, [collection]); // Dependency array ensures hook runs when `collection` changes
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
 
   return (
     <Box
@@ -119,7 +176,6 @@ const CollectionDetailModal = () => {
         </Box>
 
         {/* Article  Preview*/}
-        {/* TODO: change the fetching logic to be the most recent */}
         {articles.length > 0 && (
           <Box
             sx={{
@@ -185,42 +241,11 @@ const CollectionDetailModal = () => {
         }}
       ></Box>
 
-      {/* Articles Section */}
-      {articles.length > 0 ? (
-        <>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: "bold",
-              fontFamily: "'Roboto', serif",
-              marginBottom: "16px",
-              color: "#333",
-              textAlign: "center",
-            }}
-          >
-            More Articles
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: "24px",
-              alignItems: "start",
-            }}
-          >
-            {articles.slice(1).map((article, index) => (
-              <ArticleCard
-                key={index}
-                article={article}
-                isOwner={true} // TODO: check user ownership
-                // TODO: Implement edit and delete functionality (log for now)
-                onEdit={(article) => console.log("Edit clicked for", article)}
-                onDelete={(article) => console.log("Delete clicked for", article)}
-              />
-            ))}
-          </Box>
-        </>
-      ) : (
+      {loading ? (
+        <Typography>Loading articles...</Typography>
+      ) : error ? (
+        <Typography color="error">{error}</Typography>
+      ) : articles.length < 2 ? (
         <Box
           sx={{
             padding: "20px",
@@ -245,9 +270,44 @@ const CollectionDetailModal = () => {
             No articles available.
           </Typography>
         </Box>
-      )}
+      ) : (
+        <Box>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "bold",
+            fontFamily: "'Roboto', serif",
+            marginBottom: "16px",
+            color: "#333",
+            textAlign: "center",
+          }}
+        >
+          More Articles
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: "24px",
+            alignItems: "start",
+          }}
+        >
+          {articles.slice(1).map((article, index) => (
+            <ArticleCard
+              key={index}
+              article={article}
+              username={username}
+              // TODO: Implement edit and delete functionality (log for now)
+              onEdit={(article) => console.log("Edit clicked for", article)}
+              onDelete={(article) => console.log("Delete clicked for", article)}
+            />
+          ))}
+        </Box>
+    </Box>
+  )}
     </Box>
   );
+
 };
 
 export default CollectionDetailModal;

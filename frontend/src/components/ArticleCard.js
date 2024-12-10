@@ -1,16 +1,121 @@
-import React from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Avatar from "@mui/material/Avatar";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  TextField,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const ArticleCard = ({ article, isOwner, onEdit, onDelete }) => {
+const ArticleCard = ({ article, username }) => {
+  const DB_HOST = "http://127.0.0.1:5000/api";
+  const loggedInUsername = localStorage.getItem("username");
+  const accessToken = localStorage.getItem("access_token");
+  const isOwner = username === loggedInUsername;
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    title: article.title,
+    description: article.description,
+    link: article.link,
+    category: article.category,
+  });
+
+  // Open and close edit modal
+  const handleOpenModal = () => setEditModalOpen(true);
+  const handleCloseModal = () => setEditModalOpen(false);
+
+  // Set form data on input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData({ ...editFormData, [name]: value });
+  };
+
+  // Handle edit form change in state
+  const onEdit = async (article) => {
+    try {
+      const response = await fetch(`${DB_HOST}/posts/${article.post_id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          description: article.newDescription, 
+          article_link: article.newLink,
+          categories: article.newCategories,
+        }),
+      });
+      if (response.ok) {
+        alert("Post updated successfully");
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to update post");
+      }
+    } catch (err) {
+      console.error("Error editing post:", err);
+      alert("An error occurred");
+    }
+  };  
+
+  // Handle edit form submission
+  const handleSubmitEdit = () => {
+    onEdit(article.post_id, editFormData); 
+    handleCloseModal();
+  };
+
+  const onDelete = async (article) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      const response = await fetch(`${DB_HOST}/posts/${article.post_id}/delete`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
+      });
+      if (response.ok) {
+        alert("Post deleted successfully");
+        // Refresh the list of posts or update state here
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to delete post");
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      alert("An error occurred");
+    }
+  };
+
+  const onRemoveArticle = async (article, collectionId) => {
+    try {
+      const response = await fetch(
+        `${DB_HOST}/collections/${collectionId}/posts/${article.post_id}/remove`,
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          },
+        }
+      );
+      if (response.ok) {
+        alert("Article removed from collection successfully");
+        // Refresh collection or update state here
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to remove article");
+      }
+    } catch (err) {
+      console.error("Error removing article:", err);
+      alert("An error occurred");
+    }
+  };
+  
   return (
     <Card
       sx={{
@@ -122,7 +227,7 @@ const ArticleCard = ({ article, isOwner, onEdit, onDelete }) => {
           }}
         >
           <IconButton
-            onClick={() => onEdit(article)}
+            onClick={handleOpenModal}
             sx={{
               color: "#5F848C",
               "&:hover": { color: "#266a7a" },
@@ -160,6 +265,73 @@ const ArticleCard = ({ article, isOwner, onEdit, onDelete }) => {
       >
         Read More
       </Button>
+
+      {/* Edit Modal */}
+      <Modal open={editModalOpen} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+            Edit Article
+          </Typography>
+          <TextField
+            label="Title"
+            name="title"
+            value={editFormData.title}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+          <TextField
+            label="Description"
+            name="description"
+            value={editFormData.description}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+          <TextField
+            label="Link"
+            name="link"
+            value={editFormData.link}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+          <TextField
+            label="Category"
+            name="category"
+            value={editFormData.category}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "8px",
+            }}
+          >
+            <Button variant="contained" onClick={handleSubmitEdit}>
+              Save
+            </Button>
+            <Button variant="outlined" onClick={handleCloseModal}>
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Card>
   );
 };

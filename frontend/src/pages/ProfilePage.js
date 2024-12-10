@@ -22,7 +22,7 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
   const [isOwner, setIsOwner] = useState(false); 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [sharedPosts, setSharedPosts] = useState([]);
   const [collections, setCollections] = useState([]);
   const [articles, setArticles] = useState([]);
@@ -35,40 +35,55 @@ const ProfilePage = () => {
     });
   };
 
+  // Fetch profile data
   const fetchProfileData = async () => {
     try {
+      console.log("Starting fetchProfileData");
+  
+      // Retrieve access token
       const accessToken = localStorage.getItem("access_token");
+      console.log("Access Token:", accessToken);
+  
       if (!accessToken) {
-        throw new Error("Access token missing. Please log in again.");
+        console.error("Access token missing. Please log in again.");
+        throw new Error("Access token missing.");
       }
-
-      const response = await fetch(`${DB_HOST}/user`, {
+  
+      const response = await fetch(`${DB_HOST}/user/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       });
+  
+      console.log("Response Status:", response.status);
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error response from backend:", errorData);
+        throw new Error(errorData.msg || "Failed to fetch profile data.");
+      }
+  
+      // Parse and set profile data
       const data = await response.json();
-      console.log("API response data:", data); 
-      console.log("Profile picture:", data.data.profile_picture); 
-
-      if (data?.data) {
-        setProfileData(data.data);
-        setIsOwner(username === localStorage.getItem("username"));
-        setSharedPosts(data.data.posts || []); 
-        setCollections(data.data.collections || []); 
-        setArticles(data.data.articles || []); 
+      console.log("Fetched Profile Data:", data);
+      setProfileData(data.data); // Ensure this updates the state correctly
+      if (data.data.username === username) {
+        console.log("User is the owner of this profile");
+        setIsOwner(true);
       } else {
-        console.error("Unexpected API response structure:", data);
+        console.log("User is not the owner of this profile");
+        setIsOwner(false);
       }
     } catch (error) {
-      console.error("Error fetching profile data:", error);
+      console.error("Error in fetchProfileData:", error);
     } finally {
-      setLoading(false);
+      console.log("fetchProfileData completed.");
     }
-  };
-
+  };  
+  
+  
   useEffect(() => {
     fetchProfileData();
   }, [username]);
