@@ -1,18 +1,26 @@
-from . import db
-from flask_login import UserMixin
 from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
+from . import db
 
 
-class User(UserMixin, db.Model):
+class User(db.Model):  # Removed UserMixin
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
     bio_description = db.Column(db.Text)
-    profile_picture = db.Column(db.LargeBinary)
+    profile_picture = db.Column(db.String(255))
+    tags = db.Column(db.Text, nullable=True)  # TO-DO: Revisit the idea of tags as a list (normalization?)
+
+    @property
+    def tags_list(self):
+        return self.tags.split(",") if self.tags else []
+
+    @tags_list.setter
+    def tags_list(self, value):
+        self.tags = ",".join(value)
 
     posts = db.relationship(
         "Post", backref="user", lazy=True, cascade="all, delete-orphan"
@@ -48,7 +56,7 @@ class Article(db.Model):  # Seperated this from Post considering 3NF.
     source = db.Column(db.String)  # Automatically generated from link
     title = db.Column(db.String)  # Automatically generated from link
     caption = db.Column(db.Text)  # Automatically generated from link
-    preview = db.Column(db.LargeBinary)  # Automatically generated from link
+    preview = db.Column(db.String)  # URL of og:image, automatically generated from link
 
     posts = db.relationship(
         "Post", backref="article", lazy=True, cascade="all, delete-orphan"
@@ -66,7 +74,7 @@ class Post(db.Model):
         db.Integer, db.ForeignKey("article.article_id"), nullable=False
     )
     description = db.Column(db.Text)
-    posted_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    posted_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False)
 
     categories = db.relationship(
         "PostCategory", backref="post", lazy=True, cascade="all, delete-orphan"
@@ -104,8 +112,10 @@ class Collection(db.Model):
     title = db.Column(db.String(100), nullable=False)
     emoji = db.Column(db.String(10))
     description = db.Column(db.Text)
+    emoji = db.Column(db.String(10))
+    description = db.Column(db.Text)
     is_public = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
 
     posts = db.relationship(
         "CollectionPost", backref="collection", lazy=True, cascade="all, delete-orphan"
@@ -115,6 +125,12 @@ class Collection(db.Model):
     __table_args__ = (
             db.UniqueConstraint('user_id', 'title', name='unique_user_collection_title'),
         )
+
+    # Adding a unique constraint to the user_id and title columns
+    __table_args__ = (
+            db.UniqueConstraint('user_id', 'title', name='unique_user_collection_title'),
+        )
+
 
 
 class CollectionPost(
@@ -131,13 +147,13 @@ class Comment(db.Model):  # Cannot have nested comments
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    commented_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    commented_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
 
 
 class Like(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), primary_key=True)
-    liked_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    liked_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
 
 
 class Follow(db.Model):
@@ -148,3 +164,9 @@ class Follow(db.Model):
         db.Integer, db.ForeignKey("user.user_id"), primary_key=True
     )  # User following
     followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class RevokedToken(db.Model):  # For JWT token revocation
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    jti = db.Column(db.String(120), index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))

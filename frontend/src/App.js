@@ -8,6 +8,8 @@ import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Header from "./components/Header";
+import PostDetailPage from "./pages/PostDetailPage";
+import SettingsPage from "./pages/SettingsPage";
 
 const theme = createTheme({
   palette: {
@@ -31,16 +33,11 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
-          {/* TODO: add functionality for "isOwner" prop */}
-          <Route
-            path="/collections"
-            element={<CollectionsPage isOwner={true} />}
-          />
-          <Route
-            path="/collections/:id/:title"
-            element={<CollectionDetailModal isOwner={true} />}
-          />
-          <Route path="/profile" element={<ProfilePage isOwner={true} />} />
+          <Route path="/post/:id" element={<PostDetailPage />} />
+          <Route path="/user/:username/collections" element={<CollectionsPage />} />
+          <Route path="/collections/:id/:title" element={<CollectionDetailModal />} />
+          <Route path="/:username/settings" element={<SettingsPage />} />
+          <Route path="/:username/profile" element={<ProfilePage />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </ThemeProvider>

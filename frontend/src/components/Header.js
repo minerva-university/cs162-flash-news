@@ -7,14 +7,16 @@ import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 
-const pages = [
-  { name: "Home", path: "/feed" },
-  { name: "Collections", path: "/collections" },
-  { name: "Profile", path: "/profile" },
-];
 
 function Header() {
+  const username = localStorage.getItem("username"); // Get username from local storage to be used in the header
   const navigate = useNavigate();
+  const pages = [
+    { name: "Home", path: "/feed" },
+    { name: "Collections", path: `/user/${username}/collections` }, 
+    { name: "Profile", path: `${username}/profile` },
+  ];
+  
 
   return (
     <AppBar position="static">
