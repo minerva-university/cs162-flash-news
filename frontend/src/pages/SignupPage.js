@@ -6,10 +6,10 @@ import {
   Checkbox,
   FormControlLabel,
   Box,
+  Paper,
   Snackbar,
   Alert,
 } from "@mui/material";
-import "../App.css";
 import { useNavigate } from "react-router-dom";
 
 function SignupPage() {
@@ -111,7 +111,8 @@ function SignupPage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#FCF8EC", 
+        padding: "2rem",
       }}
     >
       <Snackbar
@@ -129,25 +130,27 @@ function SignupPage() {
         </Alert>
       </Snackbar>
 
-      <Box
+      <Paper
+        elevation={6}
         sx={{
-          maxWidth: "400px",
+          maxWidth: "500px",
           width: "100%",
+          padding: "2.5rem",
+          borderRadius: "16px",
+          textAlign: "center",
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)", 
           backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
         <Typography
           variant="h4"
-          sx={{ textAlign: "center", marginBottom: "1rem" }}
+          sx={{ marginBottom: "1.5rem", fontWeight: 700, color: "#5F848C" }} 
         >
-          Sign up
+          Sign Up
         </Typography>
         <Typography
           variant="body1"
-          sx={{ textAlign: "center", marginBottom: "2rem" }}
+          sx={{ marginBottom: "2rem", color: "gray" }}
         >
           Welcome! Please sign up to create your account
         </Typography>
@@ -161,6 +164,7 @@ function SignupPage() {
             margin="normal"
             value={formData.name}
             onChange={handleChange}
+            sx={{ marginBottom: "1.5rem" }}
           />
           <TextField
             label="Email"
@@ -171,6 +175,7 @@ function SignupPage() {
             margin="normal"
             value={formData.email}
             onChange={handleChange}
+            sx={{ marginBottom: "1.5rem" }}
           />
           <TextField
             label="Password"
@@ -181,6 +186,7 @@ function SignupPage() {
             margin="normal"
             value={formData.password}
             onChange={handleChange}
+            sx={{ marginBottom: "1.5rem" }}
           />
           <FormControlLabel
             control={
@@ -192,14 +198,14 @@ function SignupPage() {
               />
             }
             label="I agree to the Terms and Conditions"
-            sx={{ marginBottom: "1rem" }}
+            sx={{ marginBottom: "2rem" }}
           />
           <Button
             type="submit"
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ marginBottom: "1rem" }}
+            sx={{ marginBottom: "1rem", padding: "0.75rem", fontWeight: 600 }}
           >
             Sign Up
           </Button>
@@ -207,12 +213,17 @@ function SignupPage() {
         <Typography
           variant="body2"
           align="center"
-          sx={{ marginTop: "1rem", cursor: "pointer" }}
+          sx={{
+            marginTop: "1rem",
+            cursor: "pointer",
+            textDecoration: "underline",
+            color: "#5F848C", 
+          }}
           onClick={() => navigate("/login")} // Navigate to the login page
         >
           Already have an account? Log in here.
         </Typography>
-      </Box>
+      </Paper>
     </Box>
   );
 }
