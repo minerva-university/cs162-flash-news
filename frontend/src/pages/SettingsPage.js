@@ -12,6 +12,30 @@ import {
 const SettingsPage = () => {
     const DB_HOST = "http://127.0.0.1:5000/api";
     const { username } = useParams();
+
+    useEffect(() => {
+        if (!username) {
+          console.error("Username not provided in URL");
+          return;
+        }
+    
+        // Fetch user-specific data using the username
+        fetchData(username);
+      }, [username]);
+    
+      const fetchData = async (username) => {
+        try {
+          const response = await fetch(`${DB_HOST}/user/${username}`);
+          if (!response.ok) throw new Error("Failed to fetch user data");
+    
+          const data = await response.json();
+          console.log("User data fetched successfully:", data);
+          
+        // Set data to state here
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
     const navigate = useNavigate();
     const [userData, setUserData] = useState({
         username: "",
@@ -112,7 +136,7 @@ const SettingsPage = () => {
         }}
         >
         <Typography variant="h4" sx={{ fontWeight: "bold", marginBottom: "16px" }}>
-            Settings for {userData.username}
+            Settings for {username}
         </Typography>
 
         {/* Change Username */}

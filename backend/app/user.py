@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import NotFound, BadRequest
 from datetime import datetime
@@ -6,13 +6,28 @@ from bson import ObjectId
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy.exc import SQLAlchemyError
 import json
+import os
+from werkzeug.utils import secure_filename
+from .config import Config 
 
 from . import db
 from .models import User, Follow 
 
 # Initialize blueprint
-user_bp = Blueprint('user', __name__)
+user_bp = Blueprint('user', __name__, url_prefix='/api/user')
 
+UPLOAD_FOLDER = Config.UPLOAD_FOLDER
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Helper function for allowed file extensions
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+
+@user_bp.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(Config.UPLOAD_FOLDER, filename)
 
 # Utility function for consistent success handling
 def create_success_response(message, status_code=200, data=None):
@@ -31,24 +46,34 @@ def create_error_response(message, status_code=400, details=None):
     }), status_code
 
 
-
 # Get (view) user's profile 
-@user_bp.route('/user', methods=['GET'])
+@user_bp.route('/profile', methods=['GET'])
 @jwt_required()
 def get_profile(): 
     try:
         current_user_id = get_jwt_identity()
+        print(f"JWT Identity: {current_user_id}")  # Debugging
         user = User.query.get(current_user_id)
 
         if not user:
             return create_error_response('User not found', 404)
+        
+        # Create the profile picture URL
+        profile_picture_url = None
+        if user.profile_picture:
+            profile_picture_path = os.path.join(UPLOAD_FOLDER, user.profile_picture)
+            if os.path.exists(profile_picture_path):
+                profile_picture_url = f"http://127.0.0.1:5000/api/user/uploads/{user.profile_picture}"
+        
+        tags = json.loads(user.tags) if user.tags else []
 
         user_data = {
             'user_id': user.user_id,
             'username': user.username,
             'email': user.email,
             'bio_description': user.bio_description,
-            'profile_picture': user.profile_picture,
+            'profile_picture': profile_picture_url,
+            'tags': tags,
             'created_at': user.created_at
         }
         return create_success_response('User profile fetched successfully', 200, user_data)
@@ -60,101 +85,83 @@ def get_profile():
     except Exception as e:
         return create_error_response('An unexpected error occurred', 500, str(e))
 
-
-@user_bp.route('/users/<string:username>', methods=['GET'])
-def get_user_by_username(username):
-    try:
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-        return jsonify({'user_id': user.user_id, 'username': user.username}), 200
-    except Exception as e:
-        return jsonify({'error': 'Server error', 'message': str(e)}), 500
-
-
-@user_bp.route('/profile/<string:username>', methods=['GET'])
-def get_user_profile(username):
-    """Get user profile by username"""
-    try:
-        # Query user by username
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        
-        tags = json.loads(user.tags) if user.tags else []
-
-        # Ensure all fields are safely serialized
-        return jsonify({
-            "id": user.user_id,
-            "username": user.username,
-            "email": user.email,
-            "bio": user.bio_description if user.bio_description else "",  
-            "profile_picture": user.profile_picture if user.profile_picture else "",  #
-            "tags": tags,
-        }), 200
-    
-    except Exception as e:
-        # Add detailed error logging for debugging
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": "Server error", "message": str(e)}), 500
-
 # Update user profile
-@user_bp.route('/user', methods=['PUT'])
+@user_bp.route('/profile', methods=['PUT'])
 @jwt_required()
 def update_profile():
     try:
-        current_user_id = get_jwt_identity() 
-        user = User.query.get(current_user_id) 
-        
+        current_user_id = get_jwt_identity()
+        print(f"Current user ID: {current_user_id}")
+        user = User.query.get(current_user_id)
         if not user:
+            print("User not found")
             return create_error_response('User not found', 404)
 
-        data = request.get_json()
+        data = request.form  
+        print(f"Received data: {data}")
         new_username = data.get('username', user.username)
-        new_email = data.get('email', user.email)
+        print(f"New username: {new_username}")
+        file = request.files.get("profile_picture")
+        print(f"File received: {file}")
 
+        # Commenting this out because users should not be able to change their email
+        #new_email = data.get('email', user.email)
 
+        if not new_username:
+            return create_error_response('Username is required', 400)
+        
         # Check if the new username already exists
         if new_username != user.username:
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user:
                 return create_error_response('Username already exists', 400)
 
+        """
         # Check if the new email already exists
         if new_email != user.email:
             existing_email_user = User.query.filter_by(email=new_email).first()
             if existing_email_user:
                 return create_error_response('Email already exists', 400)
+        """
 
-        user.username = new_username
-        user.bio_description = data.get('bio_description', user.bio_description)
-        user.profile_picture = data.get('profile_picture', user.profile_picture)
-        user.email = new_email if new_email != user.email else user.email # Only update if new email is provided
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            user.profile_picture = filename
+        
+        # Updating user fields
+        user.bio_description = data.get('bio_description') or None
+        print(f"Updating user: {user}")
+        user.profile_picture = data.get('profile_picture', user.profile_picture) or None
+        print(f"Path to profile picture: {user.profile_picture}")
+        tags = data.get('tags', '[]')  # Default to an empty list
+        user.tags = json.dumps(json.loads(tags))  # Ensure JSON format
+        print(f"Tags: {user.tags}")
         db.session.commit()
 
         updated_user_data = {
             'user_id': user.user_id,
-            'username': user.username,
+            'username': new_username,
             'email': user.email,
             'bio_description': user.bio_description,
-            'profile_picture': user.profile_picture,
+            'profile_picture': f"http://127.0.0.1:5000/api/user/uploads/{user.profile_picture}", # Hard-Coded for now
             'created_at': user.created_at
         }
 
         return create_success_response('Profile updated successfully', 200, updated_user_data)
 
     except SQLAlchemyError as e:
+        print(f"SQLAlchemy Error: {str(e)}")
         db.session.rollback()
         return create_error_response('Database error occurred', 500, str(e))
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return create_error_response('An unexpected error occurred', 500, str(e))
 
-
-
 # Delete user profile
-@user_bp.route('/user', methods=['DELETE'])
+@user_bp.route('/profile', methods=['DELETE'])
 @jwt_required()
 def delete_user():
     try:
@@ -217,9 +224,6 @@ def follow_user(user_id):
     except Exception as e:
         db.session.rollback()
         return create_error_response(str(e), 500)
-
-
-
 
 # Unfollow user route
 @user_bp.route('/unfollow/<int:user_id>', methods=['POST'])

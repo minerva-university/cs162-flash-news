@@ -26,9 +26,10 @@ def load_user(jwt_header, jwt_data):
 
 
 @jwt.user_identity_loader
-def user_identity_lookup(user):
+def user_identity_lookup(identity):
     """Define how the user object is encoded in the JWT."""
-    return user.user_id
+    print(f"User identity: {identity}")
+    return identity
 
 
 @jwt.token_in_blocklist_loader
@@ -40,7 +41,9 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 
 def create_app():
     app = Flask(__name__)
+    from .config import Config
 
+    app.config.from_object(Config)
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI", "sqlite:///db.sqlite")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev")
@@ -60,9 +63,10 @@ def create_app():
     CORS(
         app,
         resources={
-            r"/api/*": {
-                "origins": "*",
+            r"/*": {
+                "origins": ["http://localhost:3000"],
                 "methods": ["GET", "POST", "PUT", "DELETE"],
+                "allow_headers": ["Content-Type", "Authorization"],
             }
         },
         supports_credentials=True,
@@ -72,8 +76,8 @@ def create_app():
     jwt.init_app(app)  # Initialize JWT
 
     # blueprint for auth routes in our app
-    # from .auth import auth as auth_blueprint
-    # app.register_blueprint(auth_blueprint)
+    from .auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     # blueprint for user routes in our app
     from .user import user_bp as user_blueprint
@@ -103,6 +107,11 @@ def create_app():
     from .og import opengraph_bp as og_blueprint
 
     app.register_blueprint(og_blueprint, url_prefix="/api/")
+
+    print("\nRegistered routes:", flush=True)
+    for rule in app.url_map.iter_rules():
+        print(f"{rule} -> {rule.endpoint}", flush=True)
+
 
     # Initialize the database
     with app.app_context():

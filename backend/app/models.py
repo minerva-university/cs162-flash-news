@@ -1,7 +1,7 @@
-from . import db
 from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
+from . import db
 
 
 class User(db.Model):  # Removed UserMixin
@@ -11,7 +11,7 @@ class User(db.Model):  # Removed UserMixin
     password = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     bio_description = db.Column(db.Text)
-    profile_picture = db.Column(db.LargeBinary)
+    profile_picture = db.Column(db.String(255))
     tags = db.Column(db.Text, nullable=True)  # TO-DO: Revisit the idea of tags as a list (normalization?)
 
     @property
