@@ -14,7 +14,7 @@ import PostCard from "../components/PostCard";
 
 const ProfilePage = () => {
   const DB_HOST = "http://127.0.0.1:5000/api";
-  const { username } = useParams();
+  const { username } = useParams(); 
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
@@ -190,7 +190,7 @@ const ProfilePage = () => {
         </Typography>
       </Box>
     );
-  }
+  }       
 
   return (
     <Box
@@ -346,6 +346,7 @@ const ProfilePage = () => {
               No posts available.
             </Typography>
           )}
+          
         </Box>
       </Box>
 
