@@ -1,13 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
-
 from datetime import datetime, timedelta, timezone
-from flask_login import current_user
+from flask_jwt_extended import get_jwt_identity
 
 
 def check_post_24h(post):
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
-    return post.user_id != current_user.user_id and post.posted_at < time_threshold
+    return post.user_id != get_jwt_identity() and post.posted_at < time_threshold
 
 
 # ChatGPT-generated function to parse OpenGraph tags from HTML content
