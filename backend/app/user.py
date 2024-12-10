@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import NotFound, BadRequest
 from datetime import datetime
 from bson import ObjectId
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import SQLAlchemyError
 import json
 import os
@@ -13,9 +13,8 @@ from .config import Config
 from . import db
 from .models import User, Follow 
 
-# Initialize blueprint
+# Initialize blueprint and set the upload folder
 user_bp = Blueprint('user', __name__, url_prefix='/api/user')
-
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -27,6 +26,7 @@ def allowed_file(filename):
 
 @user_bp.route('/uploads/<path:filename>')
 def uploaded_file(filename):
+    """Serve uploaded files"""
     return send_from_directory(Config.UPLOAD_FOLDER, filename)
 
 # Utility function for consistent success handling
@@ -45,14 +45,17 @@ def create_error_response(message, status_code=400, details=None):
         'details': details
     }), status_code
 
-
 # Get (view) user's profile 
 @user_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_profile(): 
+    """Get user profile"""
+
     try:
-        current_user_id = get_jwt_identity()
-        print(f"JWT Identity: {current_user_id}")  # Debugging
+        print(f"Headers: {request.headers}", flush=True)  # Debugging headers
+        print(f"JWT Identity type: {type(get_jwt_identity())}", flush=True)  # Debugging JWT Identity
+        current_user_id = int(get_jwt_identity())
+        print(f"Decoded JWT Identity: {current_user_id} (type: {type(current_user_id)})", flush=True)
         user = User.query.get(current_user_id)
 
         if not user:
@@ -68,7 +71,7 @@ def get_profile():
         tags = json.loads(user.tags) if user.tags else []
 
         user_data = {
-            'user_id': user.user_id,
+            'user_id': current_user_id,
             'username': user.username,
             'email': user.email,
             'bio_description': user.bio_description,
@@ -89,8 +92,10 @@ def get_profile():
 @user_bp.route('/', methods=['PUT'])
 @jwt_required()
 def update_profile():
+    """Update user profile"""
+
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         print(f"Current user ID: {current_user_id}")
         user = User.query.get(current_user_id)
         if not user:
@@ -104,9 +109,6 @@ def update_profile():
         file = request.files.get("profile_picture")
         print(f"File received: {file}")
 
-        # Commenting this out because users should not be able to change their email
-        #new_email = data.get('email', user.email)
-
         if not new_username:
             return create_error_response('Username is required', 400)
         
@@ -115,6 +117,9 @@ def update_profile():
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user:
                 return create_error_response('Username already exists', 400)
+
+        # Commenting this out because users should not be able to change their email
+        #new_email = data.get('email', user.email)
 
         """
         # Check if the new email already exists
@@ -164,11 +169,10 @@ def update_profile():
 @user_bp.route('/', methods=['DELETE'])
 @jwt_required()
 def delete_user():
-    try:
-        # Get the current user's ID from the JWT token
-        current_user_id = get_jwt_identity()
+    """Delete user account"""
 
-        # Retrieve the user object from the database using user_id as primary key
+    try:
+        current_user_id = int(get_jwt_identity())
         user = User.query.filter_by(user_id=current_user_id).first()
 
         if not user:
@@ -187,14 +191,14 @@ def delete_user():
     except Exception as e:
         return create_error_response('An unexpected error occurred', 500, str(e))
 
-
-
 # Follow user route
 @user_bp.route('/follow/<int:user_id>', methods=['POST'])
 @jwt_required()
 def follow_user(user_id):
+    """Follow a user"""
+
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
         # Ensure the user cannot follow themselves
         if current_user_id == user_id:
@@ -229,8 +233,10 @@ def follow_user(user_id):
 @user_bp.route('/unfollow/<int:user_id>', methods=['POST'])
 @jwt_required() 
 def unfollow_user(user_id):
+    """Unfollow a user"""
+
     try: 
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
         # Ensure the user cannot unfollow themselves
         if current_user_id == user_id:
@@ -259,3 +265,55 @@ def unfollow_user(user_id):
     except Exception as e:
         db.session.rollback()
         return create_error_response(str(e), 500)
+    
+# Get list of users the current user is following
+@user_bp.route('/following', methods=['GET'])
+@jwt_required()
+def get_followed_users():
+    """Get list of users the current user is following"""
+
+    current_user = User.query.get(int(get_jwt_identity()))
+    
+    followed_users = [
+        {
+            "id": follow.user_id,
+            "username": follow.followed_user.username
+        } for follow in current_user.followings
+    ]
+    
+    return jsonify({"followed_users": followed_users})
+
+# Get list of users following the current user
+@user_bp.route('/followers', methods=['GET'])
+@jwt_required()
+def get_followers():
+    """Get list of users following the current user"""
+
+    current_user = User.query.get(int(get_jwt_identity()))
+    
+    followers = [
+        {
+            "id": follow.follower_id,
+            "username": follow.following_user.username
+        } for follow in current_user.followers
+    ]
+    
+    return jsonify({"followers": followers})
+
+
+"""USER 2 REMAINING"""
+
+"""
+Commenting this out because it is duplicated on post.py
+@user_bp.route('/feed', methods=['GET'])
+@jwt_required()
+def get_user_feed():
+    # Get feed for current user (posts from followed users)
+    # Changed to match the Follow model structure
+    current_user = User.query.get(get_jwt_identity())
+    followed_user_ids = [follow.user_id for follow in current_user.followings]
+    
+    # @TODO: Implement actual feed retrieval from Post model
+
+    return jsonify({"followed_user_ids": followed_user_ids})
+"""

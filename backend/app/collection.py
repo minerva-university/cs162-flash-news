@@ -12,9 +12,8 @@ import logging
 # Create a new collection
 @collections.route('/', methods=['POST'])
 @jwt_required()
-@jwt_required()
 def create_collection():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     if not User.query.get(user_id):
         return jsonify({'error': 'Authentication required'}), 401
     data = request.get_json()
@@ -40,7 +39,6 @@ def create_collection():
         emoji=data.get('emoji'),
         description=data.get('description', ''),
         is_public=data.get('is_public', True),  # set to public by default.
-        user_id=current_user.user_id,
     )
 
     db.session.add(collection)
@@ -56,7 +54,7 @@ def create_collection():
 @jwt_required()
 def get_collections(user_id):
 
-    current_user_id = get_jwt_identity()  
+    current_user_id = int(get_jwt_identity())
     print(f"Logged-in user ID: {current_user_id}")
     print(f"Requested user ID: {user_id}")
 
@@ -97,7 +95,7 @@ def get_collections(user_id):
         'user_id': collection.user_id,
     } for collection in private_collections]
     
-    if get_jwt_identity() != user_id:
+    if int(get_jwt_identity()) != user_id:
         return jsonify({
             'public': public_collections_data}), 200
 
@@ -130,7 +128,7 @@ def get_collection_posts(collection_id):
             posts_data.append(response.json)
         
         else:
-            print(f"Failed to fetch post with ID {collection_post.post_id}: {response.status_code}")
+            print(f"Failed to fetch post with ID {collection.post_id}: {response.status_code}")
             return response, status_code
             
     return jsonify(posts_data), 200
@@ -168,7 +166,7 @@ def update_collection(collection_id):
     data = request.get_json()
     collection = Collection.query.filter_by(
         collection_id=collection_id, 
-        user_id=get_jwt_identity()
+        user_id=int(get_jwt_identity())
     ).first_or_404()
 
     collection.title = data.get('title', collection.title)
@@ -193,7 +191,7 @@ def update_collection(collection_id):
 def delete_collection(collection_id):
     collection = Collection.query.filter_by(
         collection_id=collection_id, 
-        user_id=get_jwt_identity()
+        user_id=int(get_jwt_identity())
     ).first_or_404()
 
     collection = Collection.query.get_or_404(collection_id)
@@ -208,10 +206,8 @@ def delete_collection(collection_id):
 @jwt_required()
 def remove_post_from_collection(collection_id, post_id):
 
-    user_id = get_jwt_identity()
-
     if not (Collection.query
-            .filter_by(collection_id=collection_id, user_id=get_jwt_identity())
+            .filter_by(collection_id=collection_id, user_id=int(get_jwt_identity()))
             .first()):
         return jsonify({'error': 'Collection not found'}), 404
 
