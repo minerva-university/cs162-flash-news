@@ -41,13 +41,14 @@ function LoginPage() {
   const handleSnackbarClose = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = formData;
 
     try {
-      const response = await fetch(`${DB_HOST}/login`, {
+      const response = await fetch(`${DB_HOST}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,6 +60,8 @@ function LoginPage() {
       });
 
       const data = await response.json();
+      console.log("data", data);
+      console.log("data.username", data.username);
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to log in");
@@ -69,6 +72,8 @@ function LoginPage() {
       localStorage.setItem("refresh_token", data.refresh_token);
       localStorage.setItem("username", data.username);
       localStorage.setItem("profile_picture", data.profile_picture || "");
+      console.log("data.username", data.username);
+      console.log("access_token", data.access_token);
 
       // Display success message
       setSnackbar({
