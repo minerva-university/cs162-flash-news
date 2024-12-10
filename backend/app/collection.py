@@ -8,7 +8,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 collections = Blueprint("collections", __name__, url_prefix="/api/collections")
 
 # Create a new collection
-@collections.route("/", methods=["POST"])
+@collections.route('/', methods=['POST'])
 @jwt_required()
 def create_collection():
     user_id = int(get_jwt_identity())
@@ -52,7 +52,7 @@ def create_collection():
     )
 
 # Get user's collections
-@collections.route("/user/<int:user_id>", methods=["GET"])
+@collections.route('/user/<int:user_id>', methods=['GET'])
 @jwt_required()
 def get_collections(user_id):
 
@@ -105,7 +105,7 @@ def get_collections(user_id):
         )
 
 # Get posts from a specific collection
-@collections.route("/<int:collection_id>/posts", methods=["GET"])
+@collections.route('/<int:collection_id>/posts', methods=['GET'])
 @jwt_required()
 def get_collection_posts(collection_id):
 
@@ -135,7 +135,7 @@ def get_collection_posts(collection_id):
 
 
 # Add a post to a collection
-@collections.route("/<int:collection_id>/posts/<int:post_id>", methods=["POST"])
+@collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['POST'])
 @jwt_required()
 def add_post_to_collection(collection_id, post_id):
 
@@ -152,7 +152,7 @@ def add_post_to_collection(collection_id, post_id):
 
 
 # Update a collection
-@collections.route("/<int:collection_id>", methods=["PUT"])
+@collections.route('/<int:collection_id>', methods=["PUT"])
 @jwt_required()
 def update_collection(collection_id):
     data = request.get_json()
@@ -171,7 +171,7 @@ def update_collection(collection_id):
 
 
 # Delete a collection
-@collections.route("/<int:collection_id>", methods=["DELETE"])
+@collections.route('/<int:collection_id>', methods=["DELETE"])
 @jwt_required()
 def delete_collection(collection_id):
     collection = Collection.query.filter_by(
@@ -186,7 +186,7 @@ def delete_collection(collection_id):
 
 
 # Remove a post from a collection
-@collections.route("/<int:collection_id>/posts/<int:post_id>", methods=["DELETE"])
+@collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['DELETE'])
 @jwt_required()
 def remove_post_from_collection(collection_id, post_id):
     # Check if user owns the collection
