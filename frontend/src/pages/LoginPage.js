@@ -60,7 +60,7 @@ function LoginPage() {
         throw new Error(data.message || "Failed to log in");
       }
 
-      // Store the tokens (optional)
+      // Store the tokens
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
       localStorage.setItem("username", data.username);

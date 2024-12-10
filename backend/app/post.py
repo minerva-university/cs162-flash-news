@@ -5,7 +5,7 @@ from .models import Post, Article, PostCategory, CategoryEnum, User
 from .utils import check_post_24h
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-posts = Blueprint("post", __name__, url_prefix='/api/posts')
+posts = Blueprint("post", __name__, url_prefix="/api/posts")
 
 
 MAX_CATEGORIES = 5  # Maximum number of categories a post can have
@@ -118,7 +118,7 @@ def delete_post(post_id):
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if post.user_id != get_jwt_identity():
+    if post.user_id != int(get_jwt_identity()):
         return jsonify({"error": "You are not allowed to delete this post"}), 403
 
     db.session.delete(post)
@@ -128,14 +128,14 @@ def delete_post(post_id):
 
 
 # Update a post
-@posts.route("/posts/<int:post_id>", methods=["PUT"])
+@posts.route("/<int:post_id>", methods=["PUT"])
 @jwt_required()
 def update_post(post_id):
     post = Post.query.get(post_id)
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if post.user_id != get_jwt_identity():
+    if post.user_id != int(get_jwt_identity()):
         return jsonify({"error": "You are not allowed to update this post"}), 403
 
     data = request.get_json()
@@ -195,7 +195,8 @@ def get_feed():
     current_user = User.query.get(get_jwt_identity())
 
     followed_users = [
-        follow.user_id for follow in current_user.followings
+        current_user.user_id,
+        *[follow.user_id for follow in current_user.followings],
     ]
 
     # Query posts by followed users from the last 24 hours
@@ -210,7 +211,7 @@ def get_feed():
 
     posts_data = []
     for post in paginated_posts.items:
-        is_liked = any(like.user_id == get_jwt_identity() for like in post.likes)
+        is_liked = any(like.user_id == int(get_jwt_identity()) for like in post.likes)
         posts_data.append(
             {
                 "post_id": post.post_id,
@@ -259,7 +260,7 @@ def get_user_posts(user_id):
     per_page = request.args.get("per_page", 10, type=int)
 
     # Check if the requested user_id is the current user's
-    if user_id == get_jwt_identity():
+    if user_id == int(get_jwt_identity()):
         # Fetch all posts by the user
         posts_query = Post.query.filter_by(user_id=user_id)
     else:
@@ -276,7 +277,7 @@ def get_user_posts(user_id):
 
     posts_data = []
     for post in paginated_posts.items:
-        is_liked = any(like.user_id == get_jwt_identity() for like in post.likes)
+        is_liked = any(like.user_id == int(get_jwt_identity()) for like in post.likes)
         posts_data.append(
             {
                 "post_id": post.post_id,
@@ -314,7 +315,7 @@ def get_user_posts(user_id):
 @posts.route("/categories", methods=["GET"])
 @jwt_required()
 def get_categories():
-    '''
+    """
     # No need for pagination given that we are dealing with only few categories (fixed)
 
     page = request.args.get("page", 1, type=int)
@@ -339,9 +340,7 @@ def get_categories():
         ),
         200,
     )
-    '''
-    categories_data = [
-        {"category_id": category.value} for category in CategoryEnum
-    ]
+    """
+    categories_data = [{"category_id": category.value} for category in CategoryEnum]
 
     return jsonify({"categories": categories_data}), 200

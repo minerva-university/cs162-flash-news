@@ -6,7 +6,11 @@ from flask_jwt_extended import get_jwt_identity
 
 def check_post_24h(post):
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
-    return post.user_id != get_jwt_identity() and post.posted_at < time_threshold
+    
+    # Remove the timezone because SQLite datetime isn't timezone-aware
+    time_threshold_naive = time_threshold.replace(tzinfo=None)
+
+    return post.user_id != int(get_jwt_identity()) and post.posted_at < time_threshold_naive
 
 
 # ChatGPT-generated function to parse OpenGraph tags from HTML content

@@ -76,7 +76,7 @@ def get_collections(user_id):
         'created_at': collection.created_at.isoformat(),
     } for collection in private_collections]
     
-    if get_jwt_identity() != user_id:
+    if int(get_jwt_identity()) != user_id:
         return jsonify({
             'public': public_collections_data}), 200
 
@@ -168,9 +168,7 @@ def delete_collection(collection_id):
 @collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['DELETE'])
 @jwt_required()
 def remove_post_from_collection(collection_id, post_id):
-
     # Check if user owns the collection
-    
     if not (Collection.query
             .filter_by(collection_id=collection_id, user_id=get_jwt_identity())
             .first()):
