@@ -29,8 +29,8 @@ def load_user(jwt_header, jwt_data):
 @jwt.user_identity_loader
 def user_identity_lookup(user):
     """Define how the user object is encoded in the JWT."""
-    # User id is likely to be an integer already (i.e we already have the user id)
-    # If user is already an ID (integer), return it directly
+    # User id is going to be a string since JWT sub needs to be a string
+    # So just return it directly — typecast when doing comparisons
     if isinstance(user, str):
         return user
     # If user is a User object, return its ID

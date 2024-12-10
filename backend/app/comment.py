@@ -58,8 +58,8 @@ def create_comment(post_id):
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    # if check_post_24h(post):
-    #     return jsonify({"error": "You are not allowed to comment on this post"}), 403
+    if check_post_24h(post):
+        return jsonify({"error": "You are not allowed to comment on this post"}), 403
 
     data = request.get_json()
     comment = data.get("comment")
