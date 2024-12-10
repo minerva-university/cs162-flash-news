@@ -78,7 +78,7 @@ def client(app_dict, test_user):
     
     # Create access token for test user
     with app.app_context():
-        access_token = create_access_token(identity=test_user.user_id)
+        access_token = create_access_token(identity=str(test_user.user_id))
         # Set the Authorization header for subsequent requests
         client.environ_base['HTTP_AUTHORIZATION'] = f'Bearer {access_token}'
     
