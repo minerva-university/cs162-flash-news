@@ -39,3 +39,44 @@ def parse_opengraph_tags(url):
             og_tags[tag["property"].replace("og:", "")] = tag.get("content", "")
 
     return og_tags
+
+
+
+# Utility function for consistent success handling
+def create_success_response(message, status_code=200, data=None):
+    """
+    Create a standardized JSON response for successful operations.
+
+    Args:
+        message (str): A message describing the success.
+        status_code (int, optional): HTTP status code for the response. Defaults to 200.
+        data (dict, optional): Additional data to include in the response. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
+    """
+    return jsonify({
+        'status': 'success',
+        'message': message,
+        'data': data
+    }), status_code
+
+
+# Utility function for consistent error handling
+def create_error_response(message, status_code=400, details=None):
+    """
+    Create a standardized JSON response for error cases.
+
+    Args:
+        message (str): A message describing the error.
+        status_code (int, optional): HTTP status code for the response. Defaults to 400.
+        details (dict, optional): Additional details about the error. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
+    """
+    return jsonify({
+        'status': 'error',
+        'message': message,
+        'details': details
+    }), status_code
