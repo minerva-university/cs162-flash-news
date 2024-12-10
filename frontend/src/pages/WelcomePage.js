@@ -25,7 +25,7 @@ function WelcomePage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#FCF8EC", 
+        backgroundColor: "#FCF8EC",
         padding: "2rem",
       }}
     >
@@ -43,7 +43,7 @@ function WelcomePage() {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)", 
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)",
         }}
       >
         <Typography
@@ -51,7 +51,7 @@ function WelcomePage() {
           sx={{
             marginBottom: "1.5rem",
             fontWeight: 700,
-            color: "#5F848C", 
+            color: "#5F848C",
             animation: `${flashAnimation} 2s ease-in-out infinite`, // Apply flash animation
           }}
         >
@@ -62,7 +62,7 @@ function WelcomePage() {
           sx={{
             marginBottom: "2rem",
             color: "gray",
-            fontSize: "1rem", 
+            fontSize: "1rem",
           }}
         >
           Your one-stop destination for sharing and exploring the latest news!

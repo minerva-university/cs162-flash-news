@@ -111,7 +111,7 @@ function SignupPage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#FCF8EC", 
+        backgroundColor: "#FCF8EC",
         padding: "2rem",
       }}
     >
@@ -138,13 +138,13 @@ function SignupPage() {
           padding: "2.5rem",
           borderRadius: "16px",
           textAlign: "center",
-          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)", 
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)",
           backgroundColor: "white",
         }}
       >
         <Typography
           variant="h4"
-          sx={{ marginBottom: "1.5rem", fontWeight: 700, color: "#5F848C" }} 
+          sx={{ marginBottom: "1.5rem", fontWeight: 700, color: "#5F848C" }}
         >
           Sign Up
         </Typography>
@@ -217,7 +217,7 @@ function SignupPage() {
             marginTop: "1rem",
             cursor: "pointer",
             textDecoration: "underline",
-            color: "#5F848C", 
+            color: "#5F848C",
           }}
           onClick={() => navigate("/login")} // Navigate to the login page
         >

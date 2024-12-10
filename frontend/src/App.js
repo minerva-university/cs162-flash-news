@@ -11,7 +11,6 @@ import Header from "./components/Header";
 import PostDetailPage from "./pages/PostDetailPage";
 import WelcomePage from "./pages/WelcomePage";
 
-
 const theme = createTheme({
   palette: {
     primary: {

@@ -95,7 +95,7 @@ function LoginPage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#FCF8EC", 
+        backgroundColor: "#FCF8EC",
         padding: "2rem",
       }}
     >
@@ -122,13 +122,13 @@ function LoginPage() {
           padding: "2.5rem",
           borderRadius: "16px",
           textAlign: "center",
-          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)", 
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)",
           backgroundColor: "white",
         }}
       >
         <Typography
           variant="h4"
-          sx={{ marginBottom: "1.5rem", fontWeight: 700, color: "#5F848C" }} 
+          sx={{ marginBottom: "1.5rem", fontWeight: 700, color: "#5F848C" }}
         >
           Sign In
         </Typography>
@@ -192,7 +192,7 @@ function LoginPage() {
             textDecoration: "underline",
             color: "#5F848C",
           }}
-          onClick={() => navigate("/signup")} 
+          onClick={() => navigate("/signup")}
         >
           Don't have an account? Sign up here.
         </Typography>
