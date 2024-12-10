@@ -11,7 +11,7 @@ from flask_jwt_extended import (
 from .models import User, RevokedToken
 from . import db
 
-auth = Blueprint("auth", __name__, url_prefix='/api')
+auth = Blueprint("auth", __name__, url_prefix="/api")
 
 
 def validate_password(password):
@@ -32,7 +32,7 @@ def validate_password(password):
 
 def validate_email(email):
     """Validate the email address using a regular expression."""
-    email_regex = r"^((?!\.)[a-zA-Z0-9_.-]*[^.])(@[a-zA-Z0-9-]+)(\.[a-zA-Z0-9-.]+)$" # character \w-_ was causing an error, so regex has been updated.
+    email_regex = r"^((?!\.)[a-zA-Z0-9_.-]*[^.])(@[a-zA-Z0-9-]+)(\.[a-zA-Z0-9-.]+)$"  # character \w-_ was causing an error, so regex has been updated.
     if not re.match(email_regex, email, re.IGNORECASE):
         return False, "Invalid email address."
     return True, None
@@ -70,11 +70,18 @@ def register():
     new_user = User(username=username, email=email, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
-    access_token = create_access_token(identity=new_user.user_id)
-    refresh_token = create_refresh_token(identity=new_user.user_id)
-    return jsonify({"message": "User registered successfully",
-                    "access_token": access_token,
-                    "refresh_token": refresh_token}), 201
+    access_token = create_access_token(identity=str(new_user.user_id))
+    refresh_token = create_refresh_token(identity=str(new_user.user_id))
+    return (
+        jsonify(
+            {
+                "message": "User registered successfully",
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            }
+        ),
+        201,
+    )
 
 
 @auth.route("/login", methods=["POST"])
@@ -91,16 +98,21 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"message": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=user.user_id)
-    refresh_token = create_refresh_token(identity=user.user_id)
+    access_token = create_access_token(identity=str(user.user_id))
+    refresh_token = create_refresh_token(identity=str(user.user_id))
 
     # Includes username and profile picture as Pei suggested
-    return jsonify({
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "username": user.username,
-        "profile_picture": user.profile_picture  # Ensure this field exists in the User model
-    }), 200
+    return (
+        jsonify(
+            {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "username": user.username,
+                "profile_picture": user.profile_picture,  # Ensure this field exists in the User model
+            }
+        ),
+        200,
+    )
 
 
 @auth.route("/logout", methods=["POST"])
@@ -117,5 +129,5 @@ def logout():
 @jwt_required(refresh=True)
 def refresh():
     current_user_id = get_jwt_identity()
-    new_access_token = create_access_token(identity=current_user_id)
+    new_access_token = create_access_token(identity=str(current_user_id))
     return jsonify(access_token=new_access_token), 200
