@@ -11,7 +11,7 @@ from flask_jwt_extended import (
 from .models import User, RevokedToken
 from . import db
 
-auth = Blueprint("auth", __name__, url_prefix="/api/auth")
+auth = Blueprint("auth", __name__, url_prefix='/api')
 
 
 def validate_password(password):
@@ -70,8 +70,11 @@ def register():
     new_user = User(username=username, email=email, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
-
-    return jsonify({"message": "User registered successfully"}), 201
+    access_token = create_access_token(identity=new_user.user_id)
+    refresh_token = create_refresh_token(identity=new_user.user_id)
+    return jsonify({"message": "User registered successfully",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token}), 201
 
 
 @auth.route("/login", methods=["POST"])
