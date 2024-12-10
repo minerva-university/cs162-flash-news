@@ -27,6 +27,9 @@ const PostDetailPage = () => {
   const { id } = useParams(); // from URL params
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
+  const [isEditingPost, setIsEditingPost] = useState(false);
+  const [isEditingComment, setIsEditingComment] = useState(-1);
+  // @TODO need to allow editing the tags and whatnot
 
   const handleAddComment = (comment, commentId) => {
     setComments([
@@ -46,12 +49,16 @@ const PostDetailPage = () => {
 
   const handlePostEditOrDelete = (postID, selectedItem) => {
     if (selectedItem === "delete") {
+      // Confirm before deleting the post
       const confirmDelete = window.confirm(
         "Are you sure you want to delete this post? This cannot be undone!"
       );
       if (confirmDelete) {
         PostController.deletePost(postID).then(() => navigate("/feed"));
       }
+    } else {
+      // Change the card to editing mode
+      setIsEditingPost(true);
     }
   };
   const handleCommentEditOrDelete = (commentID, selectedItem) => {
@@ -66,10 +73,15 @@ const PostDetailPage = () => {
           )
         );
       }
+    } else {
+      // Change the relevant card to editing mode
+      setIsEditingComment(commentID);
     }
-
-    console.log(`Comment ID: ${commentID}, Selected Item: ${selectedItem}`);
   };
+
+  const handleEditComment = (comment, commentId) => {
+    
+  }
 
   const getAllCommentsForPost = () => {
     if (!id) return;
@@ -216,65 +228,72 @@ const PostDetailPage = () => {
                 Recent Comments
               </Typography>
 
-              {comments.map((comment, index) => (
-                <Card key={`comment-${index}`}>
-                  <CardHeader
-                    avatar={
-                      comment.user.profile_picture ? (
-                        <Avatar
-                          src={comment.user.profile_picture}
-                          sx={(theme) => ({
-                            bgcolor: theme.palette.primary.main,
-                          })}
-                          aria-label="Profile Picture"
-                        />
-                      ) : (
-                        <Avatar
-                          sx={(theme) => ({
-                            bgcolor: theme.palette.primary.main,
-                          })}
-                          aria-label="Profile Picture"
-                        >
-                          {comment.user.username[0].toUpperCase()}
-                        </Avatar>
-                      )
-                    }
-                    title={
-                      <UsernameAndOPChip
-                        username={comment.user.username}
-                        isOP={comment.user.username === post.user.username}
-                      />
-                    }
-                    subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
-                    // @TODO: Only show if the current comment belongs to the currently logged in user
-                    action={
-                      post?.user.username === CURRENT_USERNAME && (
-                        <EditDeleteMenu
-                          id={comment.comment_id}
-                          onClose={handleCommentEditOrDelete}
-                        />
-                      )
-                    }
+              {comments.map((comment, index) =>
+                comment.comment_id === isEditingComment ? (
+                  <AddCommentForm
+                    post={post}
+                    onCommentAdded={handleEditComment}
                   />
-                  <CardContent>
-                    {comment.comment &&
-                      comment.comment.split("\n").map((line, index) => {
-                        return (
-                          <Typography
-                            key={index}
-                            variant="body2"
-                            sx={{
-                              color: "text.secondary",
-                              marginBottom: "1rem",
-                            }}
+                ) : (
+                  <Card key={`comment-${index}`}>
+                    <CardHeader
+                      avatar={
+                        comment.user.profile_picture ? (
+                          <Avatar
+                            src={comment.user.profile_picture}
+                            sx={(theme) => ({
+                              bgcolor: theme.palette.primary.main,
+                            })}
+                            aria-label="Profile Picture"
+                          />
+                        ) : (
+                          <Avatar
+                            sx={(theme) => ({
+                              bgcolor: theme.palette.primary.main,
+                            })}
+                            aria-label="Profile Picture"
                           >
-                            {line}
-                          </Typography>
-                        );
-                      })}
-                  </CardContent>
-                </Card>
-              ))}
+                            {comment.user.username[0].toUpperCase()}
+                          </Avatar>
+                        )
+                      }
+                      title={
+                        <UsernameAndOPChip
+                          username={comment.user.username}
+                          isOP={comment.user.username === post.user.username}
+                        />
+                      }
+                      subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
+                      // @TODO: Only show if the current comment belongs to the currently logged in user
+                      action={
+                        post?.user.username === CURRENT_USERNAME && (
+                          <EditDeleteMenu
+                            id={comment.comment_id}
+                            onClose={handleCommentEditOrDelete}
+                          />
+                        )
+                      }
+                    />
+                    <CardContent>
+                      {comment.comment &&
+                        comment.comment.split("\n").map((line, index) => {
+                          return (
+                            <Typography
+                              key={index}
+                              variant="body2"
+                              sx={{
+                                color: "text.secondary",
+                                marginBottom: "1rem",
+                              }}
+                            >
+                              {line}
+                            </Typography>
+                          );
+                        })}
+                    </CardContent>
+                  </Card>
+                )
+              )}
             </>
           )}
         </Box>
