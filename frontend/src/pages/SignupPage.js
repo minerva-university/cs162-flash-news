@@ -116,11 +116,25 @@ function SignupPage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#FCF8EC",
-        padding: "2rem",
+        backgroundColor: "#f5f5f5",
       }}
     >
-      <Box 
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={10000} // Lasts 10 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      <Box
         sx={{
           maxWidth: "500px",
           width: "100%",

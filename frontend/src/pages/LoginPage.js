@@ -180,7 +180,31 @@ function LoginPage() {
             Log In
           </Button>
         </Box>
-      </Box> 
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ marginTop: "1rem", cursor: "pointer" }}
+          onClick={() => navigate("/signup")} // Navigate to the signup page
+        >
+          Don't have an account? Sign up here.
+        </Typography>
+      </Box>
+
+      {/* Snackbar for feedback */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
