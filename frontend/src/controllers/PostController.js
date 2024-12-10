@@ -48,6 +48,21 @@ class PostController {
     }
   }
 
+  static async updatePost(postID, description) {
+    const response = await fetch(`${DB_HOST}/posts/${postID}`, {
+      method: "PUT",
+      body: JSON.stringify({ description }),
+      headers: HEADERS_WITH_JWT(this.accessToken),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
   static async deletePost(postID) {
     const response = await fetch(`${DB_HOST}/posts/${postID}`, {
       method: "DELETE",

@@ -6,8 +6,8 @@ import ThemedButton from "../components/ThemedButton";
 import CommentController from "../controllers/CommentController";
 
 export default function AddCommentForm({ post, onCommentAdded }) {
-  const CURRENT_USERNAME = "lmao8109"; // @TODO: Replace with the currently logged in user's username (get from localStorage)
-  const profile_picture = ""; // @TODO current user's profile picture
+  const CURRENT_USERNAME = localStorage.getItem("username");
+  const profile_picture = localStorage.getItem("profile_picture");
   const mainTextareaRef = useRef(null);
 
   const addComment = async () => {
@@ -23,7 +23,7 @@ export default function AddCommentForm({ post, onCommentAdded }) {
   };
 
   return (
-    <Card sx={{ marginBottom: "1rem" }}>
+    <Card>
       {/* @TODO: Put the currently logged in user's profile picture */}
       <CardHeader
         avatar={
@@ -59,8 +59,6 @@ export default function AddCommentForm({ post, onCommentAdded }) {
           placeholder={`Leave a comment`}
         />
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          {/* @TODO: I really need to look into theming, the hover button
-        text color is pissing me off */}
           <ThemedButton sx={{ marginLeft: "auto" }} onClick={addComment}>
             Comment
           </ThemedButton>

@@ -1,9 +1,10 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import CommentController from "../controllers/CommentController";
 import PostController from "../controllers/PostController";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 
 import {
   Avatar,
@@ -14,22 +15,24 @@ import {
   CardContent,
   CardHeader,
   CardActions,
+  Chip,
   Typography,
+  TextareaAutosize,
 } from "@mui/material";
 import AddCommentForm from "../forms/AddCommentForm";
 import dayjs from "dayjs";
 import EditDeleteMenu from "../components/EditDeleteMenu";
 import UsernameAndOPChip from "../components/UsernameAndOPChip";
+import ThemedButton from "../components/ThemedButton";
 
 const PostDetailPage = () => {
   const navigate = useNavigate();
-  const CURRENT_USERNAME = "lmao8109"; // @TODO: Replace with the currently logged in user's username (get from localStorage)
+  const CURRENT_USERNAME = localStorage.getItem("username");
   const { id } = useParams(); // from URL params
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [isEditingPost, setIsEditingPost] = useState(false);
-  const [isEditingComment, setIsEditingComment] = useState(-1);
-  // @TODO need to allow editing the tags and whatnot
+  const mainTextareaRef = useRef(null);
 
   const handleAddComment = (comment, commentId) => {
     setComments([
@@ -51,37 +54,45 @@ const PostDetailPage = () => {
     if (selectedItem === "delete") {
       // Confirm before deleting the post
       const confirmDelete = window.confirm(
-        "Are you sure you want to delete this post? This cannot be undone!"
+        "Are you sure you want to delete this post? This cannot be undone!",
       );
       if (confirmDelete) {
         PostController.deletePost(postID).then(() => navigate("/feed"));
       }
-    } else {
+    } else if (selectedItem === "edit") {
       // Change the card to editing mode
       setIsEditingPost(true);
+      mainTextareaRef.current.value = post.description;
     }
   };
-  const handleCommentEditOrDelete = (commentID, selectedItem) => {
+  const handleCommentDelete = (commentID, selectedItem) => {
+    // You can't edit your comments! Accept the consequences of your actions!
     if (selectedItem === "delete") {
       const confirmDelete = window.confirm(
-        "Are you sure you want to delete this comment?"
+        "Are you sure you want to delete this comment?",
       );
       if (confirmDelete) {
         CommentController.deleteComment(commentID).then(() =>
           setComments(
-            comments.filter((comment) => comment.comment_id !== commentID)
-          )
+            comments.filter((comment) => comment.comment_id !== commentID),
+          ),
         );
       }
-    } else {
-      // Change the relevant card to editing mode
-      setIsEditingComment(commentID);
     }
   };
 
-  const handleEditComment = (comment, commentId) => {
-    
-  }
+  const savePostEdit = () => {
+    const newDescription = mainTextareaRef.current.value;
+    if (!newDescription || !post) return;
+
+    PostController.updatePost(post.post_id, newDescription).then(() => {
+      setPost({
+        ...post,
+        description: newDescription,
+      });
+      setIsEditingPost(false);
+    });
+  };
 
   const getAllCommentsForPost = () => {
     if (!id) return;
@@ -161,7 +172,7 @@ const PostDetailPage = () => {
             marginRight: "2rem",
           }}
         >
-          <Card sx={{ marginBottom: "1rem" }}>
+          <Card sx={{ marginBottom: "1.5rem" }}>
             <CardHeader
               avatar={
                 post?.profile_picture ? (
@@ -186,19 +197,21 @@ const PostDetailPage = () => {
               title={
                 <UsernameAndOPChip username={post?.user.username} isOP={true} />
               }
-              // @TODO: Only show if the current post belongs to the currently logged in user
+              // Only show if the current post belongs to the currently logged in user
               action={
                 post?.user.username === CURRENT_USERNAME && (
                   <EditDeleteMenu
                     id={post.post_id}
+                    editLabel={"Edit Post Description"}
+                    deleteLabel={"Delete Post"}
                     onClose={handlePostEditOrDelete}
                   />
                 )
               }
             />
-            <CardContent>
-              {post?.description &&
-                post.description.split("\n").map((line, index) => {
+            {!isEditingPost && (
+              <CardContent>
+                {post?.description.split("\n").map((line, index) => {
                   return (
                     <Typography
                       key={index}
@@ -212,6 +225,57 @@ const PostDetailPage = () => {
                     </Typography>
                   );
                 })}
+                {/* Category Chips */}
+                {post.categories && post.categories.length > 0 && (
+                  <Box
+                    sx={{
+                      marginTop: "1.5rem",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <LocalOfferIcon
+                      fontSize="small"
+                      sx={{ marginRight: "0.5rem" }}
+                    />
+                    {post.categories.map((category) => (
+                      <Chip
+                        key={category}
+                        label={category}
+                        variant="outlined"
+                        size="small"
+                        sx={{ marginRight: "0.5rem" }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </CardContent>
+            )}
+            {/* Post Editing Area */}
+            <CardContent sx={{ display: isEditingPost ? "block" : "none" }}>
+              <TextareaAutosize
+                style={{
+                  width: "100%",
+                  border: "none",
+                  outline: "none",
+                  marginBottom: "1rem",
+                }}
+                ref={mainTextareaRef}
+                aria-label="minimum height"
+                minRows={3}
+                placeholder={`What's on your mind?`}
+              />
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <ThemedButton onClick={() => setIsEditingPost(false)}>
+                  Cancel
+                </ThemedButton>
+                <ThemedButton
+                  sx={{ marginLeft: "auto" }}
+                  onClick={savePostEdit}
+                >
+                  Save Post
+                </ThemedButton>
+              </Box>
             </CardContent>
           </Card>
 
@@ -223,77 +287,71 @@ const PostDetailPage = () => {
             <>
               <Typography
                 variant="h6"
-                sx={{ marginTop: "2rem", marginBottom: "1rem" }}
+                sx={{ marginTop: "2.5rem", marginBottom: "1rem" }}
               >
                 Recent Comments
               </Typography>
 
-              {comments.map((comment, index) =>
-                comment.comment_id === isEditingComment ? (
-                  <AddCommentForm
-                    post={post}
-                    onCommentAdded={handleEditComment}
-                  />
-                ) : (
-                  <Card key={`comment-${index}`}>
-                    <CardHeader
-                      avatar={
-                        comment.user.profile_picture ? (
-                          <Avatar
-                            src={comment.user.profile_picture}
-                            sx={(theme) => ({
-                              bgcolor: theme.palette.primary.main,
-                            })}
-                            aria-label="Profile Picture"
-                          />
-                        ) : (
-                          <Avatar
-                            sx={(theme) => ({
-                              bgcolor: theme.palette.primary.main,
-                            })}
-                            aria-label="Profile Picture"
-                          >
-                            {comment.user.username[0].toUpperCase()}
-                          </Avatar>
-                        )
-                      }
-                      title={
-                        <UsernameAndOPChip
-                          username={comment.user.username}
-                          isOP={comment.user.username === post.user.username}
+              {comments.map((comment, index) => (
+                <Card key={`comment-${index}`} sx={{ marginBottom: "1rem" }}>
+                  <CardHeader
+                    avatar={
+                      comment.user.profile_picture ? (
+                        <Avatar
+                          src={comment.user.profile_picture}
+                          sx={(theme) => ({
+                            bgcolor: theme.palette.primary.main,
+                          })}
+                          aria-label="Profile Picture"
                         />
-                      }
-                      subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
-                      // @TODO: Only show if the current comment belongs to the currently logged in user
-                      action={
-                        post?.user.username === CURRENT_USERNAME && (
-                          <EditDeleteMenu
-                            id={comment.comment_id}
-                            onClose={handleCommentEditOrDelete}
-                          />
-                        )
-                      }
-                    />
-                    <CardContent>
-                      {comment.comment &&
-                        comment.comment.split("\n").map((line, index) => {
-                          return (
-                            <Typography
-                              key={index}
-                              variant="body2"
-                              sx={{
-                                color: "text.secondary",
-                                marginBottom: "1rem",
-                              }}
-                            >
-                              {line}
-                            </Typography>
-                          );
-                        })}
-                    </CardContent>
-                  </Card>
-                )
-              )}
+                      ) : (
+                        <Avatar
+                          sx={(theme) => ({
+                            bgcolor: theme.palette.primary.main,
+                          })}
+                          aria-label="Profile Picture"
+                        >
+                          {comment.user.username[0].toUpperCase()}
+                        </Avatar>
+                      )
+                    }
+                    title={
+                      <UsernameAndOPChip
+                        username={comment.user.username}
+                        isOP={comment.user.username === post.user.username}
+                      />
+                    }
+                    subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
+                    // @TODO: Only show if the current comment belongs to the currently logged in user
+                    action={
+                      comment.user.username === CURRENT_USERNAME && (
+                        <EditDeleteMenu
+                          id={comment.comment_id}
+                          deleteOnly={true}
+                          onClose={handleCommentDelete}
+                        />
+                      )
+                    }
+                  />
+                  <CardContent>
+                    {comment.comment &&
+                      comment.comment.split("\n").map((line, index) => {
+                        return (
+                          <Typography
+                            key={index}
+                            variant="body2"
+                            sx={{
+                              color: "text.secondary",
+                              marginBottom: "1rem",
+                            }}
+                          >
+                            {line}
+                          </Typography>
+                        );
+                      })}
+                  </CardContent>
+                </Card>
+              ))}
             </>
           )}
         </Box>
@@ -302,29 +360,39 @@ const PostDetailPage = () => {
         <Card sx={{ position: "sticky", top: 0, width: "30vw" }}>
           <CardHeader title={"About This Article"} />
           <CardContent sx={{ display: "flex" }}>
-            <img
-              style={{
-                width: "100px",
-                height: "100px",
-                objectFit: "cover",
-                objectPosition: "center",
+            {post?.article.preview && (
+              <img
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  objectFit: "cover",
+                  objectPosition: "center",
+                }}
+                src={post?.article.preview}
+                alt={post?.article.title}
+              />
+            )}
+            <Box
+              sx={{
+                padding: post?.article.preview ? "0 1rem" : 0,
+                flex: "1 1 auto",
               }}
-              src={post?.article.preview}
-              alt={post?.article.title}
-            />
-            <Box sx={{ padding: "0 1rem" }}>
+            >
               <Typography
                 variant="h6"
                 sx={{ marginBottom: "0.5rem", fontSize: 16 }}
               >
-                {post?.article.title.length > 40
+                {post?.article.title?.length > 40
                   ? `${post?.article.title.slice(0, 40)}...`
-                  : post?.article.title}
+                  : (post?.article.title ?? "No title available")}
               </Typography>
-              <Typography variant="body2">
-                {post?.article.caption.length > 40
+              <Typography
+                variant="body2"
+                sx={{ textWrap: "wrap", wordBreak: "break-word" }}
+              >
+                {post?.article.caption?.length > 40
                   ? `${post?.article.caption.slice(0, 40)}...`
-                  : post?.article.caption}
+                  : (post?.article.caption ?? post?.article.link)}
               </Typography>
             </Box>
           </CardContent>
@@ -346,7 +414,9 @@ const PostDetailPage = () => {
                 target="_blank"
                 rel="noopener"
               >
-                View on {post?.article.source}
+                {post?.article.source
+                  ? `View on ${post?.article.source}`
+                  : "View Article"}
               </Link>
             </Button>
           </CardActions>

@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-export default function EditDeleteMenu({ id, onClose }) {
+export default function EditDeleteMenu({
+  id,
+  deleteOnly,
+  onClose,
+  editLabel,
+  deleteLabel,
+}) {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -28,8 +36,18 @@ export default function EditDeleteMenu({ id, onClose }) {
           "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem onClick={() => handleClose("edit")}>Edit</MenuItem>
-        <MenuItem onClick={() => handleClose("delete")}>Delete</MenuItem>
+        {!deleteOnly && (
+          <MenuItem onClick={() => handleClose("edit")}>
+            <EditIcon sx={{ marginRight: "0.5rem" }} /> {editLabel ?? "Edit"}
+          </MenuItem>
+        )}
+        <MenuItem
+          sx={{ color: "#f44336" }}
+          onClick={() => handleClose("delete")}
+        >
+          <DeleteIcon sx={{ marginRight: "0.5rem" }} />{" "}
+          {deleteLabel ?? "Delete"}
+        </MenuItem>
       </Menu>
     </>
   );

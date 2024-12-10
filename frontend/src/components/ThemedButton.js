@@ -3,17 +3,14 @@ import { Button } from "@mui/material";
 export default function ThemedButton(props) {
   return (
     <Button
+      {...props}
       sx={{
         ...props.sx,
-        backgroundColor: "#5F848C",
-        color: "#FCF8EC",
-        fontWeight: "bold",
-        borderRadius: "0 0 8px 8px",
         "&:hover": {
           backgroundColor: "#266a7a",
+          color: "#F6F5EE",
         },
       }}
-      {...props}
     />
   );
 }

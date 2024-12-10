@@ -66,7 +66,25 @@ export default function PostCard({ post }) {
         underline="none"
       >
         {/* @todo: should probably render placeholder image if image doesn't load */}
-        <CardMedia sx={{ height: 300 }} image={post.article.preview} />
+        <CardMedia
+          sx={{ height: post.article.preview ? 300 : 200 }}
+          image={post.article.preview ?? undefined}
+          component={() =>
+            !post.article.preview && (
+              <Box
+                sx={{
+                  backgroundColor: "#F6F5EE",
+                  height: 200,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography variant="h6">No preview image available</Typography>
+              </Box>
+            )
+          }
+        />
       </Link>
 
       {/* Post Description */}
@@ -97,7 +115,6 @@ export default function PostCard({ post }) {
           })}
       </CardContent>
       {/* Category Chips */}
-      {/* @TODO: Make it clickable */}
       {post.categories && (
         <Box sx={{ padding: "0 16px" }}>
           {post.categories.map((category) => (
