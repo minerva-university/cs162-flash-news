@@ -34,6 +34,7 @@ const SettingsPage = () => {
       try {
         setLoading(true);
         const accessToken = localStorage.getItem("access_token");
+        console.log(accessToken);
         const response = await fetch(`${DB_HOST}/user/`, {
           method: "GET",
           headers: {

@@ -9,11 +9,11 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import GoogleIcon from "@mui/icons-material/Google";
 import "../App.css";
 import { useNavigate } from "react-router-dom";
 
 function SignupPage() {
+  const DB_HOST = "http://127.0.0.1:5000/api";
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -54,7 +54,7 @@ function SignupPage() {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/register", {
+      const response = await fetch(`${DB_HOST}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,6 +67,8 @@ function SignupPage() {
       });
 
       const data = await response.json();
+      console.log("data", data);
+      console.log("type of access token", typeof data.access_token);
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to register");
@@ -74,12 +76,9 @@ function SignupPage() {
 
       setSnackbar({
         open: true,
-        message: "Signup successful! Sending you to your settings...",
+        message: "Signup successful! You are being redirected to your profile setting.",
         severity: "success",
       });
-      
-      console.log("data", data);
-      console.log("data.username", data.username);
 
       // Delay navigation to allow Snackbar to display
       setTimeout(() => {
@@ -100,7 +99,7 @@ function SignupPage() {
       });
     }
   };
-  
+
   return (
     <Box
       sx={{
@@ -112,7 +111,6 @@ function SignupPage() {
         backgroundColor: "#f5f5f5",
       }}
     >
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={10000} // Lasts 10 seconds
@@ -203,6 +201,14 @@ function SignupPage() {
             Sign Up
           </Button>
         </Box>
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ marginTop: "1rem", cursor: "pointer" }}
+          onClick={() => navigate("/login")} // Navigate to the login page
+        >
+          Already have an account? Log in here.
+        </Typography>
       </Box>
     </Box>
   );
