@@ -1,22 +1,25 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import Button from "@mui/material/Button";
-import { TextField } from "@mui/material";
-import Modal from "@mui/material/Modal";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
+import {
+  Avatar,
+  Typography,
+  Box,
+  Divider,
+  Button,
+  TextField,
+  Modal,
+  FormControlLabel,
+  Switch,
+} from "@mui/material";
 import CollectionCard from "../components/CollectionCard";
 import EmojiPicker from "emoji-picker-react";
 
-const CollectionsPage = ({ currentUser }) => {
+const CollectionsPage = () => {
   const DB_HOST = "http://127.0.0.1:5000/api";
   const { username } = useParams(); // Extract username from URL
   const navigate = useNavigate();
 
+  const [profileData, setProfileData] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [publicCollections, setPublicCollections] = useState([]);
@@ -41,14 +44,14 @@ const CollectionsPage = ({ currentUser }) => {
   // Emoji picker handler
   const handleEmojiClick = (emoji) => {
     setAddFormData({ ...addFormData, emoji: emoji.emoji });
-    setShowEmojiPicker(false); // Close picker after selection
+    setShowEmojiPicker(false); 
   };
   
-  // Open and close modal
+  // Open and close modal for adding collection
   const handleOpenModal = () => setAddOpenModal(true);
   const handleCloseModal = () => setAddOpenModal(false);
 
-  // Input change handler
+  // Input change handler for adding collection
   const handleInputChange = (e) => {
     const { name, value } = e.target; 
     setAddFormData({ ...addFormData, [name]: value });
@@ -64,36 +67,48 @@ const CollectionsPage = ({ currentUser }) => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
-  // Fetch collections from the backend
+
+  // Fetch user data and collections
   const fetchCollections = async () => {
     try {
       setLoading(true);
 
-      // Fetch collections
-      const userResponse = await fetch(`${DB_HOST}/user/users/${username}`);
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) throw new Error("Access token missing. Please log in.");
+
+      // Fetch user data
+      const userResponse = await fetch(`${DB_HOST}/user/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       const userData = await userResponse.json();
+      if (!userResponse.ok) throw new Error(userData.message);
 
-      const { user_id } = userData;
+      setProfileData(userData.data);
 
-      // Check if the logged-in user is the owner of the page
-      const ownerCheck = currentUser?.user_id === user_id;
-      setIsOwner(ownerCheck);
-      console.log("Is owner:", ownerCheck);
-
+      // Check ownership
+      const isPageOwner = userData.data.username === username;
+      setIsOwner(isPageOwner);
   
-      // Fetch collections by user_id
-      const collectionsResponse = await fetch(`${DB_HOST}/collections/user/${user_id}`);
+      // Fetch collections
+      const collectionsResponse = await fetch(`${DB_HOST}/collections/user/${userData.data.user_id}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
       const collectionsData = await collectionsResponse.json();
-  
+      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
-      if (collectionsResponse.ok) {
-        // Separate collections into public and private
-        setPublicCollections(collectionsData.public || []);
-        if (ownerCheck) {
-          setPrivateCollections(collectionsData.private || []);
-        }
-      } else {
-        console.error("Failed to fetch collections:", collectionsData.error);
+      // Set public and private collections
+      setPublicCollections(collectionsData.public || []);
+      if (isPageOwner) {
+        setPrivateCollections(collectionsData.private || []);
       }
     } catch (error) {
       console.error("Error fetching collections:", error);
@@ -106,50 +121,53 @@ const CollectionsPage = ({ currentUser }) => {
     fetchCollections();
   }, []);
 
+  // Handle create collection
   const handleCreateCollection = async () => {
-    if (!addFormData.title || !addFormData.emoji) {
-      alert("Please fill out all required fields.");
-      return;
-    }
-
     try {
+      if (!addFormData.title || !addFormData.emoji) {
+        alert("Please fill out all required fields.");
+        return;
+      }
+
+      // Fetch access token and send request
+      const accessToken = localStorage.getItem("access_token");
+
       const response = await fetch(`${DB_HOST}/collections/`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({
-          user_id: currentUser.user_id,
+          user_id: profileData.user_id,
           title: addFormData.title,
-          emoji: addFormData.emoji,
           description: addFormData.description || "",
+          emoji: addFormData.emoji,
           is_public: addFormData.isPublic,
         }),
       });
 
-      if (response.ok) {
-        setAddFormData({ title: "", emoji: "😀", description: "", isPublic: false });
-        setAddOpenModal(false);
-        const newCollection = await response.json();
-        if (newCollection.is_public) {
-          setPublicCollections((prev) => [...prev, newCollection]);
-        } else {
-          setPrivateCollections((prev) => [...prev, newCollection]);
-        }
-      } else {
+      if (!response.ok) {
         const error = await response.json();
-        alert(error.message || "Error creating collection.");
+        throw new Error(error.message || "Error creating collection.");
       }
+
+      const newCollection = await response.json();
+      setAddFormData({ title: "", description: "", emoji: "😀", isPublic: false });
+      setAddOpenModal(false);
+
+      if (newCollection.is_public) {
+        setPublicCollections((prev) => [...prev, newCollection]);
+      } else {
+        setPrivateCollections((prev) => [...prev, newCollection]);
+      }
+      fetchCollections(); 
     } catch (error) {
       console.error("Error creating collection:", error);
+      alert(error.message || "An error occurred. Please try again.");
     }
   };
-
-  if (loading) {
-    return <Typography>Loading collections...</Typography>;
-  }
-
+  
   // Open Edit Modal
   const handleEditCollection = (collection) => {
 
@@ -182,9 +200,12 @@ const CollectionsPage = ({ currentUser }) => {
         return;
       }
 
+      const accessToken = localStorage.getItem("access_token");
+
       const response = await fetch(`${DB_HOST}/collections/update/${editFormData.collection_id}`, {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -214,9 +235,12 @@ const CollectionsPage = ({ currentUser }) => {
     if (!window.confirm("Are you sure you want to delete this collection?")) return;
   
     try {
+      const accessToken = localStorage.getItem("access_token");
+
       const response = await fetch(`${DB_HOST}/collections/delete/${collection_id}`, {
         method: "DELETE",
         headers: {
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -234,7 +258,6 @@ const CollectionsPage = ({ currentUser }) => {
     }
   };
   
-
   // Filter collections by title
   const filteredPublicCollections = publicCollections.filter(
     (collection) =>
@@ -248,7 +271,7 @@ const CollectionsPage = ({ currentUser }) => {
 
   // Handle collection click
   const handleCollectionClick = (collection) => {
-    console.log("Clicked collection:", collection); // Debugging
+    console.log("Clicked collection:", collection); 
 
     const formattedTitle = collection.title
       ?.toLowerCase()
@@ -258,21 +281,9 @@ const CollectionsPage = ({ currentUser }) => {
     });
   };
   
-
-  // TODO: Implement sorting by date for public and private collections
-  const sortByDate = (isPublic) => {
-    if (isPublic) {
-      const sortedPublic = [...publicCollections].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
-      setPublicCollections(sortedPublic);
-    } else {
-      const sortedPrivate = [...privateCollections].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
-      setPrivateCollections(sortedPrivate);
-    }
-  };
+  if (loading) {
+    return <Typography>Loading collections...</Typography>;
+  }
 
   return (
     <Box
@@ -462,7 +473,7 @@ const CollectionsPage = ({ currentUser }) => {
                       gap: "24px",
                     }}
                   >
-                    {privateCollections.map((collection) => (
+                    {filteredPrivateCollections.map((collection) => (
                       <CollectionCard
                         key={collection.collection_id}
                         collection={collection}
