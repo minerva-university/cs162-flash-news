@@ -32,7 +32,7 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        {!publicRoutes.includes(location.pathname) && <Header currentUser={currentUser} />}
+        {!publicRoutes.includes(location.pathname) && <Header />}
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -41,7 +41,7 @@ function App() {
           <Route path="/user/:username/collections" element={<CollectionsPage />} />
           <Route path="/collections/:id/:title" element={<CollectionDetailModal  />} />
           <Route path="/:username/settings" element={<SettingsPage />} />
-          <Route path="/:username/profile" element={<ProfilePage currentUser={currentUser} />} />
+          <Route path="/:username/profile" element={<ProfilePage />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </ThemeProvider>
