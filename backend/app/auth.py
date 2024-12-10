@@ -11,7 +11,7 @@ from flask_jwt_extended import (
 from .models import User, RevokedToken
 from . import db
 
-auth = Blueprint("auth", __name__, url_prefix='/api')
+auth = Blueprint("auth", __name__, url_prefix="/api")
 
 
 def validate_password(password):
@@ -32,7 +32,7 @@ def validate_password(password):
 
 def validate_email(email):
     """Validate the email address using a regular expression."""
-    email_regex = r"^((?!\.)[a-zA-Z0-9_.-]*[^.])(@[a-zA-Z0-9-]+)(\.[a-zA-Z0-9-.]+)$" # character \w-_ was causing an error, so regex has been updated.
+    email_regex = r"^((?!\.)[a-zA-Z0-9_.-]*[^.])(@[a-zA-Z0-9-]+)(\.[a-zA-Z0-9-.]+)$"  # character \w-_ was causing an error, so regex has been updated.
     if not re.match(email_regex, email, re.IGNORECASE):
         return False, "Invalid email address."
     return True, None
@@ -78,8 +78,6 @@ def register():
     print(f"Type of Access Token: {type(access_token)}", flush=True)
     print(f"Refresh Token: {refresh_token}", flush=True)
     print(f"Type of Refresh Token: {type(refresh_token)}", flush=True)
-
-
     return (
         jsonify(
             {
@@ -118,6 +116,7 @@ def login():
     print(f"Refresh Token: {refresh_token}", flush=True)
     print(f"Type of Refresh Token: {type(refresh_token)}", flush=True)
 
+
     # Includes username and profile picture as Pei suggested
     return (
         jsonify(
@@ -130,7 +129,7 @@ def login():
         ),
         200,
     )
-
+  
 @auth.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():

@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import Card from "@mui/material/Card";
-import CardHeader from "@mui/material/CardHeader";
+import React, { useRef, useState } from "react";
+import { Card, CardHeader } from "@mui/material";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 
 import Avatar from "@mui/material/Avatar";
@@ -33,6 +32,7 @@ const style = {
 };
 
 export default function AddPostForm({ onPostAdded }) {
+  // @TODO: MISSING OPTION TO ADD TO THE USER'S COLLECTION(S)
   const profile_picture = ""; // @TODO current user's profile picture
   const mainTextareaRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -40,7 +40,7 @@ export default function AddPostForm({ onPostAdded }) {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [postVisibility, setPostVisibility] = useState("public");
   const [link, setLink] = useState("");
-  const [linkError, setLinkError] = useState(false);
+  const [linkError, setLinkError] = useState("");
 
   const [ogMetadata, setOgMetadata] = useState(null);
 
@@ -48,7 +48,7 @@ export default function AddPostForm({ onPostAdded }) {
     // Reset data
     setOgMetadata(null);
     setLink("");
-    setLinkError(false);
+    setLinkError("");
     setCategories([]);
     mainTextareaRef.current.value = "";
   };
@@ -122,12 +122,12 @@ export default function AddPostForm({ onPostAdded }) {
   const parseLink = (event) => {
     const url = event.target.value;
     if (!url || !isValid(url)) {
-      setLinkError(true);
+      setLinkError("Please enter a valid link");
       setOgMetadata(null);
       return;
     }
 
-    setLinkError(false);
+    setLinkError("");
     setLink(url);
     getOGMetadata(url);
   };
@@ -137,7 +137,11 @@ export default function AddPostForm({ onPostAdded }) {
       .then((metadata) => {
         setOgMetadata(metadata);
       })
-      .catch((error) => console.error(error));
+      .catch((error) =>
+        setLinkError(
+          "Could not get link details. You can still create a post though!",
+        ),
+      );
   };
 
   return (
@@ -147,7 +151,7 @@ export default function AddPostForm({ onPostAdded }) {
           <Avatar
             src={profile_picture ?? ""}
             sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-            aria-label="recipe"
+            aria-label="Profile Picture"
           >
             R
           </Avatar>
@@ -193,12 +197,12 @@ export default function AddPostForm({ onPostAdded }) {
               onKeyDown={(e) =>
                 e.key === "Enter" && getOGMetadata(e.target.value)
               }
-              error={linkError}
-              helperText={linkError && "Please enter a valid link"}
+              error={linkError !== ""}
+              helperText={linkError}
               required
             />
           </Box>
-          {link != "" && (
+          {link !== "" && (
             <>
               {/* OG Image (if any) */}
               {ogMetadata?.image && (

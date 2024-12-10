@@ -205,7 +205,7 @@ def delete_collection(collection_id):
 @collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['DELETE'])
 @jwt_required()
 def remove_post_from_collection(collection_id, post_id):
-
+    # Check if user owns the collection
     if not (Collection.query
             .filter_by(collection_id=collection_id, user_id=int(get_jwt_identity()))
             .first()):

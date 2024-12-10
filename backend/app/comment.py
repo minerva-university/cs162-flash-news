@@ -96,7 +96,7 @@ def update_comment(comment_id):
     if not post_comment:
         return jsonify({"error": "Comment not found"}), 404
 
-    if post_comment.user_id != current_user.user_id:
+    if post_comment.user_id != int(get_jwt_identity()):
         return jsonify({"error": "You are not allowed to update this comment"}), 403
 
     if check_post_24h(post_comment.post):
@@ -121,7 +121,7 @@ def delete_comment(comment_id):
     if not post_comment:
         return jsonify({"error": "Comment not found"}), 404
 
-    if post_comment.user_id != current_user.user_id:
+    if post_comment.user_id != int(get_jwt_identity()):
         return jsonify({"error": "You are not allowed to delete this comment"}), 403
 
     if check_post_24h(post_comment.post):

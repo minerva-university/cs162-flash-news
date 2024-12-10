@@ -41,18 +41,19 @@ export default function PostCard({ post, currentUser }) {
 
   return (
     <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
+      {/* @TODO: Link to the user profile page */}
       <CardHeader
         avatar={
           post.profile_picture ? (
             <Avatar
               src={post.profile_picture}
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
+              aria-label="Profile Picture"
             />
           ) : (
             <Avatar
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="recipe"
+              aria-label="Profile Picture"
             >
               {post.user.username[0].toUpperCase()}
             </Avatar>
@@ -61,12 +62,32 @@ export default function PostCard({ post, currentUser }) {
         title={post.user.username}
         subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
       />
-      {/* @todo: should probably render placeholder image if image doesn't load */}
-      <CardMedia
-        sx={{ height: 300 }}
-        image={post.article.preview}
-        title={post.article.title}
-      />
+      <Link
+        href={`/post/${post.post_id}`}
+        title="View post details"
+        underline="none"
+      >
+        {/* @todo: should probably render placeholder image if image doesn't load */}
+        <CardMedia
+          sx={{ height: post.article.preview ? 300 : 200 }}
+          image={post.article.preview ?? undefined}
+          component={() =>
+            !post.article.preview && (
+              <Box
+                sx={{
+                  backgroundColor: "#F6F5EE",
+                  height: 200,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography variant="h6">No preview image available</Typography>
+              </Box>
+            )
+          }
+        />
+      </Link>
 
       {/* Post Description */}
       <CardContent>
@@ -83,22 +104,19 @@ export default function PostCard({ post, currentUser }) {
                 }}
               >
                 {line}
-                {index == 2 && arr.length > 3 && !expanded && (
-                  <Typography
-                    variant="body2"
-                    sx={{ cursor: "pointer" }}
+                {index === 2 && arr.length > 3 && !expanded && (
+                  <span
+                    style={{ cursor: "pointer" }}
                     onClick={() => setExpanded(true)}
                   >
                     ...more
-                  </Typography>
+                  </span>
                 )}
               </Typography>
             );
           })}
       </CardContent>
-
       {/* Category Chips */}
-      {/* @TODO: Make it clickable */}
       {post.categories && (
         <Box sx={{ padding: "0 16px" }}>
           {post.categories.map((category) => (
@@ -122,7 +140,7 @@ export default function PostCard({ post, currentUser }) {
         >
           <ThumbUp sx={{ marginRight: "0.5rem" }} />
           <Typography variant="body2">
-            {post.likes_count != 0 && post.likes_count}
+            {post.likes_count !== 0 && post.likes_count}
           </Typography>
         </IconButton>
         <IconButton
@@ -132,7 +150,7 @@ export default function PostCard({ post, currentUser }) {
         >
           <ChatBubble sx={{ marginRight: "0.5rem" }} />
           <Typography variant="body2">
-            {post.comments_count != 0 && post.comments_count}
+            {post.comments_count !== 0 && post.comments_count}
           </Typography>
         </IconButton>
         <Button

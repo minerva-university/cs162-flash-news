@@ -74,6 +74,12 @@ function SignupPage() {
         throw new Error(data.message || "Failed to register");
       }
 
+      // Store the tokens
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("profile_picture", data.profile_picture || "");
+
       setSnackbar({
         open: true,
         message: "Signup successful! You are being redirected to your profile setting.",
