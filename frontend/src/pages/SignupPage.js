@@ -10,6 +10,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import "../App.css";
 import { useNavigate } from "react-router-dom";
 
 function SignupPage() {
@@ -82,8 +83,7 @@ function SignupPage() {
 
       setSnackbar({
         open: true,
-        message:
-          "Signup successful! You are being redirected to your profile setting.",
+        message: "Signup successful! You are being redirected to your profile setting.",
         severity: "success",
       });
 
