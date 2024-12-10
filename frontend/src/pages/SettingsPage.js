@@ -6,253 +6,269 @@ import {
   Divider,
   TextField,
   Button,
-  Modal,
+  CircularProgress,
+  Avatar,
+  Alert,
 } from "@mui/material";
 
 const SettingsPage = () => {
-    const DB_HOST = "http://127.0.0.1:5000/api";
-    const { username } = useParams();
+  const DB_HOST = "http://127.0.0.1:5000/api";
+  const { username } = useParams();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!username) {
-          console.error("Username not provided in URL");
-          return;
-        }
-    
-        // Fetch user-specific data using the username
-        fetchData(username);
-      }, [username]);
-    
-      const fetchData = async (username) => {
-        try {
-          const response = await fetch(`${DB_HOST}/user/${username}`);
-          if (!response.ok) throw new Error("Failed to fetch user data");
-    
-          const data = await response.json();
-          console.log("User data fetched successfully:", data);
-          
-        // Set data to state here
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      };
-    const navigate = useNavigate();
-    const [userData, setUserData] = useState({
-        username: "",
-        bio_description: "",
-        tags: [],
-    });
-    const [newUsername, setNewUsername] = useState("");
-    const [newBio, setNewBio] = useState("");
-    const [newTags, setNewTags] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userData, setUserData] = useState({
+    username: "",
+    bio_description: "",
+    tags: [],
+    profile_picture: "",
+  });
 
-    // Fetch user data
-    useEffect(() => {
-        const fetchUserData = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(
-            `${DB_HOST}/user/${username}`,
-            {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            }
-            );
-            const data = await response.json();
-            if (response.ok) {
-            setUserData(data);
-            setNewUsername(data.username);
-            setNewBio(data.bio_description || "");
-            setNewTags(data.tags ? data.tags.join(", ") : ""); // Default to empty string
-            } else {
-            console.error("Error fetching user data:", data.error);
-            }
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-        } finally {
-            setLoading(false);
-        }
-        };
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null); 
+  const [alert, setAlert] = useState({ message: "", severity: "" });
 
-        fetchUserData();
-    }, [username]);
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const accessToken = localStorage.getItem("access_token");
+        const response = await fetch(`${DB_HOST}/user/`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-    // Update user data
-    const handleUpdate = async (field, value) => {
-        try {
-        const response = await fetch(
-            `${DB_HOST}/user/update/${username}`,
-            {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ [field]: value }),
-            credentials: "include",
-            }
-        );
-        if (response.ok) {
-            alert(`${field} updated successfully!`);
-            navigate(`/${newUsername}/settings`);
-        } else {
-            alert(`Failed to update ${field}.`);
-        }
-        } catch (error) {
-        console.error(`Error updating ${field}:`, error);
-        }
+        if (!response.ok) throw new Error("Failed to fetch user data");
+
+        const data = await response.json();
+        setUserData(data.data);
+      } catch (error) {
+        setAlert({ message: error.message, severity: "error" });
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const handleDeleteProfile = async () => {
-        try {
-        const response = await fetch(
-            `${DB_HOST}/user/delete/${username}`,
-            {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            }
-        );
-        if (response.ok) {
-            alert("Profile deleted successfully!");
-            navigate("/");
-        } else {
-            alert("Failed to delete profile.");
-        }
-        } catch (error) {
-        console.error("Error deleting profile:", error);
-        }
-    };
+    fetchUserData();
+  }, [username]);
 
-    if (loading) return <Typography>Loading...</Typography>;
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
+  // Handle profile picture file change
+  const handleProfilePictureChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfilePicture(e.target.files[0]);
+    }
+  };
+
+  // Save all changes
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("access_token");
+
+      // Validate username is not empty
+      if (!userData.username.trim()) {
+        setAlert({ message: "Username is mandatory", severity: "error" });
+        setSaving(false);
+        return;
+      }
+
+      // Prepare the form data for profile picture upload
+      const formData = new FormData();
+      formData.append("username", userData.username);
+      formData.append("bio_description", userData.bio_description || ""); // Send an empty string if undefined
+      formData.append("tags", JSON.stringify(userData.tags));
+      if (profilePicture) {
+        formData.append("profile_picture", profilePicture); 
+      }
+
+      const response = await fetch(`${DB_HOST}/user/`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to save changes");
+
+      setAlert({ message: "Changes saved successfully", severity: "success" });
+
+      // Redirect to the user's profile page
+      navigate(`/${userData.username}/profile`);
+
+    } catch (error) {
+      setAlert({ message: error.message, severity: "error" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
     return (
-        <Box
+      <Box
         sx={{
-            maxWidth: "600px",
-            margin: "0 auto",
-            padding: "32px",
-            backgroundColor: "#fff",
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
         }}
-        >
-        <Typography variant="h4" sx={{ fontWeight: "bold", marginBottom: "16px" }}>
-            Settings for {username}
-        </Typography>
-
-        {/* Change Username */}
-        <Box sx={{ marginBottom: "24px" }}>
-            <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", marginBottom: "8px" }}
-            >
-            Change Username
-            </Typography>
-            <TextField
-            label="New Username"
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
-            fullWidth
-            sx={{ marginBottom: "16px" }}
-            />
-            <Button
-            variant="contained"
-            onClick={() => handleUpdate("username", newUsername)}
-            sx={{
-                backgroundColor: "#79A3B1",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#456268" },
-            }}
-            >
-            Save Username
-            </Button>
-        </Box>
-        <Divider sx={{ marginBottom: "24px" }} />
-
-        {/* Change Bio */}
-        <Box sx={{ marginBottom: "24px" }}>
-            <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", marginBottom: "8px" }}
-            >
-            Change Bio
-            </Typography>
-            <TextField
-            label="New Bio"
-            value={newBio}
-            onChange={(e) => setNewBio(e.target.value)}
-            fullWidth
-            sx={{ marginBottom: "16px" }}
-            />
-            <Button
-            variant="contained"
-            onClick={() => handleUpdate("bio_description", newBio)}
-            sx={{
-                backgroundColor: "#79A3B1",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#456268" },
-            }}
-            >
-            Save Bio
-            </Button>
-        </Box>
-        <Divider sx={{ marginBottom: "24px" }} />
-
-        {/* Change Tags */}
-        <Box sx={{ marginBottom: "24px" }}>
-            <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", marginBottom: "8px" }}
-            >
-            Change Tags
-            </Typography>
-            <TextField
-            label="New Tags (comma-separated)"
-            value={newTags}
-            onChange={(e) => setNewTags(e.target.value)}
-            fullWidth
-            sx={{ marginBottom: "16px" }}
-            />
-            <Button
-            variant="contained"
-            onClick={() =>
-                handleUpdate(
-                "tags",
-                newTags.split(",").map((tag) => tag.trim())
-                )
-            }
-            sx={{
-                backgroundColor: "#79A3B1",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#456268" },
-            }}
-            >
-            Save Tags
-            </Button>
-        </Box>
-        <Divider sx={{ marginBottom: "24px" }} />
-
-        {/* Delete Profile */}
-        <Box>
-            <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", color: "red", marginBottom: "8px" }}
-            >
-            Delete Profile
-            </Typography>
-            <Typography variant="body2" sx={{ marginBottom: "16px", color: "gray" }}>
-            Warning: This action is irreversible. Deleting your profile will
-            remove all your data permanently.
-            </Typography>
-            <Button
-            variant="contained"
-            color="error"
-            onClick={handleDeleteProfile}
-            >
-            DELETE PROFILE
-            </Button>
-        </Box>
-        </Box>
+      >
+        <CircularProgress />
+      </Box>
     );
-    };
+  }
 
-    export default SettingsPage;
+  return (
+    <Box
+      sx={{
+        maxWidth: "600px",
+        margin: "40px auto",
+        padding: "32px",
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      }}
+    >
+      <Typography variant="h4" sx={{ fontWeight: "bold", marginBottom: "16px" }}>
+        Settings
+      </Typography>
+
+      {alert.message && (
+        <Alert
+          severity={alert.severity}
+          onClose={() => setAlert({ message: "", severity: "" })}
+          sx={{ marginBottom: "16px" }}
+        >
+          {alert.message}
+        </Alert>
+      )}
+
+      {/* Change Profile Picture */}
+      <Box sx={{ textAlign: "center", marginBottom: "24px" }}>
+        <Avatar
+          src={profilePicture ? URL.createObjectURL(profilePicture) : userData.profile_picture}
+          alt={userData.username}
+          sx={{
+            width: 100,
+            height: 100,
+            margin: "0 auto",
+            marginBottom: "16px",
+            border: "2px solid #79A3B1",
+          }}
+        />
+        <Button variant="contained" component="label" sx={{ marginBottom: "8px" }}>
+          Upload Profile Picture
+          <input type="file" hidden onChange={handleProfilePictureChange} />
+        </Button>
+      </Box>
+
+      <Divider sx={{ marginBottom: "24px" }} />
+
+      {/* Change Username */}
+      <Box sx={{ marginBottom: "24px" }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", marginBottom: "8px" }}
+        >
+          Username
+        </Typography>
+        <TextField
+          label="Username"
+          name="username"
+          value={userData.username}
+          onChange={handleChange}
+          fullWidth
+          sx={{ marginBottom: "16px" }}
+        />
+      </Box>
+      <Divider sx={{ marginBottom: "24px" }} />
+
+      {/* Change Bio */}
+      <Box sx={{ marginBottom: "24px" }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", marginBottom: "8px" }}
+        >
+          Bio
+        </Typography>
+        <TextField
+          label="Bio"
+          name="bio_description"
+          value={userData.bio_description || ""}
+          onChange={handleChange}
+          fullWidth
+          sx={{ marginBottom: "16px" }}
+        />
+      </Box>
+      <Divider sx={{ marginBottom: "24px" }} />
+
+      {/* Change Tags */}
+      <Box sx={{ marginBottom: "24px" }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", marginBottom: "8px" }}
+        >
+          Tags (comma-separated)
+        </Typography>
+        <TextField
+          label="Tags"
+          name="tags"
+          value={userData.tags.join(", ") || ""}
+          onChange={(e) =>
+            setUserData((prev) => ({
+              ...prev,
+              tags: e.target.value.split(",").map((tag) => tag.trim()),
+            }))
+          }
+          fullWidth
+          sx={{ marginBottom: "16px" }}
+        />
+      </Box>
+
+      {/* Save Changes */}
+      <Button
+        variant="contained"
+        onClick={handleSave}
+        disabled={saving}
+        fullWidth
+        sx={{
+          backgroundColor: "#79A3B1",
+          color: "#fff",
+          "&:hover": { backgroundColor: "#456268" },
+        }}
+      >
+        {saving ? "Saving..." : "Save Changes"}
+      </Button>
+
+      {/* Go Back to Profile */}
+      <Button
+        variant="outlined"
+        onClick={() => navigate(`/${userData.username}/profile`)}
+        fullWidth
+        sx={{
+            marginTop: "16px",
+            borderColor: "#79A3B1",
+            color: "#79A3B1",
+            "&:hover": { borderColor: "#456268", color: "#456268" },
+        }}
+      >
+        Go Back to Profile
+      </Button>
+    </Box>
+  );
+};
+
+export default SettingsPage;
