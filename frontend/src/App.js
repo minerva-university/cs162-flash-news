@@ -26,23 +26,18 @@ function App() {
   const location = useLocation();
   const publicRoutes = ["/login", "/signup"];
 
-  const currentUser = {
-    user_id: 1, // Hardcoded user ID
-    username: "testuser", // Hardcoded username
-  };
-
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        {!publicRoutes.includes(location.pathname) && <Header currentUser={currentUser} />}
+        {!publicRoutes.includes(location.pathname) && <Header />}
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
-          <Route path="/user/:username/collections" element={<CollectionsPage currentUser={currentUser} />} />
-          <Route path="/collections/:id/:title" element={<CollectionDetailModal currentUser={currentUser} />} />
+          <Route path="/user/:username/collections" element={<CollectionsPage />} />
+          <Route path="/collections/:id/:title" element={<CollectionDetailModal />} />
           <Route path="/:username/settings" element={<SettingsPage />} />
-          <Route path="/:username/profile" element={<ProfilePage currentUser={currentUser} />} />
+          <Route path="/:username/profile" element={<ProfilePage />} />
           <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </ThemeProvider>
