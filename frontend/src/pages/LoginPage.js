@@ -117,7 +117,7 @@ function LoginPage() {
         </Alert>
       </Snackbar>
 
-      <Paper
+      <Box
         elevation={6}
         sx={{
           maxWidth: "500px",
@@ -149,10 +149,7 @@ function LoginPage() {
             fullWidth
             variant="outlined"
             margin="normal"
-            value={formData.email}
-            onChange={handleChange}
-            sx={{ marginBottom: "1.5rem" }}
-          />
+          /> 
           <TextField
             label="Password"
             name="password"
@@ -160,10 +157,7 @@ function LoginPage() {
             fullWidth
             variant="outlined"
             margin="normal"
-            value={formData.password}
-            onChange={handleChange}
-            sx={{ marginBottom: "1.5rem" }}
-          />
+          /> 
           <FormControlLabel
             control={
               <Checkbox
@@ -186,20 +180,7 @@ function LoginPage() {
             Log In
           </Button>
         </Box>
-        <Typography
-          variant="body2"
-          align="center"
-          sx={{
-            marginTop: "1rem",
-            cursor: "pointer",
-            textDecoration: "underline",
-            color: "#5F848C",
-          }}
-          onClick={() => navigate("/signup")}
-        >
-          Don't have an account? Sign up here.
-        </Typography>
-      </Paper>
+      </Box> 
     </Box>
   );
 }

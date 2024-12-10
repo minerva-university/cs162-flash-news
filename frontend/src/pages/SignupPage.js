@@ -120,23 +120,7 @@ function SignupPage() {
         padding: "2rem",
       }}
     >
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={10000} // Lasts 10 seconds
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
-      <Paper
-        elevation={6}
+      <Box 
         sx={{
           maxWidth: "500px",
           width: "100%",
@@ -167,10 +151,7 @@ function SignupPage() {
             fullWidth
             variant="outlined"
             margin="normal"
-            value={formData.name}
-            onChange={handleChange}
-            sx={{ marginBottom: "1.5rem" }}
-          />
+          /> 
           <TextField
             label="Email"
             name="email"
@@ -178,10 +159,7 @@ function SignupPage() {
             fullWidth
             variant="outlined"
             margin="normal"
-            value={formData.email}
-            onChange={handleChange}
-            sx={{ marginBottom: "1.5rem" }}
-          />
+          /> 
           <TextField
             label="Password"
             name="password"
@@ -189,10 +167,7 @@ function SignupPage() {
             fullWidth
             variant="outlined"
             margin="normal"
-            value={formData.password}
-            onChange={handleChange}
-            sx={{ marginBottom: "1.5rem" }}
-          />
+          /> 
           <FormControlLabel
             control={
               <Checkbox
@@ -228,7 +203,7 @@ function SignupPage() {
         >
           Already have an account? Log in here.
         </Typography>
-      </Paper>
+      </Box>
     </Box>
   );
 }
