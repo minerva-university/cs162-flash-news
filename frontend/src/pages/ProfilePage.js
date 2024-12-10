@@ -6,6 +6,7 @@ import {
   Button,
   CircularProgress,
   Divider,
+  Typography,
 } from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
