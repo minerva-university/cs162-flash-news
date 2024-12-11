@@ -148,10 +148,7 @@ const SettingsPage = () => {
         throw new Error("Failed to delete account.");
       }
 
-      setAlert({
-        message: "Account deleted successfully!",
-        severity: "success",
-      });
+      setAlert({ message: "Account deleted successfully!", severity: "success" });
       localStorage.clear(); // Clear local storage after account deletion
       navigate("/signup"); // Redirect to the signup page
     } catch (error) {
