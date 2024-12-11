@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -10,112 +11,132 @@ import {
   IconButton,
   Modal,
   TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const ArticleCard = ({ article, username }) => {
+// TODO: Fix the styling of the card 
+
+const ArticleCard = ({ post, username, onPostUpdate }) => {
   const DB_HOST = "http://127.0.0.1:5000/api";
+  const navigate = useNavigate();
   const loggedInUsername = localStorage.getItem("username");
   const accessToken = localStorage.getItem("access_token");
   const isOwner = username === loggedInUsername;
+
+  console.log("Initializing ArticleCard with post:", post);
+
+  // Initialize edit form state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    title: article.title,
-    description: article.description,
-    link: article.link,
-    category: article.category,
+    title: post.article.title || "",
+    description: post.description || "",
+    link: post.article.link || "",
+    categories: post.categories || [],
   });
 
   // Open and close edit modal
-  const handleOpenModal = () => setEditModalOpen(true);
-  const handleCloseModal = () => setEditModalOpen(false);
-
-  // Set form data on input change
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData({ ...editFormData, [name]: value });
+  const handleOpenModal = () => {
+    console.log("Opening modal for editing");
+    setEditModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    console.log("Closing modal");
+    setEditModalOpen(false);
   };
 
-  // Handle edit form change in state
-  const onEdit = async (article) => {
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    console.log(`Handling input change for ${name}:`, value);
+    setEditFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handle category selection change
+  const handleCategoryChange = (event) => {
+    console.log("Selected new categories:", event.target.value);
+    setEditFormData((prev) => ({
+      ...prev,
+      categories: event.target.value,
+    }));
+  };
+
+  // Handle post edit
+  const handleEditPost = async () => {
+    console.log("Submitting edit with data:", editFormData);
+    console.log("Post ID:", post.post_id);
+    console.log("Post title:", editFormData.title);
+    console.log("Post description:", editFormData.description);
+    console.log("Post link:", editFormData.link);
+    console.log("Post categories:", editFormData.categories);
     try {
-      const response = await fetch(`${DB_HOST}/posts/${article.post_id}`, {
+      const response = await fetch(`${DB_HOST}/posts/${post.post_id}`, {
         method: "PUT",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          description: article.newDescription, 
-          article_link: article.newLink,
-          categories: article.newCategories,
+          article_link: editFormData.link.trim(),
+          title: editFormData.title.trim(),
+          description: editFormData.description.trim(),
+          categories: editFormData.categories,
         }),
       });
+
+      console.log("body", JSON.stringify({  article_link: editFormData.link.trim(), title: editFormData.title.trim(), description: editFormData.description.trim(), categories: editFormData.categories, }));
+
       if (response.ok) {
-        alert("Post updated successfully");
+        console.log("Edit successful");
+        handleCloseModal();
+        //navigate(0); // Refresh the page
+        //if (onPostUpdate) onPostUpdate(); // Refresh parent data
       } else {
         const errorData = await response.json();
-        alert(errorData.error || "Failed to update post");
+        console.error("Failed to update post:", errorData);
+        alert(errorData.error || "Failed to update the post.");
       }
-    } catch (err) {
-      console.error("Error editing post:", err);
-      alert("An error occurred");
+    } catch (error) {
+      console.error("Error editing post:", error);
+      alert("An error occurred while editing the post.");
     }
-  };  
-
-  // Handle edit form submission
-  const handleSubmitEdit = () => {
-    onEdit(article.post_id, editFormData); 
-    handleCloseModal();
   };
 
-  const onDelete = async (article) => {
+  // Handle post deletion
+  const handleDeletePost = async () => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
+    console.log("Attempting to delete post:", post.post_id);
+
     try {
-      const response = await fetch(`${DB_HOST}/posts/${article.post_id}/delete`, {
+      const response = await fetch(`${DB_HOST}/posts/${post.post_id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
+
       if (response.ok) {
-        alert("Post deleted successfully");
-        // Refresh the list of posts or update state here
+        console.log("Deletion successful");
+        alert("Post deleted successfully!");
+        if (onPostUpdate) onPostUpdate(); // Refresh parent data
       } else {
         const errorData = await response.json();
-        alert(errorData.error || "Failed to delete post");
+        console.error("Failed to delete post:", errorData);
+        alert(errorData.error || "Failed to delete the post.");
       }
-    } catch (err) {
-      console.error("Error deleting post:", err);
-      alert("An error occurred");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("An error occurred while deleting the post.");
     }
   };
 
-  const onRemoveArticle = async (article, collectionId) => {
-    try {
-      const response = await fetch(
-        `${DB_HOST}/collections/${collectionId}/posts/${article.post_id}/remove`,
-        {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-          },
-        }
-      );
-      if (response.ok) {
-        alert("Article removed from collection successfully");
-        // Refresh collection or update state here
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || "Failed to remove article");
-      }
-    } catch (err) {
-      console.error("Error removing article:", err);
-      alert("An error occurred");
-    }
-  };
-  
   return (
     <Card
       sx={{
@@ -126,16 +147,16 @@ const ArticleCard = ({ article, username }) => {
         borderRadius: "8px",
         overflow: "hidden",
         boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-        maxWidth: 400,
+        maxWidth: 300,
         height: "100%",
-        margin: "5px",
+        margin: "5px 8px",
       }}
     >
-      {/* Image Section */}
+      {/* Article Image */}
       <Box
         component="img"
-        src={article.image || "https://via.placeholder.com/300x150"}
-        alt={article.title}
+        src={post.article.preview || "https://via.placeholder.com/300x150"}
+        alt={post.article.title}
         sx={{
           width: "100%",
           height: "150px",
@@ -144,11 +165,11 @@ const ArticleCard = ({ article, username }) => {
         }}
       />
 
-      {/* Content Section */}
+      {/* Article Content */}
       <CardContent
         sx={{
           flex: "1 1 auto",
-          padding: "20px",
+          padding: "10px",
           display: "flex",
           flexDirection: "column",
         }}
@@ -162,7 +183,7 @@ const ArticleCard = ({ article, username }) => {
             fontFamily: "Roboto",
           }}
         >
-          {article.title}
+          {post.article.title}
         </Typography>
         <Typography
           variant="body2"
@@ -172,7 +193,7 @@ const ArticleCard = ({ article, username }) => {
             fontFamily: "Roboto",
           }}
         >
-          {article.source}
+          {post.article.source}
         </Typography>
         <Typography
           variant="body2"
@@ -182,10 +203,10 @@ const ArticleCard = ({ article, username }) => {
             fontFamily: "Roboto",
           }}
         >
-          {article.description}
+          {post.description}
         </Typography>
 
-        {/* Category and Author */}
+        {/* Categories and Author */}
         <Box
           sx={{
             display: "flex",
@@ -193,16 +214,24 @@ const ArticleCard = ({ article, username }) => {
             alignItems: "center",
           }}
         >
-          <Chip
-            label={article.category}
-            size="small"
-            sx={{
-              backgroundColor: "#79A3B1",
-              color: "#FCF8EC",
-            }}
-          />
+          {post.categories.map((category, index) => (
+            <Chip
+              key={index}
+              label={category}
+              size="small"
+              sx={{
+                backgroundColor: "#79A3B1",
+                color: "#FCF8EC",
+                marginRight: "4px",
+              }}
+            />
+          ))}
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Avatar sx={{ bgcolor: "#D0E8F2", width: 30, height: 30 }} />
+            <Avatar
+              src={post.user.profile_picture || ""}
+              alt={post.user.username}
+              sx={{ bgcolor: "#D0E8F2", width: 30, height: 30 }}
+            />
             <Typography
               variant="body2"
               sx={{
@@ -211,19 +240,21 @@ const ArticleCard = ({ article, username }) => {
                 fontFamily: "Roboto",
               }}
             >
-              {article.author}
+              {post.user.username}
             </Typography>
           </Box>
         </Box>
       </CardContent>
 
-      {/* Action Buttons */}
+      {/* Actions */}
       {isOwner && (
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            padding: "8px 16px",
+            padding: "8px",
+            marginTop: "-20px",
+            marginBottom: "4px",
           }}
         >
           <IconButton
@@ -236,7 +267,7 @@ const ArticleCard = ({ article, username }) => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={() => onDelete(article)}
+            onClick={handleDeletePost}
             sx={{
               color: "#5F848C",
               "&:hover": { color: "#A94442" },
@@ -250,7 +281,7 @@ const ArticleCard = ({ article, username }) => {
       {/* Read More Button */}
       <Button
         variant="contained"
-        href={article.link}
+        href={post.article.link}
         target="_blank"
         rel="noopener noreferrer"
         sx={{
@@ -258,6 +289,7 @@ const ArticleCard = ({ article, username }) => {
           color: "#FCF8EC",
           fontWeight: "bold",
           borderRadius: "0 0 8px 8px",
+          margin: "0",
           "&:hover": {
             backgroundColor: "#266a7a",
           },
@@ -282,12 +314,12 @@ const ArticleCard = ({ article, username }) => {
           }}
         >
           <Typography variant="h6" sx={{ marginBottom: "16px" }}>
-            Edit Article
+            Edit Post
           </Typography>
           <TextField
             label="Title"
             name="title"
-            value={editFormData.title}
+            value={editFormData.title || ""}
             onChange={handleInputChange}
             fullWidth
             sx={{ marginBottom: "16px" }}
@@ -295,7 +327,7 @@ const ArticleCard = ({ article, username }) => {
           <TextField
             label="Description"
             name="description"
-            value={editFormData.description}
+            value={editFormData.description || ""}
             onChange={handleInputChange}
             fullWidth
             sx={{ marginBottom: "16px" }}
@@ -303,19 +335,30 @@ const ArticleCard = ({ article, username }) => {
           <TextField
             label="Link"
             name="link"
-            value={editFormData.link}
+            value={editFormData.link || ""}
             onChange={handleInputChange}
             fullWidth
             sx={{ marginBottom: "16px" }}
           />
-          <TextField
-            label="Category"
-            name="category"
-            value={editFormData.category}
-            onChange={handleInputChange}
-            fullWidth
-            sx={{ marginBottom: "16px" }}
-          />
+          <FormControl fullWidth sx={{ marginBottom: "16px" }}>
+            <InputLabel id="category-label">Categories</InputLabel>
+            <Select
+              labelId="category-label"
+              id="categories"
+              multiple
+              value={editFormData.categories}
+              onChange={handleCategoryChange}
+              renderValue={(selected) => selected.join(", ")}
+            >
+              {["Science", "Technology", "Health", "Politics", "Education"].map(
+                (category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                )
+              )}
+            </Select>
+          </FormControl>
           <Box
             sx={{
               display: "flex",
@@ -323,7 +366,7 @@ const ArticleCard = ({ article, username }) => {
               gap: "8px",
             }}
           >
-            <Button variant="contained" onClick={handleSubmitEdit}>
+            <Button variant="contained" onClick={handleEditPost}>
               Save
             </Button>
             <Button variant="outlined" onClick={handleCloseModal}>
