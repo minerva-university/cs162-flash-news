@@ -29,13 +29,10 @@ const ProfilePage = () => {
       state: { collection, username },
     });
   };
-
+  
   // Fetch profile data
   const fetchProfileData = async () => {
     try {
-      console.log("Starting fetchProfileData");
-  
-      // Retrieve access token
       const accessToken = localStorage.getItem("access_token");
 
       if (!accessToken) {
@@ -65,8 +62,7 @@ const ProfilePage = () => {
       console.error("Error in fetchProfileData:", error);
     }
   };  
-  
-  
+
   useEffect(() => {
     fetchProfileData();
   }, [username]);
@@ -239,8 +235,7 @@ const ProfilePage = () => {
                 color: "#D9EAF3",
               }}
             >
-              {username[0].toLocaleUpperCase()}
-              {username.slice(1).toLowerCase()}
+              {username[0].toLocaleUpperCase()}{username.slice(1).toLowerCase()}
             </Typography>
             {profileData.bio_description ? (
               <Typography
@@ -373,8 +368,7 @@ const ProfilePage = () => {
           marginBottom: "20px",
         }}
       >
-        {username[0].toLocaleUpperCase()}
-        {username.slice(1).toLowerCase()}'s Most Recent Public Collections
+        {username[0].toLocaleUpperCase()}{username.slice(1).toLowerCase()}'s Most Recent Public Collections
       </Typography>
 
       <Box
