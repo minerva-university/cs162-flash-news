@@ -37,8 +37,14 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
-          <Route path="/user/:username/collections" element={<CollectionsPage />} />
-          <Route path="/collections/:id/:title" element={<CollectionDetailModal />} />
+          <Route
+            path="/user/:username/collections"
+            element={<CollectionsPage />}
+          />
+          <Route
+            path="/collections/:id/:title"
+            element={<CollectionDetailModal />}
+          />
           <Route path="/:username/settings" element={<SettingsPage />} />
           <Route path="/:username/profile" element={<ProfilePage />} />
           <Route path="/signup" element={<SignupPage />} />
