@@ -15,6 +15,7 @@ from .models import User, Follow
 
 # Initialize blueprint and set the upload folder
 user_bp = Blueprint('user', __name__, url_prefix='/api/user')
+
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -231,7 +232,7 @@ def follow_user(user_id):
     except Exception as e:
         db.session.rollback()
         return create_error_response(str(e), 500)
-
+    
 # Unfollow user route
 @user_bp.route('/unfollow/<int:user_id>', methods=['POST'])
 @jwt_required() 
@@ -268,7 +269,7 @@ def unfollow_user(user_id):
     except Exception as e:
         db.session.rollback()
         return create_error_response(str(e), 500)
-    
+        
 # Get list of users the current user is following
 @user_bp.route('/following', methods=['GET'])
 @jwt_required()
