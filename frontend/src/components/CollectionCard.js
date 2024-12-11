@@ -5,7 +5,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {  
+const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
   return (
     <Box
       sx={{
@@ -20,7 +20,7 @@ const CollectionCard = ({ collection, onClick, isOwner, onEdit, onDelete }) => {
           transform: "translateY(-8px)",
           boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
         },
-        position: "relative", 
+        position: "relative",
       }}
       onClick={onClick}
     >

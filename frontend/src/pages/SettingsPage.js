@@ -32,12 +32,11 @@ const SettingsPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [profilePicture, setProfilePicture] = useState(null); 
+  const [profilePicture, setProfilePicture] = useState(null);
   const [alert, setAlert] = useState({ message: "", severity: "" });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-
-  // Fetch user data 
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -98,10 +97,10 @@ const SettingsPage = () => {
       // Prepare the form data for profile picture upload
       const formData = new FormData();
       formData.append("username", userData.username);
-      formData.append("bio_description", userData.bio_description || ""); 
+      formData.append("bio_description", userData.bio_description || "");
       formData.append("tags", JSON.stringify(userData.tags));
       if (profilePicture) {
-        formData.append("profile_picture", profilePicture); 
+        formData.append("profile_picture", profilePicture);
       }
 
       const response = await fetch(`${DB_HOST}/user`, {
@@ -115,17 +114,18 @@ const SettingsPage = () => {
       if (!response.ok) {
         const errorData = await response.json();
         if (errorData.message === "Username already exists") {
-          throw new Error("The username is already taken. Please choose another.");
+          throw new Error(
+            "The username is already taken. Please choose another.",
+          );
         } else {
           throw new Error("Failed to save changes.");
-        } 
+        }
       }
 
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
       // Redirect to the user's profile page
       navigate(`/${userData.username}/profile`);
-
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     } finally {
@@ -184,7 +184,10 @@ const SettingsPage = () => {
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <Typography variant="h4" sx={{ fontWeight: "bold", marginBottom: "16px" }}>
+      <Typography
+        variant="h4"
+        sx={{ fontWeight: "bold", marginBottom: "16px" }}
+      >
         Settings
       </Typography>
 
@@ -201,7 +204,11 @@ const SettingsPage = () => {
       {/* Change Profile Picture */}
       <Box sx={{ textAlign: "center", marginBottom: "24px" }}>
         <Avatar
-          src={profilePicture ? URL.createObjectURL(profilePicture) : userData.profile_picture}
+          src={
+            profilePicture
+              ? URL.createObjectURL(profilePicture)
+              : userData.profile_picture
+          }
           alt={userData.username}
           sx={{
             width: 100,
@@ -211,7 +218,11 @@ const SettingsPage = () => {
             border: "2px solid #79A3B1",
           }}
         />
-        <Button variant="contained" component="label" sx={{ marginBottom: "8px" }}>
+        <Button
+          variant="contained"
+          component="label"
+          sx={{ marginBottom: "8px" }}
+        >
           Upload Profile Picture
           <input type="file" hidden onChange={handleProfilePictureChange} />
         </Button>
@@ -301,10 +312,10 @@ const SettingsPage = () => {
         onClick={() => navigate(`/${username}/profile`)}
         fullWidth
         sx={{
-            marginTop: "16px",
-            borderColor: "#79A3B1",
-            color: "#79A3B1",
-            "&:hover": { borderColor: "#456268", color: "#456268" },
+          marginTop: "16px",
+          borderColor: "#79A3B1",
+          color: "#79A3B1",
+          "&:hover": { borderColor: "#456268", color: "#456268" },
         }}
       >
         Go Back to Profile

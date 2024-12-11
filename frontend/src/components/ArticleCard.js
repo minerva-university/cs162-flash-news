@@ -19,7 +19,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-// TODO: Fix the styling of the card 
+// TODO: Fix the styling of the card
 
 const ArticleCard = ({ post, username, onPostUpdate }) => {
   const DB_HOST = "http://127.0.0.1:5000/api";
@@ -91,7 +91,15 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
         }),
       });
 
-      console.log("body", JSON.stringify({  article_link: editFormData.link.trim(), title: editFormData.title.trim(), description: editFormData.description.trim(), categories: editFormData.categories, }));
+      console.log(
+        "body",
+        JSON.stringify({
+          article_link: editFormData.link.trim(),
+          title: editFormData.title.trim(),
+          description: editFormData.description.trim(),
+          categories: editFormData.categories,
+        }),
+      );
 
       if (response.ok) {
         console.log("Edit successful");
@@ -355,7 +363,7 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
                   <MenuItem key={category} value={category}>
                     {category}
                   </MenuItem>
-                )
+                ),
               )}
             </Select>
           </FormControl>

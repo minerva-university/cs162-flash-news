@@ -37,7 +37,7 @@ export default function PostCard({ post }) {
       .catch((error) => console.error(error));
   };
 
-  console.log("post username", post.user.username[0])
+  console.log("post username", post.user.username[0]);
 
   return (
     <Card sx={{ width: "80%", maxWidth: "555px", margin: "0 auto 2rem" }}>

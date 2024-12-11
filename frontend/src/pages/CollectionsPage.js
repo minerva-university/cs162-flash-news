@@ -16,7 +16,7 @@ import EmojiPicker from "emoji-picker-react";
 
 const CollectionsPage = () => {
   const DB_HOST = "http://127.0.0.1:5000/api";
-  const { username } = useParams(); 
+  const { username } = useParams();
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState(null);
@@ -39,21 +39,21 @@ const CollectionsPage = () => {
     description: "",
     emoji: "",
     isPublic: false,
-  });  
+  });
 
   // Emoji picker handler
   const handleEmojiClick = (emoji) => {
     setAddFormData({ ...addFormData, emoji: emoji.emoji });
-    setShowEmojiPicker(false); 
+    setShowEmojiPicker(false);
   };
-  
+
   // Open and close modal for adding collection
   const handleOpenModal = () => setAddOpenModal(true);
   const handleCloseModal = () => setAddOpenModal(false);
 
   // Input change handler for adding collection
   const handleInputChange = (e) => {
-    const { name, value } = e.target; 
+    const { name, value } = e.target;
     setAddFormData({ ...addFormData, [name]: value });
   };
 
@@ -92,17 +92,20 @@ const CollectionsPage = () => {
       setProfileData(userData.data);
 
       // Check ownership
-      const isPageOwner = userData.data.is_owner      
+      const isPageOwner = userData.data.is_owner;
       setIsOwner(isPageOwner);
 
       // Fetch collections
-      const collectionsResponse = await fetch(`${DB_HOST}/collections/user/${userData.data.user_id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+      const collectionsResponse = await fetch(
+        `${DB_HOST}/collections/user/${userData.data.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
       const collectionsData = await collectionsResponse.json();
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
@@ -154,7 +157,12 @@ const CollectionsPage = () => {
       }
 
       const newCollection = await response.json();
-      setAddFormData({ title: "", description: "", emoji: "😀", isPublic: false });
+      setAddFormData({
+        title: "",
+        description: "",
+        emoji: "😀",
+        isPublic: false,
+      });
       setAddOpenModal(false);
 
       if (newCollection.is_public) {
@@ -162,30 +170,29 @@ const CollectionsPage = () => {
       } else {
         setPrivateCollections((prev) => [...prev, newCollection]);
       }
-      fetchCollections(); 
+      fetchCollections();
     } catch (error) {
       console.error("Error creating collection:", error);
       alert(error.message || "An error occurred. Please try again.");
     }
   };
-  
+
   // Open Edit Modal
   const handleEditCollection = (collection) => {
-
     setEditFormData({
       collection_id: collection.collection_id,
       title: collection.title || "",
       description: collection.description || "",
       emoji: collection.emoji || "",
-      isPublic: collection.is_public, 
+      isPublic: collection.is_public,
     });
-  
+
     console.log("Edit form data initialized:", {
       collection_id: collection.collection_id,
       title: collection.title || "",
       description: collection.description || "",
       emoji: collection.emoji || "",
-      isPublic: collection.is_public, 
+      isPublic: collection.is_public,
     });
     setEditModalOpen(true);
   };
@@ -193,8 +200,7 @@ const CollectionsPage = () => {
   // Submit Updated Collection
   const submitEditCollection = async () => {
     try {
-
-      console.log("Submitting edit with data:", editFormData); 
+      console.log("Submitting edit with data:", editFormData);
 
       if (!editFormData.title || !editFormData.emoji) {
         alert("Please fill in all required fields.");
@@ -203,7 +209,9 @@ const CollectionsPage = () => {
 
       const accessToken = localStorage.getItem("access_token");
 
-      const response = await fetch(`${DB_HOST}/collections/${editFormData.collection_id}`, {
+      const response = await fetch(
+        `${DB_HOST}/collections/${editFormData.collection_id}`,
+        {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -215,12 +223,12 @@ const CollectionsPage = () => {
             emoji: editFormData.emoji,
             is_public: editFormData.isPublic,
           }),
-        }
+        },
       );
 
       if (response.ok) {
         setEditModalOpen(false);
-        fetchCollections(); 
+        fetchCollections();
       } else {
         const error = await response.json();
         alert(error.message || "Failed to update collection");
@@ -230,11 +238,12 @@ const CollectionsPage = () => {
       alert("An error occurred. Please try again.");
     }
   };
-  
+
   // Handle delete collection
   const handleDeleteCollection = async (collection_id) => {
-    if (!window.confirm("Are you sure you want to delete this collection?")) return;
-  
+    if (!window.confirm("Are you sure you want to delete this collection?"))
+      return;
+
     try {
       const accessToken = localStorage.getItem("access_token");
 
@@ -246,11 +255,11 @@ const CollectionsPage = () => {
         },
         credentials: "include",
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        fetchCollections(); 
+        fetchCollections();
       } else {
         alert(data.error || "Error deleting collection.");
       }
@@ -258,30 +267,28 @@ const CollectionsPage = () => {
       console.error("Error deleting collection:", error);
     }
   };
-  
+
   // Filter collections by title
   const filteredPublicCollections = publicCollections.filter(
     (collection) =>
-      collection.title?.toLowerCase().includes(searchTerm) || false
+      collection.title?.toLowerCase().includes(searchTerm) || false,
   );
 
   const filteredPrivateCollections = privateCollections.filter(
     (collection) =>
-      collection.title?.toLowerCase().includes(searchTerm) || false
+      collection.title?.toLowerCase().includes(searchTerm) || false,
   );
 
   // Handle collection click
   const handleCollectionClick = (collection) => {
-    console.log("Clicked collection:", collection); 
+    console.log("Clicked collection:", collection);
 
-    const formattedTitle = collection.title
-      ?.toLowerCase()
-      .replace(/\s+/g, "-");
+    const formattedTitle = collection.title?.toLowerCase().replace(/\s+/g, "-");
     navigate(`/collections/${collection.collection_id}/${formattedTitle}`, {
       state: { collection, username },
     });
   };
-  
+
   if (loading) {
     return <Typography>Loading collections...</Typography>;
   }
@@ -320,50 +327,50 @@ const CollectionsPage = () => {
           </Typography>
         </Box>
         {isOwner && (
-        <Button
-          variant="contained"
-          onClick={() => handleOpenModal()}
+          <Button
+            variant="contained"
+            onClick={() => handleOpenModal()}
+            sx={{
+              marginLeft: "auto",
+              backgroundColor: "#79A3B1",
+              color: "#fff",
+              fontWeight: "bold",
+              fontFamily: "'Raleway', sans-serif",
+              "&:hover": {
+                backgroundColor: "#456268",
+              },
+            }}
+          >
+            Add New Collection
+          </Button>
+        )}
+      </Box>
+
+      {/* Search Bar */}
+      <Box
+        sx={{ marginBottom: "24px", display: "flex", justifyContent: "center" }}
+      >
+        <TextField
+          placeholder="Search Collections"
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={handleSearchChange}
           sx={{
-            marginLeft: "auto",
-            backgroundColor: "#79A3B1",
-            color: "#fff",
-            fontWeight: "bold",
-            fontFamily: "'Raleway', sans-serif",
-            "&:hover": {
-              backgroundColor: "#456268",
+            width: "50%",
+            backgroundColor: "#FFFFFF",
+            borderRadius: "8px",
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "#DDD",
+              },
+              "&:hover fieldset": {
+                borderColor: "#79A3B1",
+              },
             },
           }}
-        >
-          Add New Collection
-        </Button>
-      )}
-    </Box>
-
-    {/* Search Bar */}
-    <Box
-      sx={{ marginBottom: "24px", display: "flex", justifyContent: "center" }}
-    >
-      <TextField
-        placeholder="Search Collections"
-        variant="outlined"
-        size="small"
-        value={searchTerm}
-        onChange={handleSearchChange}
-        sx={{
-          width: "50%",
-          backgroundColor: "#FFFFFF",
-          borderRadius: "8px",
-          "& .MuiOutlinedInput-root": {
-            "& fieldset": {
-              borderColor: "#DDD",
-            },
-            "&:hover fieldset": {
-              borderColor: "#79A3B1",
-            },
-          },
-        }}
-      />
-    </Box>
+        />
+      </Box>
 
       {/* Handle no collections */}
       {publicCollections.length === 0 && privateCollections.length === 0 ? (
@@ -405,7 +412,8 @@ const CollectionsPage = () => {
                 <Box
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(300px, 1fr))",
                     gap: "24px",
                   }}
                 >
@@ -416,7 +424,9 @@ const CollectionsPage = () => {
                       onClick={() => handleCollectionClick(collection)}
                       isOwner={isOwner}
                       onEdit={() => handleEditCollection(collection)}
-                      onDelete={() => handleDeleteCollection(collection.collection_id)}
+                      onDelete={() =>
+                        handleDeleteCollection(collection.collection_id)
+                      }
                     />
                   ))}
                 </Box>
@@ -449,7 +459,6 @@ const CollectionsPage = () => {
             )}
           </Box>
 
-
           {/* Private Collections */}
           {isOwner && (
             <Box sx={{ marginTop: "40px" }}>
@@ -470,7 +479,8 @@ const CollectionsPage = () => {
                   <Box
                     sx={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(300px, 1fr))",
                       gap: "24px",
                     }}
                   >
@@ -481,7 +491,9 @@ const CollectionsPage = () => {
                         onClick={() => handleCollectionClick(collection)}
                         isOwner={isOwner}
                         onEdit={() => handleEditCollection(collection)}
-                        onDelete={() => handleDeleteCollection(collection.collection_id)}
+                        onDelete={() =>
+                          handleDeleteCollection(collection.collection_id)
+                        }
                       />
                     ))}
                   </Box>
@@ -581,15 +593,20 @@ const CollectionsPage = () => {
           )}
 
           <FormControlLabel
-            control={<Switch checked={addFormData.isPublic} onChange={handleTogglePublic} />}
+            control={
+              <Switch
+                checked={addFormData.isPublic}
+                onChange={handleTogglePublic}
+              />
+            }
             label="Public"
           />
           <Box
             sx={{
               mt: 1,
               display: "flex",
-              justifyContent: "flex-end", 
-              gap: 1, 
+              justifyContent: "flex-end",
+              gap: 1,
             }}
           >
             <Button variant="contained" onClick={handleCreateCollection}>
@@ -676,8 +693,8 @@ const CollectionsPage = () => {
             sx={{
               mt: 1,
               display: "flex",
-              justifyContent: "flex-end", 
-              gap: 1, 
+              justifyContent: "flex-end",
+              gap: 1,
             }}
           >
             {/* Save Changes Button */}
@@ -693,7 +710,7 @@ const CollectionsPage = () => {
             <Button
               variant="outlined"
               onClick={() => setEditModalOpen(false)}
-              sx={{ marginTop: "16px", marginLeft: "8px",}}
+              sx={{ marginTop: "16px", marginLeft: "8px" }}
             >
               Cancel
             </Button>

@@ -14,10 +14,10 @@ import PostCard from "../components/PostCard";
 
 const ProfilePage = () => {
   const DB_HOST = "http://127.0.0.1:5000/api";
-  const { username } = useParams(); 
+  const { username } = useParams();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
-  const [isOwner, setIsOwner] = useState(false); 
+  const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sharedPosts, setSharedPosts] = useState([]);
   const [collections, setCollections] = useState([]);
@@ -25,23 +25,21 @@ const ProfilePage = () => {
 
   // Handle collection click event (navigate to collection page)
   const handleCollectionClick = (collection) => {
-    const formattedTitle = collection.title
-      ?.toLowerCase()
-      .replace(/\s+/g, "-");
+    const formattedTitle = collection.title?.toLowerCase().replace(/\s+/g, "-");
     navigate(`/collections/${collection.collection_id}/${formattedTitle}`, {
       state: { collection, username },
     });
   };
-  
+
   // Fetch profile data
   const fetchProfileData = async () => {
     try {
       const accessToken = localStorage.getItem("access_token");
-  
+
       if (!accessToken) {
         throw new Error("Access token missing. Please log in.");
       }
-  
+
       const response = await fetch(`${DB_HOST}/user/${username}`, {
         method: "GET",
         headers: {
@@ -49,22 +47,22 @@ const ProfilePage = () => {
           "Content-Type": "application/json",
         },
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch profile data.");
       }
-  
+
       const result = await response.json();
       console.log("Fetched Profile Data:", result);
-  
-      const profile = result.data; 
+
+      const profile = result.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
     } catch (error) {
       console.error("Error in fetchProfileData:", error);
     }
-  };  
+  };
 
   useEffect(() => {
     fetchProfileData();
@@ -77,9 +75,9 @@ const ProfilePage = () => {
         console.error("Profile data or user ID is missing.");
         return;
       }
-  
+
       const accessToken = localStorage.getItem("access_token");
-  
+
       const response = await fetch(
         `${DB_HOST}/posts/user/${profileData.user_id}`,
         {
@@ -88,39 +86,39 @@ const ProfilePage = () => {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch shared posts.");
       }
-  
+
       const data = await response.json();
       console.log("Fetched Shared Posts Raw Data:", data);
-  
+
       // Ensure the response is an array
       const postsArray = data.posts || [];
       console.log("Posts Array:", postsArray);
-  
+
       // Sort posts by `posted_at` in descending order
       const sortedPosts = postsArray.sort(
-        (a, b) => new Date(b.posted_at) - new Date(a.posted_at)
+        (a, b) => new Date(b.posted_at) - new Date(a.posted_at),
       );
-  
+
       console.log("Processed Shared Posts:", sortedPosts);
-  
+
       setSharedPosts(sortedPosts);
     } catch (error) {
       console.error("Error fetching shared posts:", error);
     }
-  };  
+  };
 
   useEffect(() => {
     if (profileData && profileData.user_id) {
       fetchSharedPosts();
     }
-  }, [profileData]);  
+  }, [profileData]);
 
   // Fetch user collections
   const fetchCollections = async () => {
@@ -138,19 +136,19 @@ const ProfilePage = () => {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const collectionsData = await collectionsResponse.json();
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
       console.log("Fetched collections:", collectionsData);
       console.log("Public Collections:", collectionsData.public);
-  
-      // Sort collections based on a date 
+
+      // Sort collections based on a date
       const sortedCollections = (collectionsData?.public || []).sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
-  
+
       // Set sorted collections
       setCollections(sortedCollections);
     } catch (error) {
@@ -193,7 +191,7 @@ const ProfilePage = () => {
         </Typography>
       </Box>
     );
-  }       
+  }
 
   return (
     <Box
@@ -223,8 +221,11 @@ const ProfilePage = () => {
             gap: "16px",
           }}
         >
-          <Avatar sx={{ width: 80, height: 80, bgcolor: "#fff" }} 
-            src={profileData.profile_picture || "https://via.placeholder.com/150"}
+          <Avatar
+            sx={{ width: 80, height: 80, bgcolor: "#fff" }}
+            src={
+              profileData.profile_picture || "https://via.placeholder.com/150"
+            }
             alt={profileData.username[0]}
           />
           <Box>
@@ -235,7 +236,8 @@ const ProfilePage = () => {
                 color: "#D9EAF3",
               }}
             >
-              {username[0].toLocaleUpperCase()}{username.slice(1).toLowerCase()}
+              {username[0].toLocaleUpperCase()}
+              {username.slice(1).toLowerCase()}
             </Typography>
             {profileData.bio_description ? (
               <Typography
@@ -328,8 +330,8 @@ const ProfilePage = () => {
             padding: "20px 0",
           }}
         >
-          {sharedPosts.length ? ( 
-            sharedPosts.slice(0, 3).map((post, index) => ( 
+          {sharedPosts.length ? (
+            sharedPosts.slice(0, 3).map((post, index) => (
               <Box
                 key={index}
                 sx={{
@@ -337,7 +339,7 @@ const ProfilePage = () => {
                   margin: "0 10px",
                 }}
               >
-               <PostCard key={index} post={post} />
+                <PostCard key={index} post={post} />
               </Box>
             ))
           ) : (
@@ -345,7 +347,6 @@ const ProfilePage = () => {
               No posts available.
             </Typography>
           )}
-          
         </Box>
       </Box>
 
@@ -368,7 +369,8 @@ const ProfilePage = () => {
           marginBottom: "20px",
         }}
       >
-        {username[0].toLocaleUpperCase()}{username.slice(1).toLowerCase()}'s Most Recent Public Collections
+        {username[0].toLocaleUpperCase()}
+        {username.slice(1).toLowerCase()}'s Most Recent Public Collections
       </Typography>
 
       <Box
@@ -378,7 +380,6 @@ const ProfilePage = () => {
           gap: "50px",
         }}
       >
-
         {collections.length ? (
           collections.slice(0, 4).map((collection, index) => (
             <Box
@@ -392,25 +393,25 @@ const ProfilePage = () => {
               }}
             >
               <Box
-              sx={{
-                width: "80px",
-                height: "80px",
-                backgroundColor: "#D9EAF3",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "36px",
-                color: "#5F848C",
-                cursor: "pointer",
-                transition: "transform 0.3s, box-shadow 0.3s",
-                "&:hover": {
-                  transform: "translateY(-5px)",
-                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-                },
-              }}
-            >
-              {collection.emoji}
+                sx={{
+                  width: "80px",
+                  height: "80px",
+                  backgroundColor: "#D9EAF3",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "36px",
+                  color: "#5F848C",
+                  cursor: "pointer",
+                  transition: "transform 0.3s, box-shadow 0.3s",
+                  "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                  },
+                }}
+              >
+                {collection.emoji}
               </Box>
               <Typography
                 variant="h6"
@@ -433,26 +434,28 @@ const ProfilePage = () => {
 
         {/* See More Collections Button */}
         {collections.length > 4 && ( // Show the button only if more than 4 collections exist
-            <Box sx={{ textAlign: "center", marginTop: "40px" }}>
-              <Button
-                variant="outlined"
-                onClick={() => navigate(`/user/${profileData.username}/collections`)} 
-                sx={{
-                  borderColor: "#5F848C",
-                  color: "#5F848C",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "50%",
-                  fontWeight: "bold",
-                  "&:hover": {
-                    backgroundColor: "#D9EAF3",
-                  },
-                }}
-              >
-                See More Collections
-              </Button>
-            </Box>
-          )}
+          <Box sx={{ textAlign: "center", marginTop: "40px" }}>
+            <Button
+              variant="outlined"
+              onClick={() =>
+                navigate(`/user/${profileData.username}/collections`)
+              }
+              sx={{
+                borderColor: "#5F848C",
+                color: "#5F848C",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "50%",
+                fontWeight: "bold",
+                "&:hover": {
+                  backgroundColor: "#D9EAF3",
+                },
+              }}
+            >
+              See More Collections
+            </Button>
+          </Box>
+        )}
       </Box>
 
       {isOwner && (
@@ -480,9 +483,9 @@ const ProfilePage = () => {
 
           <Box
             sx={{
-              maxWidth: "1200px", 
-              justifyContent: "center", 
-              padding: "20px 0", 
+              maxWidth: "1200px",
+              justifyContent: "center",
+              padding: "20px 0",
               marginTop: "40px",
               display: "flex",
               alignItems: "center",
@@ -491,12 +494,12 @@ const ProfilePage = () => {
               justifyTracks: "center",
               flexWrap: "wrap",
               gap: "20px",
-              margin: "0 auto", 
+              margin: "0 auto",
             }}
           >
             {sharedPosts.length ? (
               sharedPosts.map((post, index) => (
-                <ArticleCard 
+                <ArticleCard
                   key={index}
                   post={post}
                   username={username}
@@ -508,7 +511,6 @@ const ProfilePage = () => {
                 No articles available.
               </Typography>
             )}
-            
           </Box>
         </>
       )}

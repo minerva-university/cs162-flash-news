@@ -34,7 +34,7 @@ const CollectionDetailModal = () => {
               Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -280,7 +280,10 @@ const CollectionDetailModal = () => {
       )}
 
       {error && (
-        <Typography color="error" sx={{ textAlign: "center", marginTop: "32px" }}>
+        <Typography
+          color="error"
+          sx={{ textAlign: "center", marginTop: "32px" }}
+        >
           {error}
         </Typography>
       )}
