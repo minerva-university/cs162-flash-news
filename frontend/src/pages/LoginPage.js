@@ -7,6 +7,7 @@ import {
   Checkbox,
   FormControlLabel,
   Box,
+  Paper,
   Snackbar,
   Alert,
 } from "@mui/material";
@@ -94,28 +95,46 @@ function LoginPage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#FCF8EC",
+        padding: "2rem",
       }}
     >
-      <Box
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={10000} // Lasts 10 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      <Paper
+        elevation={6}
         sx={{
-          maxWidth: "400px",
+          maxWidth: "500px",
           width: "100%",
+          padding: "2.5rem",
+          borderRadius: "16px",
+          textAlign: "center",
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)",
           backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
         <Typography
           variant="h4"
-          sx={{ textAlign: "center", marginBottom: "1rem" }}
+          sx={{ marginBottom: "1.5rem", fontWeight: 700, color: "#5F848C" }}
         >
-          Sign in
+          Sign In
         </Typography>
         <Typography
           variant="body1"
-          sx={{ textAlign: "center", marginBottom: "2rem" }}
+          sx={{ marginBottom: "2rem", color: "gray" }}
         >
           Welcome! Please sign in to continue
         </Typography>
@@ -129,6 +148,7 @@ function LoginPage() {
             margin="normal"
             value={formData.email}
             onChange={handleChange}
+            sx={{ marginBottom: "1.5rem" }}
           />
           <TextField
             label="Password"
@@ -139,6 +159,7 @@ function LoginPage() {
             margin="normal"
             value={formData.password}
             onChange={handleChange}
+            sx={{ marginBottom: "1.5rem" }}
           />
           <FormControlLabel
             control={
@@ -150,14 +171,14 @@ function LoginPage() {
               />
             }
             label="Remember me"
-            sx={{ marginBottom: "1rem" }}
+            sx={{ marginBottom: "2rem" }}
           />
           <Button
             type="submit"
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ marginBottom: "1rem" }}
+            sx={{ marginBottom: "1rem", padding: "0.75rem", fontWeight: 600 }}
           >
             Log In
           </Button>
@@ -165,28 +186,17 @@ function LoginPage() {
         <Typography
           variant="body2"
           align="center"
-          sx={{ marginTop: "1rem", cursor: "pointer" }}
-          onClick={() => navigate("/signup")} // Navigate to the signup page
+          sx={{
+            marginTop: "1rem",
+            cursor: "pointer",
+            textDecoration: "underline",
+            color: "#5F848C",
+          }}
+          onClick={() => navigate("/signup")}
         >
           Don't have an account? Sign up here.
         </Typography>
-      </Box>
-
-      {/* Snackbar for feedback */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      </Paper>
     </Box>
   );
 }
