@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from . import db
 from .models import Post, Like
 from .utils import check_post_24h
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 likes = Blueprint("like", __name__)
 
@@ -67,7 +68,7 @@ def give_like(post_id):
         return jsonify({"error": "You are not allowed to like this post"}), 403
 
     post_like = Like(
-        user_id=current_user_id,
+        user_id=int(get_jwt_identity()),
         post_id=post_id,
         # user_id=current_user.user_id,
     )
@@ -82,7 +83,7 @@ def give_like(post_id):
 # @TODO: Implement JWT auth decorator
 def remove_like(post_id):
     post_like = Like.query.filter_by(
-        user_id=current_user_id,
+        user_id=int(get_jwt_identity()),
         # user_id=current_user.user_id,
         post_id=post_id,
     ).first()
