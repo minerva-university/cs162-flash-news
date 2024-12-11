@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Card, CardHeader } from "@mui/material";
+import { Card, CardHeader, Typography } from "@mui/material";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 
 import Avatar from "@mui/material/Avatar";
@@ -13,9 +13,11 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import TagsController from "../controllers/TagsController";
+import TagController from "../controllers/TagController";
 import MultipleSelectChip from "../components/MultipleSelectChip";
 import PostController from "../controllers/PostController";
+import UserController from "../controllers/UserController";
+import CollectionController from "../controllers/CollectionController";
 
 // Style for the modal
 const style = {
@@ -37,8 +39,10 @@ export default function AddPostForm({ onPostAdded }) {
   const mainTextareaRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const [collectionsByTitle, setCollectionsByTitle] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [postVisibility, setPostVisibility] = useState("public");
+  const [selectedCollections, setSelectedCollections] = useState([]);
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState("");
 
@@ -50,7 +54,8 @@ export default function AddPostForm({ onPostAdded }) {
     setLink("");
     setLinkError("");
     setCategories([]);
-    mainTextareaRef.current.value = "";
+    if (mainTextareaRef && mainTextareaRef.current)
+      mainTextareaRef.current.value = "";
   };
 
   const handleOpen = async () => {
@@ -59,8 +64,46 @@ export default function AddPostForm({ onPostAdded }) {
     setSelectedCategories([]);
 
     // Get all tags in the database
-    const categories = await TagsController.getAll();
-    setCategories(categories);
+    const availableCategories = await TagController.getAll();
+    if (
+      availableCategories &&
+      availableCategories.categories &&
+      availableCategories.categories.length > 0
+    )
+      setCategories(availableCategories?.categories?.map((c) => c.category_id));
+
+    // Get all collections for the user
+    // Note: this will likely have to change after Laryssa's PR because
+    // we'll be using user.py
+    const { id } = await UserController.getCurrentUserDetails();
+    const collectionResponse =
+      await CollectionController.getAllCollectionsForUser(id);
+
+    // display this in multiple select chip
+    // how do I keep the IDs :'(
+    if (
+      collectionResponse &&
+      (collectionResponse.private.length > 0 ||
+        collectionResponse.public.length > 0)
+    ) {
+      const collectionsKeyedByTitle = {};
+
+      const finalCollections = [
+        ...collectionResponse.private.map((c) => {
+          const title = `(Private) ${c.title}`;
+          collectionsKeyedByTitle[title] = c.id;
+          return title;
+        }),
+        ...collectionResponse.public.map((c) => {
+          const title = `(Public) ${c.title}`;
+          collectionsKeyedByTitle[title] = c.id;
+          return title;
+        }),
+      ];
+      
+      setCollections(finalCollections);
+      setCollectionsByTitle(collectionsKeyedByTitle);
+    }
 
     if (mainTextareaRef && mainTextareaRef.current)
       mainTextareaRef.current.focus();
@@ -68,7 +111,7 @@ export default function AddPostForm({ onPostAdded }) {
 
   const handleClose = () => {
     const confirmation = window.confirm(
-      "Are you sure you want to exit? All changes will be lost.",
+      "Are you sure you want to exit? All changes will be lost."
     );
     if (confirmation) {
       resetAddPostForm();
@@ -78,7 +121,7 @@ export default function AddPostForm({ onPostAdded }) {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!mainTextareaRef.current.value) {
       alert("Please type a few meaningful words!");
       return;
@@ -95,23 +138,27 @@ export default function AddPostForm({ onPostAdded }) {
       article_link: link,
       post_description: mainTextareaRef.current.value,
       categories: selectedCategories,
-      visibility: postVisibility,
     };
 
-    PostController.createPost(post)
-      .then((response) => {
-        resetAddPostForm();
+    const response = await PostController.createPost(post);
+    if (response.post_id) {
+      // Add the post to the selected collections
+      await Promise.all(
+        selectedCollections.map((title) =>
+          CollectionController.addPostToCollection(
+            collectionsByTitle[title],
+            response.post_id
+          )
+        )
+      );
 
-        // Refresh the feed using the callback function
-        if (onPostAdded) onPostAdded();
+      resetAddPostForm();
 
-        setOpen(false);
-      })
-      .catch((error) => console.error(error));
-  };
+      // Refresh the feed using the callback function
+      if (onPostAdded) onPostAdded();
 
-  const handleVisibilityChange = (event) => {
-    setPostVisibility(event.target.value);
+      setOpen(false);
+    }
   };
 
   function isValid(url) {
@@ -139,8 +186,8 @@ export default function AddPostForm({ onPostAdded }) {
       })
       .catch((error) =>
         setLinkError(
-          "Could not get link details. You can still create a post though!",
-        ),
+          "Could not get link details. You can still create a post though!"
+        )
       );
   };
 
@@ -213,7 +260,14 @@ export default function AddPostForm({ onPostAdded }) {
                 />
               )}
 
-              <h2>{ogMetadata?.title}</h2>
+              <Typography
+                variant="h5"
+                fontWeight={"bold"}
+                sx={{ marginTop: "0.5rem" }}
+              >
+                {ogMetadata?.title}{" "}
+                {ogMetadata?.site_name && `| ${ogMetadata?.site_name}`}
+              </Typography>
 
               {/* Main Textarea */}
               <TextareaAutosize
@@ -229,38 +283,27 @@ export default function AddPostForm({ onPostAdded }) {
                 minRows={7}
                 placeholder="What's on your mind?"
               />
+
+              {/* Collections */}
+              <MultipleSelectChip
+                id="collections-list"
+                label="Add Post to Collection(s)"
+                options={collections}
+                max={-1}
+                sx={{ marginBottom: "1rem" }}
+                onChange={(selected) => setSelectedCollections(selected)}
+              />
+
               {/* Categories */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "1rem",
-                }}
-              >
-                <MultipleSelectChip
-                  id="categories-list"
-                  label="Select Categories"
-                  options={categories}
-                  max={5}
-                  sx={{ marginRight: "1rem" }}
-                  onChange={(selected) => setSelectedCategories(selected)}
-                />
-                <FormControl sx={{ width: "50%" }}>
-                  <InputLabel id="post-visibility-label">
-                    Post Visibility
-                  </InputLabel>
-                  <Select
-                    labelId="post-visibility-label"
-                    id="post-visibility"
-                    value={postVisibility}
-                    label="Post Visibility"
-                    onChange={handleVisibilityChange}
-                  >
-                    <MenuItem value={"public"}>Public</MenuItem>
-                    <MenuItem value={"private"}>Private</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
+              <MultipleSelectChip
+                id="categories-list"
+                label="Select Categories"
+                options={categories}
+                max={5}
+                sx={{ marginBottom: "1rem" }}
+                onChange={(selected) => setSelectedCategories(selected)}
+              />
+
               {/* Save Post */}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Button onClick={handleClose}>Cancel</Button>

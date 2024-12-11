@@ -92,8 +92,6 @@ class PostController {
   }
 
   static async getOGMetadata(url) {
-    // @TODO: Standardize the DB_HOST value e.g. in config file
-    // Also, for some reason localhost:5000 is not working
     const response = await fetch(`${DB_HOST}/og`, {
       method: "POST",
       body: JSON.stringify({ url }),

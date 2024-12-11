@@ -13,9 +13,12 @@ def scrape():
     if url is None:
         return (jsonify({"error": "No URL provided"}), 400)
 
-    og_data = parse_opengraph_tags(url)
+    try:
+        og_data = parse_opengraph_tags(url)
 
-    if og_data:
-        return (jsonify(og_data), 200)
-    else:
-        return (jsonify({"error": "Invalid link or OpenGraph data"}), 400)
+        if og_data:
+            return (jsonify(og_data), 200)
+        else:
+            return (jsonify({"error": "Invalid link or OpenGraph data"}), 400)
+    except Exception:
+        return (jsonify({"error": "Could not parse link"}), 403)
