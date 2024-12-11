@@ -16,7 +16,7 @@ import EmojiPicker from "emoji-picker-react";
 
 const CollectionsPage = () => {
   const DB_HOST = "http://127.0.0.1:5000/api";
-  const { username } = useParams(); // Extract username from URL
+  const { username } = useParams(); 
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState(null);
@@ -67,7 +67,6 @@ const CollectionsPage = () => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
-
   // Fetch user data and collections
   const fetchCollections = async () => {
     try {
@@ -77,7 +76,7 @@ const CollectionsPage = () => {
       if (!accessToken) throw new Error("Access token missing. Please log in.");
 
       // Fetch user data
-      const userResponse = await fetch(`${DB_HOST}/user/`, {
+      const userResponse = await fetch(`${DB_HOST}/user/${username}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -88,12 +87,14 @@ const CollectionsPage = () => {
       const userData = await userResponse.json();
       if (!userResponse.ok) throw new Error(userData.message);
 
+      console.log("User data:", userData.data);
+
       setProfileData(userData.data);
 
       // Check ownership
-      const isPageOwner = userData.data.username === username;
+      const isPageOwner = userData.data.is_owner      
       setIsOwner(isPageOwner);
-  
+
       // Fetch collections
       const collectionsResponse = await fetch(`${DB_HOST}/collections/user/${userData.data.user_id}`, {
         method: "GET",
@@ -202,7 +203,7 @@ const CollectionsPage = () => {
 
       const accessToken = localStorage.getItem("access_token");
 
-      const response = await fetch(`${DB_HOST}/collections/update/${editFormData.collection_id}`, {
+      const response = await fetch(`${DB_HOST}/collections/${editFormData.collection_id}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -237,7 +238,7 @@ const CollectionsPage = () => {
     try {
       const accessToken = localStorage.getItem("access_token");
 
-      const response = await fetch(`${DB_HOST}/collections/delete/${collection_id}`, {
+      const response = await fetch(`${DB_HOST}/collections/${collection_id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
