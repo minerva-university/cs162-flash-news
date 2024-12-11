@@ -12,10 +12,6 @@ import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
 
-// TODO: Add functionality for fetching articles --> Consider data from posts and adapt to article card 
-// TODO: Add functionality for fetching most recent collections
-// TODO: Add functionality for fetching most recent posts (potentially ask for backend quicker variable send?)
-
 const ProfilePage = () => {
   const DB_HOST = "http://127.0.0.1:5000/api";
   const { username } = useParams(); 
@@ -29,27 +25,24 @@ const ProfilePage = () => {
 
   // Handle collection click event (navigate to collection page)
   const handleCollectionClick = (collection) => {
-    const formattedTitle = collection.name.toLowerCase().replace(/\s+/g, "-");
-    navigate(`/collections/${collection.id}/${formattedTitle}`, {
-      state: { collection },
+    const formattedTitle = collection.title
+      ?.toLowerCase()
+      .replace(/\s+/g, "-");
+    navigate(`/collections/${collection.collection_id}/${formattedTitle}`, {
+      state: { collection, username },
     });
   };
-
+  
   // Fetch profile data
   const fetchProfileData = async () => {
     try {
-      console.log("Starting fetchProfileData");
-  
-      // Retrieve access token
       const accessToken = localStorage.getItem("access_token");
-      console.log("Access Token:", accessToken);
   
       if (!accessToken) {
-        console.error("Access token missing. Please log in again.");
-        throw new Error("Access token missing.");
+        throw new Error("Access token missing. Please log in.");
       }
   
-      const response = await fetch(`${DB_HOST}/user/`, {
+      const response = await fetch(`${DB_HOST}/user/${username}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -57,37 +50,125 @@ const ProfilePage = () => {
         },
       });
   
-      console.log("Response Status:", response.status);
-  
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error response from backend:", errorData);
-        throw new Error(errorData.msg || "Failed to fetch profile data.");
+        throw new Error(errorData.message || "Failed to fetch profile data.");
       }
   
-      // Parse and set profile data
-      const data = await response.json();
-      console.log("Fetched Profile Data:", data);
-      setProfileData(data.data); // Ensure this updates the state correctly
-      if (data.data.username === username) {
-        console.log("User is the owner of this profile");
-        setIsOwner(true);
-      } else {
-        console.log("User is not the owner of this profile");
-        setIsOwner(false);
-      }
+      const result = await response.json();
+      console.log("Fetched Profile Data:", result);
+  
+      const profile = result.data; 
+      setProfileData(profile);
+      setIsOwner(profile.is_owner);
     } catch (error) {
       console.error("Error in fetchProfileData:", error);
-    } finally {
-      console.log("fetchProfileData completed.");
     }
   };  
-  
-  
+
   useEffect(() => {
     fetchProfileData();
   }, [username]);
 
+  // Fetch shared posts
+  const fetchSharedPosts = async () => {
+    try {
+      if (!profileData || !profileData.user_id) {
+        console.error("Profile data or user ID is missing.");
+        return;
+      }
+  
+      const accessToken = localStorage.getItem("access_token");
+  
+      const response = await fetch(
+        `${DB_HOST}/posts/user/${profileData.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch shared posts.");
+      }
+  
+      const data = await response.json();
+      console.log("Fetched Shared Posts Raw Data:", data);
+  
+      // Ensure the response is an array
+      const postsArray = data.posts || [];
+      console.log("Posts Array:", postsArray);
+  
+      // Sort posts by `posted_at` in descending order
+      const sortedPosts = postsArray.sort(
+        (a, b) => new Date(b.posted_at) - new Date(a.posted_at)
+      );
+  
+      console.log("Processed Shared Posts:", sortedPosts);
+  
+      setSharedPosts(sortedPosts);
+    } catch (error) {
+      console.error("Error fetching shared posts:", error);
+    }
+  };  
+
+  useEffect(() => {
+    if (profileData && profileData.user_id) {
+      fetchSharedPosts();
+    }
+  }, [profileData]);  
+
+  // Fetch user collections
+  const fetchCollections = async () => {
+    try {
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) {
+        console.error("Access token missing. Please log in again.");
+      }
+
+      const collectionsResponse = await fetch(
+        `${DB_HOST}/collections/user/${profileData.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const collectionsData = await collectionsResponse.json();
+      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
+      console.log("Fetched collections:", collectionsData);
+      console.log("Public Collections:", collectionsData.public);
+  
+      // Sort collections based on a date 
+      const sortedCollections = (collectionsData?.public || []).sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+  
+      // Set sorted collections
+      setCollections(sortedCollections);
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (profileData && profileData.user_id) {
+      fetchCollections();
+    }
+  }, [profileData]);
+
+  const handlePostUpdate = () => {
+    fetchSharedPosts(); // Re-fetch posts after update/deleting
+  };
 
   if (loading) {
     return (
@@ -144,7 +225,7 @@ const ProfilePage = () => {
         >
           <Avatar sx={{ width: 80, height: 80, bgcolor: "#fff" }} 
             src={profileData.profile_picture || "https://via.placeholder.com/150"}
-            alt={profileData.username}
+            alt={profileData.username[0]}
           />
           <Box>
             <Typography
@@ -154,7 +235,7 @@ const ProfilePage = () => {
                 color: "#D9EAF3",
               }}
             >
-              {profileData.username}
+              {username[0].toLocaleUpperCase()}{username.slice(1).toLowerCase()}
             </Typography>
             {profileData.bio_description ? (
               <Typography
@@ -243,7 +324,7 @@ const ProfilePage = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: "30px",
+            gap: "10px",
             padding: "20px 0",
           }}
         >
@@ -256,7 +337,7 @@ const ProfilePage = () => {
                   margin: "0 10px",
                 }}
               >
-               {/*<PostCard key={index} post={post} /> */}
+               <PostCard key={index} post={post} />
               </Box>
             ))
           ) : (
@@ -277,7 +358,7 @@ const ProfilePage = () => {
         }}
       />
 
-      {/* Most Recent Public Collections Section */}
+      {/* Public Collections Section */}
       <Typography
         variant="h4"
         sx={{
@@ -287,7 +368,7 @@ const ProfilePage = () => {
           marginBottom: "20px",
         }}
       >
-        Most Recent Public Collections
+        {username[0].toLocaleUpperCase()}{username.slice(1).toLowerCase()}'s Most Recent Public Collections
       </Typography>
 
       <Box
@@ -299,20 +380,16 @@ const ProfilePage = () => {
       >
 
         {collections.length ? (
-          collections.map((collection, index) => (
+          collections.slice(0, 4).map((collection, index) => (
             <Box
               key={index}
+              onClick={() => handleCollectionClick(collection)}
               sx={{
-                padding: "16px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
-                cursor: "pointer",
-                "&:hover": { boxShadow: "0px 4px 10px rgba(0,0,0,0.2)" },
+                alignItems: "center",
+                padding: "16px",
               }}
-              onClick={() => handleCollectionClick(collection)}
             >
               <Box
               sx={{
@@ -344,7 +421,7 @@ const ProfilePage = () => {
                   fontWeight: "bold",
                 }}
               >
-                {collection.name} Collection
+                {collection.title}
               </Typography>
             </Box>
           ))
@@ -353,6 +430,29 @@ const ProfilePage = () => {
             No collections available.
           </Typography>
         )}
+
+        {/* See More Collections Button */}
+        {collections.length > 4 && ( // Show the button only if more than 4 collections exist
+            <Box sx={{ textAlign: "center", marginTop: "40px" }}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate(`/user/${profileData.username}/collections`)} 
+                sx={{
+                  borderColor: "#5F848C",
+                  color: "#5F848C",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "50%",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    backgroundColor: "#D9EAF3",
+                  },
+                }}
+              >
+                See More Collections
+              </Button>
+            </Box>
+          )}
       </Box>
 
       {isOwner && (
@@ -380,23 +480,27 @@ const ProfilePage = () => {
 
           <Box
             sx={{
+              maxWidth: "1200px", 
+              justifyContent: "center", 
+              padding: "20px 0", 
+              marginTop: "40px",
+              display: "flex",
+              alignItems: "center",
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              justifyTracks: "center",
+              flexWrap: "wrap",
               gap: "20px",
-              marginTop: "20px",
+              margin: "0 auto", 
             }}
           >
-            {articles.length ? (
-              articles.map((article, index) => (
+            {sharedPosts.length ? (
+              sharedPosts.map((post, index) => (
                 <ArticleCard 
                   key={index}
-                  article={article}
-                  isOwner={true} // TODO: check user ownership
-                  // TODO: Implement edit and delete functionality (log for now)
-                  onEdit={(article) => console.log("Edit clicked for", article)}
-                  onDelete={(article) =>
-                    console.log("Delete clicked for", article)
-                  }
+                  post={post}
+                  username={username}
+                  onPostUpdate={handlePostUpdate}
                 />
               ))
             ) : (

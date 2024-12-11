@@ -9,7 +9,14 @@ import {
   CircularProgress,
   Avatar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
+
+// TODO: Add tags as dropdown
 
 const SettingsPage = () => {
   const DB_HOST = "http://127.0.0.1:5000/api";
@@ -27,15 +34,17 @@ const SettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null); 
   const [alert, setAlert] = useState({ message: "", severity: "" });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Fetch user data on mount
+
+  // Fetch user data 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
         const accessToken = localStorage.getItem("access_token");
         console.log(accessToken);
-        const response = await fetch(`${DB_HOST}/user/`, {
+        const response = await fetch(`${DB_HOST}/user/${username}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -89,13 +98,13 @@ const SettingsPage = () => {
       // Prepare the form data for profile picture upload
       const formData = new FormData();
       formData.append("username", userData.username);
-      formData.append("bio_description", userData.bio_description || ""); // Send an empty string if undefined
+      formData.append("bio_description", userData.bio_description || ""); 
       formData.append("tags", JSON.stringify(userData.tags));
       if (profilePicture) {
         formData.append("profile_picture", profilePicture); 
       }
 
-      const response = await fetch(`${DB_HOST}/user/`, {
+      const response = await fetch(`${DB_HOST}/user`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -103,7 +112,14 @@ const SettingsPage = () => {
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Failed to save changes");
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.message === "Username already exists") {
+          throw new Error("The username is already taken. Please choose another.");
+        } else {
+          throw new Error("Failed to save changes.");
+        } 
+      }
 
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
@@ -114,6 +130,31 @@ const SettingsPage = () => {
       setAlert({ message: error.message, severity: "error" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle account deletion
+  const handleDeleteAccount = async () => {
+    try {
+      const accessToken = localStorage.getItem("access_token");
+      const response = await fetch(`${DB_HOST}/user/${username}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete account.");
+      }
+
+      alert("Account deleted successfully!");
+      localStorage.clear(); // Clear local storage after account deletion
+      navigate("/signup"); // Redirect to the signup page
+    } catch (error) {
+      setAlert({ message: error.message, severity: "error" });
+    } finally {
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -257,7 +298,7 @@ const SettingsPage = () => {
       {/* Go Back to Profile */}
       <Button
         variant="outlined"
-        onClick={() => navigate(`/${userData.username}/profile`)}
+        onClick={() => navigate(`/${username}/profile`)}
         fullWidth
         sx={{
             marginTop: "16px",
@@ -268,6 +309,37 @@ const SettingsPage = () => {
       >
         Go Back to Profile
       </Button>
+
+      {/* Delete Account Button */}
+      <Button
+        variant="outlined"
+        color="error"
+        fullWidth
+        sx={{ marginTop: "16px" }}
+        onClick={() => setDeleteDialogOpen(true)}
+      >
+        Delete Account
+      </Button>
+
+      {/* Confirm Delete Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Account</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete your account? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button color="error" onClick={handleDeleteAccount}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
