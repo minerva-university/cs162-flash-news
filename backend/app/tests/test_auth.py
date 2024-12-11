@@ -158,7 +158,7 @@ def test_token_expiration(client, registered_user):
         
         # Create a token that's already expired
         expired_token = create_access_token(
-            identity=user_id,
+            identity=str(user_id),
             expires_delta=timedelta(seconds=-1)
         )
         mock_create_token.return_value = expired_token
@@ -175,7 +175,7 @@ def test_token_expiration(client, registered_user):
     with patch('flask_jwt_extended.utils.create_access_token') as mock_create_token:
         # Create a token with 1 second expiration
         short_lived_token = create_access_token(
-            identity=user_id,
+            identity=str(user_id),
             expires_delta=timedelta(seconds=1)
         )
         mock_create_token.return_value = short_lived_token
@@ -214,7 +214,7 @@ def test_refresh_token_expiration(client, registered_user):
         
         # Create an expired refresh token
         expired_refresh_token = create_access_token(
-            identity=user_id,
+            identity=str(user_id),
             expires_delta=timedelta(seconds=-1)
         )
         mock_create_refresh.return_value = expired_refresh_token

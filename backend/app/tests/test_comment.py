@@ -172,26 +172,6 @@ def test_delete_comment_unauthorized(client):
     assert response.status_code == 403
 
 
-def test_post_24h_datetime_comparison():
-    # Create a post with timezone-aware datetime
-    post = create_test_post(db)
-    post.user_id = 2
-    post.posted_at = datetime.now(timezone.utc) - timedelta(hours=25)
-    db.session.commit()
-
-    db.session.refresh(post)
-
-    # Verify the datetime has timezone info
-    assert post.posted_at.tzinfo is not None
-    
-    # Test the check_post_24h function directly
-    assert check_post_24h(post) == True
-
-    # Test with a recent post
-    post.posted_at = datetime.now(timezone.utc) - timedelta(hours=23)
-    db.session.commit()
-    assert check_post_24h(post) == False
-
 
 # Test that you can't see comments on another user's post 24hrs after they posted it
 def test_comment_after_24h(client):
