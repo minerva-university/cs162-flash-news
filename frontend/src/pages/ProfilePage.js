@@ -21,7 +21,6 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [sharedPosts, setSharedPosts] = useState([]);
   const [collections, setCollections] = useState([]);
-  const [articles, setArticles] = useState([]);
 
   // Handle collection click event (navigate to collection page)
   const handleCollectionClick = (collection) => {
@@ -487,7 +486,6 @@ const ProfilePage = () => {
               justifyContent: "center",
               padding: "20px 0",
               marginTop: "40px",
-              display: "flex",
               alignItems: "center",
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
