@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import db
 from .models import Collection, CollectionPost, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .post import get_post
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from .models import CollectionPost, Post
 
 collections = Blueprint("collections", __name__, url_prefix="/api/collections")
 
