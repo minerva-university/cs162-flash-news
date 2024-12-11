@@ -1,14 +1,10 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import db
 from .models import Collection, CollectionPost, User
 from .post import get_post
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask import jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from .models import CollectionPost, Post
 
 collections = Blueprint("collections", __name__, url_prefix="/api/collections")
-
 
 # Create a new collection
 @collections.route("/", methods=["POST"])
@@ -18,7 +14,6 @@ def create_collection():
     if not User.query.get(user_id):
         return jsonify({"error": "Authentication required"}), 401
     data = request.get_json()
-    print("Received data:", data)  # Log the request payload for debugging
 
     # Validate required fields
     if not data.get("title"):
@@ -35,11 +30,11 @@ def create_collection():
 
     # Create new collection
     collection = Collection(
-        user_id=user_id,
         title=data.get('title'),
         emoji=data.get('emoji'),
         description=data.get('description', ''),
         is_public=data.get('is_public', True),  # set to public by default.
+        user_id=user_id,
     )
 
     db.session.add(collection)
@@ -61,14 +56,10 @@ def create_collection():
 def get_collections(user_id):
 
     current_user_id = int(get_jwt_identity())
-    print(f"Logged-in user ID: {current_user_id}")
-    print(f"Requested user ID: {user_id}")
-
     user = User.query.get(user_id)
-
     if not user:
-        return jsonify({'error': 'User not found'}), 404
-    
+        return jsonify({"error": "User not found"}), 404
+
     # Fetch public and private collections
     public_collections = Collection.query.filter_by(user_id=user_id, is_public=True).all()
     print(f"Public collections fetched: {len(public_collections)}")
@@ -100,7 +91,7 @@ def get_collections(user_id):
         'articles_count': len(collection.posts),
         'user_id': collection.user_id,
     } for collection in private_collections]
-    
+
     if int(get_jwt_identity()) != user_id:
         return jsonify({"public": public_collections_data}), 200
 
@@ -112,7 +103,6 @@ def get_collections(user_id):
             200,
         )
 
-
 # Get posts from a specific collection
 @collections.route("/<int:collection_id>/posts", methods=["GET"])
 @jwt_required()
@@ -123,7 +113,7 @@ def get_collection_posts(collection_id):
         .filter_by(collection_id=collection_id)
         .all()
     )
-    
+
     # If no posts in collection, return empty list
     if not collection_posts:
         return jsonify([]), 200
@@ -138,7 +128,6 @@ def get_collection_posts(collection_id):
             posts_data.append(response.json)
 
         else:
-            print(f"Failed to fetch post with ID {collection.post_id}: {response.status_code}")
             return response, status_code
 
     return jsonify(posts_data), 200
@@ -148,6 +137,7 @@ def get_collection_posts(collection_id):
 @collections.route("/<int:collection_id>/posts/<int:post_id>", methods=["POST"])
 @jwt_required()
 def add_post_to_collection(collection_id, post_id):
+
     check_post = CollectionPost.query.filter_by(collection_id=collection_id, post_id=post_id).first()
 
     if check_post:
@@ -164,14 +154,9 @@ def add_post_to_collection(collection_id, post_id):
 @collections.route("/<int:collection_id>", methods=["PUT"])
 @jwt_required()
 def update_collection(collection_id):
-
-    print(f"Received PUT request for collection ID: {collection_id}")
-    print(f"Initial collection: {Collection.query.get(collection_id)}")
-    print(f"Initial is_public: {Collection.query.get(collection_id).is_public}")
     data = request.get_json()
     collection = Collection.query.filter_by(
-        collection_id=collection_id, 
-        user_id=int(get_jwt_identity())
+        collection_id=collection_id, user_id=get_jwt_identity()
     ).first_or_404()
 
     collection.title = data.get("title", collection.title)
@@ -180,9 +165,9 @@ def update_collection(collection_id):
     collection.is_public = data.get("is_public", collection.is_public)
 
     db.session.commit()
-    updated_collection = Collection.query.get(collection_id)
+
     return jsonify({"message": "Collection updated successfully"}), 200
-    
+
 
 # Delete a collection
 @collections.route("/<int:collection_id>", methods=["DELETE"])
@@ -193,7 +178,6 @@ def delete_collection(collection_id):
         user_id=int(get_jwt_identity())
     ).first_or_404()
 
-    collection = Collection.query.get_or_404(collection_id)
     db.session.delete(collection)
     db.session.commit()
 

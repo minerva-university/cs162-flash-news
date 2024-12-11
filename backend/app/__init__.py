@@ -15,7 +15,6 @@ load_dotenv()
 db = SQLAlchemy()
 jwt = JWTManager()
 
-
 @jwt.user_lookup_loader
 def load_user(jwt_header, jwt_data):
     from .models import User
@@ -26,14 +25,13 @@ def load_user(jwt_header, jwt_data):
         return User.query.get(user_id)
     return None
 
-
 @jwt.user_identity_loader
 def user_identity_lookup(user):
     """Define how the user object is encoded in the JWT."""
     # User id is going to be a string since JWT sub needs to be a string
     # So just return it directly — typecast when doing comparisons
-    # if isinstance(user, (str, int)):
-    return str(user)  # Always return a string
+    #if isinstance(user, str):
+    return str(user) # Always return a string
     # If user is a User object, return its ID
     #return user.user_id
 
@@ -44,7 +42,6 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 
     jti = jwt_payload["jti"]
     return RevokedToken.query.filter_by(jti=jti).first() is not None
-
 
 def create_app():
     app = Flask(__name__)
@@ -80,7 +77,17 @@ def create_app():
     )
 
     db.init_app(app)
-    jwt.init_app(app)  # Initialize JWT
+    jwt.init_app(app)
+
+    '''
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+
+    from .models import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    '''
 
     # blueprint for auth routes in our app
     from .auth import auth as auth_blueprint
@@ -115,7 +122,7 @@ def create_app():
     from .og import opengraph_bp as og_blueprint
 
     app.register_blueprint(og_blueprint, url_prefix="/api/")
-    
+
     # Avoids circular imports by importing models in this format
     with app.app_context():
         from .models import User, RevokedToken  # Import models lazily

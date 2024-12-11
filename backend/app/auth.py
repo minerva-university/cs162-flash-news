@@ -68,16 +68,10 @@ def register():
         password
     )  # By default, it has 16 character of salt.
     new_user = User(username=username, email=email, password=hashed_password)
-    print(f"Access IUD Identity: {new_user.user_id} (type: {type(new_user.user_id)})")
-
     db.session.add(new_user)
     db.session.commit()
     access_token = create_access_token(identity=str(new_user.user_id))
     refresh_token = create_refresh_token(identity=str(new_user.user_id))
-    print(f"Access Token: {access_token}", flush=True)
-    print(f"Type of Access Token: {type(access_token)}", flush=True)
-    print(f"Refresh Token: {refresh_token}", flush=True)
-    print(f"Type of Refresh Token: {type(refresh_token)}", flush=True)
     return (
         jsonify(
             {
@@ -91,6 +85,7 @@ def register():
         201,
     )
 
+
 @auth.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -102,20 +97,11 @@ def login():
 
     user = User.query.filter_by(email=email).first()
 
-    print(f"Access ID Identity: {user.user_id} (type: {type(user.user_id)})")
-
     if not user or not check_password_hash(user.password, password):
         return jsonify({"message": "Invalid credentials"}), 401
-    
-    #access_token = create_access_token(identity=user.user_id)
-    #refresh_token = create_refresh_token(identity=user.user_id)
-    access_token = str(create_access_token(identity=str(user.user_id)))
-    refresh_token = str(create_refresh_token(identity=str(user.user_id)))
-    print(f"Access Token: {access_token}", flush=True)
-    print(f"Type of Access Token: {type(access_token)}", flush=True)
-    print(f"Refresh Token: {refresh_token}", flush=True)
-    print(f"Type of Refresh Token: {type(refresh_token)}", flush=True)
 
+    access_token = create_access_token(identity=str(user.user_id))
+    refresh_token = create_refresh_token(identity=str(user.user_id))
 
     # Includes username and profile picture as Pei suggested
     return (
@@ -129,7 +115,8 @@ def login():
         ),
         200,
     )
-  
+
+
 @auth.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
@@ -144,6 +131,5 @@ def logout():
 @jwt_required(refresh=True)
 def refresh():
     current_user_id = get_jwt_identity()
-    print(f"Decoded JWT Identity: {current_user_id} (type: {type(current_user_id)})")
     new_access_token = create_access_token(identity=str(current_user_id))
     return jsonify(access_token=new_access_token), 200
