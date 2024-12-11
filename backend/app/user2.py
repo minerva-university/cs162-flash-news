@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, request
 from . import db
 from .models import User, Follow
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from .utils import create_success_response, create_error_response
+
 
 # User Blueprint
 user_bp = Blueprint('user', __name__, url_prefix='/api/user')
@@ -35,10 +37,10 @@ def update_user_profile():
     
     try:
         db.session.commit()
-        return jsonify({"message": "Profile updated successfully"}), 200
+        return create_success_response("Profile updated successfully")
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        return create_error_response("Failed to update profile", details={"error": str(e)})
 
 
 @user_bp.route('/delete', methods=['DELETE'])
@@ -49,10 +51,10 @@ def delete_user_account():
     try:
         db.session.delete(current_user)
         db.session.commit()
-        return jsonify({"message": "Account deleted successfully"}), 200
+        return create_success_response("Account deleted successfully")
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        return create_error_response("Failed to delete account", details={"error": str(e)})
 
 
 @user_bp.route('/feed', methods=['GET'])
@@ -65,7 +67,7 @@ def get_user_feed():
     
     # @TODO: Implement actual feed retrieval from Post model
 
-    return jsonify({"followed_user_ids": followed_user_ids})
+    return create_success_response("Feed retrieved successfully", data={"followed_user_ids": followed_user_ids})
 
 
 @user_bp.route('/follow/<int:user_id>', methods=['POST'])
@@ -75,12 +77,12 @@ def follow_user(user_id):
     current_user = User.query.get(get_jwt_identity())
     # Prevent self-following
     if user_id == current_user.user_id:
-        return jsonify({"error": "Cannot follow yourself"}), 400
+        return create_error_response("Cannot follow yourself")
     
     # Check if user exists
     user_to_follow = User.query.get(user_id)
     if not user_to_follow:
-        return jsonify({"error": "User not found"}), 404
+        return create_error_response("User not found", status_code=404)
     
     # Check if already following
     existing_follow = Follow.query.filter_by(
@@ -89,7 +91,7 @@ def follow_user(user_id):
     ).first()
     
     if existing_follow:
-        return jsonify({"error": "Already following this user"}), 400
+        return create_error_response("Already following this user")
     
     # Create follow relationship
     new_follow = Follow(
@@ -100,10 +102,10 @@ def follow_user(user_id):
     try:
         db.session.add(new_follow)
         db.session.commit()
-        return jsonify({"message": "Successfully followed user"}), 200
+        return create_success_response("Successfully followed user")
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        return create_error_response("Failed to follow user", details={"error": str(e)})
     
 
 @user_bp.route('/unfollow/<int:user_id>', methods=['POST'])
@@ -119,15 +121,15 @@ def unfollow_user(user_id):
     ).first()
     
     if not follow:
-        return jsonify({"error": "Not following this user"}), 400
+        return create_error_response("Not following this user")
     
     try:
         db.session.delete(follow)
         db.session.commit()
-        return jsonify({"message": "Successfully unfollowed user"}), 200
+        return create_success_response("Successfully unfollowed user")
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        return create_error_response("Failed to unfollow user", details={"error": str(e)})
     
 
 @user_bp.route('/following', methods=['GET'])
@@ -143,7 +145,7 @@ def get_followed_users():
         } for follow in current_user.followings
     ]
     
-    return jsonify({"followed_users": followed_users})
+    return create_success_response("Followed users retrieved successfully", data={"followed_users": followed_users})
 
 
 @user_bp.route('/followers', methods=['GET'])
@@ -159,4 +161,4 @@ def get_followers():
         } for follow in current_user.followers
     ]
     
-    return jsonify({"followers": followers})
+    return create_success_response("Followers retrieved successfully", data={"followers": followers})

@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import db
 from .models import Collection, CollectionPost, User
 from .post import get_post
+from .utils import create_success_response, create_error_response
 
 collections = Blueprint('collections', __name__, url_prefix='/api/collections')
 
@@ -12,22 +13,22 @@ collections = Blueprint('collections', __name__, url_prefix='/api/collections')
 def create_collection():
     user_id = get_jwt_identity()
     if not User.query.get(user_id):
-        return jsonify({'error': 'Authentication required'}), 401
+        return create_error_response("Authentication required", 401)
     data = request.get_json()
 
     # Validate required fields
     if not data.get('title'):
-        return jsonify({'error': 'Collection title is required'}), 400
+        return create_error_response("Collection title is required", 400)
 
     # Validate data types
     if not isinstance(data.get('title'), str):
-        return jsonify({'error': 'Title must be a string'}), 400
+        return create_error_response("Title must be a string", 400)
         
     if 'is_public' in data and not isinstance(data['is_public'], bool):
-        return jsonify({'error': 'is_public must be a boolean'}), 400
+        return create_error_response("is_public must be a boolean", 400)
     
     if 'emoji' in data and not isinstance(data['emoji'], str):
-        return jsonify({'error': 'Emoji must be a string'}), 400
+        return create_error_response("Emoji must be a string", 400)
 
     collection = Collection(
         title=data.get('title'),
@@ -40,10 +41,9 @@ def create_collection():
     db.session.add(collection)
     db.session.commit()
     
-    return jsonify({
-        'message': 'Collection created successfully',
-        'collection_id': collection.collection_id
-    }), 201
+    return create_success_response("Collection created successfully", 201, 
+    {"collection_id": collection.collection_id}
+    )
 
 
 # Get user's collections
@@ -52,7 +52,7 @@ def create_collection():
 def get_collections(user_id):
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'error': 'User not found'}), 404
+        return create_error_response("User not found", 404)
     
     # Filter collections after getting them from user
     public_collections = [c for c in user.collections if c.is_public]
@@ -77,13 +77,15 @@ def get_collections(user_id):
     } for collection in private_collections]
     
     if int(get_jwt_identity()) != user_id:
-        return jsonify({
-            'public': public_collections_data}), 200
+        return create_success_response("Public collections fetched successfully", 200, {
+        'public': public_collections_data
+    })
 
     else:
-        return jsonify({
-            'public': public_collections_data,
-            'private': private_collections_data}), 200
+        return create_success_response("Collections fetched successfully", 200, {
+        'public': public_collections_data,
+        'private': private_collections_data
+    })
 
 # Get posts from a specific collection
 @collections.route('/<int:collection_id>/posts', methods=['GET'])
@@ -106,7 +108,7 @@ def get_collection_posts(collection_id):
         else:
             return response, status_code
             
-    return jsonify(posts_data), 200
+    return create_success_response("Posts fetched successfully", 200, posts_data)
 
 
 # Add a post to a collection
@@ -117,7 +119,7 @@ def add_post_to_collection(collection_id, post_id):
     check_post = CollectionPost.query.filter_by(collection_id=collection_id, post_id=post_id).first()
 
     if check_post:
-        return jsonify({'message': 'Post already in collection'}), 200
+        return create_success_response("Post already in collection", 200)
 
     collection_post = CollectionPost(
         collection_id=collection_id,
@@ -126,7 +128,7 @@ def add_post_to_collection(collection_id, post_id):
     db.session.add(collection_post)
     db.session.commit()
     
-    return jsonify({'message': 'Post added to collection'}), 200
+    return create_success_response("Post added to collection successfully", 200)
 
 
 # Update a collection
@@ -146,7 +148,7 @@ def update_collection(collection_id):
 
     db.session.commit()
     
-    return jsonify({'message': 'Collection updated successfully'}), 200
+    return create_success_response("Collection updated successfully")
 
 
 # Delete a collection
@@ -161,7 +163,7 @@ def delete_collection(collection_id):
     db.session.delete(collection)
     db.session.commit()
     
-    return jsonify({'message': 'Collection deleted successfully'}), 200
+    return create_success_response("Collection deleted successfully")
 
 
 # Remove a post from a collection
@@ -172,7 +174,7 @@ def remove_post_from_collection(collection_id, post_id):
     if not (Collection.query
             .filter_by(collection_id=collection_id, user_id=get_jwt_identity())
             .first()):
-        return jsonify({'error': 'Collection not found'}), 404
+        return create_error_response("Collection not found", 404)
 
     collection_post = CollectionPost.query.filter_by(
         collection_id=collection_id,
@@ -182,4 +184,4 @@ def remove_post_from_collection(collection_id, post_id):
     db.session.delete(collection_post)
     db.session.commit()
     
-    return jsonify({'message': 'Post removed from collection'}), 200
+    return create_success_response("Post removed from collection successfully", 200)
