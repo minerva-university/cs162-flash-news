@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timedelta, timezone
-from flask_jwt_extended import get_jwt_identity
+from flask_login import current_user
 from flask import jsonify
 
 
