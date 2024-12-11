@@ -20,7 +20,7 @@ import PostController from "../controllers/PostController";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-export default function PostCard({ post, currentUser }) {
+export default function PostCard({ post }) {
   dayjs.extend(relativeTime);
 
   const [expanded, setExpanded] = React.useState(false);
@@ -40,7 +40,7 @@ export default function PostCard({ post, currentUser }) {
   console.log("post username", post.user.username[0])
 
   return (
-    <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
+    <Card sx={{ width: "80%", maxWidth: "555px", margin: "0 auto 2rem" }}>
       {/* @TODO: Link to the user profile page */}
       <CardHeader
         avatar={
