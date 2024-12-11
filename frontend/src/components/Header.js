@@ -16,6 +16,17 @@ function Header() {
     { name: "Profile", path: `${username}/profile` },
   ];
 
+  const handleLogout = () => {
+    // Clear tokens and user data from localStorage
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("profile_picture");
+
+    // Redirect to login page
+    navigate("/login");
+  };
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -46,6 +57,12 @@ function Header() {
                 {page.name}
               </Button>
             ))}
+            <Button
+              sx={{ my: 2, color: "white", display: "block" }}
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
           </Box>
         </Toolbar>
       </Container>

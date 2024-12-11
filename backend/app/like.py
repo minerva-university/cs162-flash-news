@@ -5,7 +5,7 @@ from .utils import check_post_24h
 
 likes = Blueprint("like", __name__)
 
-current_user_id = 1  # @TODO UPDATE AFTER JWT IMPLEMENTATION
+likes = Blueprint("like", __name__, url_prefix="/api/likes")
 
 
 # Get likes on a post
@@ -21,7 +21,11 @@ def get_likes(post_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    paginated_likes = post.likes.paginate(page=page, per_page=per_page, error_out=False)
+    paginated_likes = (
+        Like.query.filter_by(post_id=post_id)
+        .order_by(Like.liked_at.desc())
+        .paginate(page=page, per_page=per_page, error_out=False)
+    )
 
     likes_data = [
         {
@@ -53,8 +57,14 @@ def give_like(post_id):
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    # if check_post_24h(post):
-    #     return jsonify({"error": "You are not allowed to like this post"}), 403
+    existing_like = Like.query.filter_by(
+        user_id=get_jwt_identity(), post_id=post_id
+    ).first()
+    if existing_like:
+        return jsonify({"error": "You have already liked this post"}), 400
+
+    if check_post_24h(post):
+        return jsonify({"error": "You are not allowed to like this post"}), 403
 
     post_like = Like(
         user_id=current_user_id,

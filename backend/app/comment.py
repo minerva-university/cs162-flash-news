@@ -5,7 +5,7 @@ from .models import Post, Comment
 from .utils import check_post_24h
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-comments = Blueprint("comment", __name__)
+comments = Blueprint("comment", __name__, url_prefix="/api/comments")
 
 
 # Get comments on a post
@@ -25,8 +25,10 @@ def get_comments(post_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    paginated_comments = post.comments.paginate(
-        page=page, per_page=per_page, error_out=False
+    paginated_comments = (
+        Comment.query.filter_by(post_id=post_id)
+        .order_by(Comment.commented_at.desc())
+        .paginate(page=page, per_page=per_page, error_out=False)
     )
 
     comments_data = [
@@ -72,9 +74,7 @@ def create_comment(post_id):
     if not comment:
         return jsonify({"error": "Comment is required"}), 400
 
-    post_comment = Comment(
-        user_id=current_user.user_id, post_id=post_id, comment=comment
-    )
+    post_comment = Comment(user_id=get_jwt_identity(), post_id=post_id, content=comment)
     db.session.add(post_comment)
     db.session.commit()
 

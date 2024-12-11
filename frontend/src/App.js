@@ -10,6 +10,7 @@ import SignupPage from "./pages/SignupPage";
 import Header from "./components/Header";
 import PostDetailPage from "./pages/PostDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import WelcomePage from "./pages/WelcomePage";
 
 const theme = createTheme({
   palette: {
@@ -24,13 +25,14 @@ const theme = createTheme({
 
 function App() {
   const location = useLocation();
-  const publicRoutes = ["/login", "/signup"];
+  const publicRoutes = ["/login", "/signup", "/"];
 
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
         {!publicRoutes.includes(location.pathname) && <Header />}
         <Routes>
+          <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
