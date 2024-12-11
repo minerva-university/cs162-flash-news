@@ -121,9 +121,10 @@ const CollectionsPage = () => {
     }
   };
 
+  //
   useEffect(() => {
     fetchCollections();
-  }, []);
+  }, [username]);
 
   // Handle create collection
   const handleCreateCollection = async () => {

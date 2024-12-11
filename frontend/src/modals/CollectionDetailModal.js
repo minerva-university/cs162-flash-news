@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Typography, Button, Box } from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
@@ -13,7 +13,9 @@ const CollectionDetailModal = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const collection = location.state?.collection || {};
+  const collection = useMemo(() => {
+    return location.state?.collection || {};
+  }, [location.state]);
   const username = location.state?.username;
   const { title, createdAt, description, emoji } = collection;
 

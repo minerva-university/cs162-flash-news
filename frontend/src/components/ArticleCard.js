@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -23,7 +23,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const ArticleCard = ({ post, username, onPostUpdate }) => {
   const DB_HOST = "http://127.0.0.1:5000/api";
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const loggedInUsername = localStorage.getItem("username");
   const accessToken = localStorage.getItem("access_token");
   const isOwner = username === loggedInUsername;
