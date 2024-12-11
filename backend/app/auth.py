@@ -68,8 +68,6 @@ def register():
         password
     )  # By default, it has 16 character of salt.
     new_user = User(username=username, email=email, password=hashed_password)
-    print(f"Access IUD Identity: {new_user.user_id} (type: {type(new_user.user_id)})")
-
     db.session.add(new_user)
     db.session.commit()
     access_token = create_access_token(identity=str(new_user.user_id))
@@ -98,8 +96,6 @@ def login():
         return jsonify({"message": "Missing email or password"}), 400
 
     user = User.query.filter_by(email=email).first()
-
-    print(f"Access ID Identity: {user.user_id} (type: {type(user.user_id)})")
 
     if not user or not check_password_hash(user.password, password):
         return jsonify({"message": "Invalid credentials"}), 401
