@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from . import db
 from .models import Post, Comment
 from .utils import check_post_24h
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 comments = Blueprint("comment", __name__)
 

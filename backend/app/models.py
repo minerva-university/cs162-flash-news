@@ -92,7 +92,7 @@ class Post(db.Model):
 
 class CategoryEnum(enum.Enum):
     POLITICS = "Politics"
-    TECH = "Tech"
+    TECHNOLOGY = "Technology"
     HEALTH = "Health"
     SPORTS = "Sports"
     ENTERTAINMENT = "Entertainment"
