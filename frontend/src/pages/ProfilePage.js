@@ -29,13 +29,10 @@ const ProfilePage = () => {
       state: { collection, username },
     });
   };
-
+  
   // Fetch profile data
   const fetchProfileData = async () => {
     try {
-      console.log("Starting fetchProfileData");
-  
-      // Retrieve access token
       const accessToken = localStorage.getItem("access_token");
 
       if (!accessToken) {
@@ -65,8 +62,7 @@ const ProfilePage = () => {
       console.error("Error in fetchProfileData:", error);
     }
   };  
-  
-  
+
   useEffect(() => {
     fetchProfileData();
   }, [username]);
