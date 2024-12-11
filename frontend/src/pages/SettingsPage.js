@@ -137,7 +137,7 @@ const SettingsPage = () => {
   const handleDeleteAccount = async () => {
     try {
       const accessToken = localStorage.getItem("access_token");
-      const response = await fetch(`${DB_HOST}/user/${username}`, {
+      const response = await fetch(`${DB_HOST}/user`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -148,7 +148,7 @@ const SettingsPage = () => {
         throw new Error("Failed to delete account.");
       }
 
-      alert("Account deleted successfully!");
+      setAlert({ message: "Account deleted successfully!", severity: "success" });
       localStorage.clear(); // Clear local storage after account deletion
       navigate("/signup"); // Redirect to the signup page
     } catch (error) {
