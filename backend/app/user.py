@@ -46,20 +46,22 @@ def create_error_response(message, status_code=400, details=None):
     }), status_code
 
 # Get (view) user's profile 
-@user_bp.route('/', methods=['GET'])
+@user_bp.route('/<string:username>', methods=['GET'])
 @jwt_required()
-def get_profile(): 
+def get_profile(username): 
     """Get user profile"""
 
     try:
-        print(f"Headers: {request.headers}", flush=True)  # Debugging headers
-        print(f"JWT Identity type: {type(get_jwt_identity())}", flush=True)  # Debugging JWT Identity
+        print(f"Username parameter: {username}", flush=True)
         current_user_id = int(get_jwt_identity())
-        print(f"Decoded JWT Identity: {current_user_id} (type: {type(current_user_id)})", flush=True)
-        user = User.query.get(current_user_id)
-
+        user = User.query.filter_by(username=username).first()
+        
         if not user:
             return create_error_response('User not found', 404)
+        
+        # Determine if the logged-in user is the profile owner
+        is_owner = current_user_id == user.user_id
+        print(f"Is owner: {is_owner}", flush=True)
         
         # Create the profile picture URL
         profile_picture_url = None
@@ -71,13 +73,14 @@ def get_profile():
         tags = json.loads(user.tags) if user.tags else []
 
         user_data = {
-            'user_id': current_user_id,
+            'user_id': user.user_id,
             'username': user.username,
             'email': user.email,
             'bio_description': user.bio_description,
             'profile_picture': profile_picture_url,
             'tags': tags,
-            'created_at': user.created_at
+            'created_at': user.created_at,
+            'is_owner': is_owner
         }
         return create_success_response('User profile fetched successfully', 200, user_data)
     

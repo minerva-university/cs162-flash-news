@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import db
 from .models import Collection, CollectionPost, User
 from .post import get_post
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from .models import CollectionPost, Post
 
 collections = Blueprint('collections', __name__, url_prefix='/api/collections')
 
@@ -107,16 +109,17 @@ def get_collections(user_id):
 # Get posts from a specific collection
 @collections.route('/<int:collection_id>/posts', methods=['GET'])
 @jwt_required()
-@jwt_required()
 def get_collection_posts(collection_id):
 
     collection_posts = (
         CollectionPost.query
         .filter_by(collection_id=collection_id)
-        .all())
+        .all()
+    )
     
+    # If no posts in collection, return empty list
     if not collection_posts:
-        return jsonify({'error': 'No posts found for this collection'}), 404
+        return jsonify([]), 200
 
     posts_data = []
 
@@ -136,7 +139,6 @@ def get_collection_posts(collection_id):
 
 # Add a post to a collection
 @collections.route('/<int:collection_id>/posts/<int:post_id>', methods=['POST'])
-@jwt_required()
 @jwt_required()
 def add_post_to_collection(collection_id, post_id):
     
