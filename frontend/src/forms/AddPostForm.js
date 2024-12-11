@@ -100,7 +100,7 @@ export default function AddPostForm({ onPostAdded }) {
           return title;
         }),
       ];
-      
+
       setCollections(finalCollections);
       setCollectionsByTitle(collectionsKeyedByTitle);
     }
@@ -111,7 +111,7 @@ export default function AddPostForm({ onPostAdded }) {
 
   const handleClose = () => {
     const confirmation = window.confirm(
-      "Are you sure you want to exit? All changes will be lost."
+      "Are you sure you want to exit? All changes will be lost.",
     );
     if (confirmation) {
       resetAddPostForm();
@@ -147,9 +147,9 @@ export default function AddPostForm({ onPostAdded }) {
         selectedCollections.map((title) =>
           CollectionController.addPostToCollection(
             collectionsByTitle[title],
-            response.post_id
-          )
-        )
+            response.post_id,
+          ),
+        ),
       );
 
       resetAddPostForm();
@@ -186,8 +186,8 @@ export default function AddPostForm({ onPostAdded }) {
       })
       .catch((error) =>
         setLinkError(
-          "Could not get link details. You can still create a post though!"
-        )
+          "Could not get link details. You can still create a post though!",
+        ),
       );
   };
 

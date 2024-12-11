@@ -4,7 +4,7 @@ class TagController {
   static get accessToken() {
     return localStorage.getItem("access_token");
   }
-  
+
   static async getAll() {
     const response = await fetch(`${DB_HOST}/posts/categories`, {
       method: "GET",

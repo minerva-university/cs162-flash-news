@@ -4,7 +4,7 @@ class UserController {
   static get accessToken() {
     return localStorage.getItem("access_token");
   }
-  
+
   static async getCurrentUserDetails() {
     const response = await fetch(`${DB_HOST}/user`, {
       method: "GET",
