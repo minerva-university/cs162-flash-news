@@ -15,6 +15,7 @@ from .models import User, Follow
 
 # Initialize blueprint and set the upload folder
 user_bp = Blueprint('user', __name__, url_prefix='/api/user')
+
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
