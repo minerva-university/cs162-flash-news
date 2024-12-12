@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 function SignupPage() {
+  const DB_HOST = "http://127.0.0.1:5000/api";
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -53,7 +54,7 @@ function SignupPage() {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/register", {
+      const response = await fetch(`${DB_HOST}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,13 +80,13 @@ function SignupPage() {
 
       setSnackbar({
         open: true,
-        message: "Signup successful! You are being redirected to your feed.",
+        message: "Signup successful! You are being redirected to your settings page.",
         severity: "success",
       });
 
       // Delay navigation to allow Snackbar to display
       setTimeout(() => {
-        navigate("/feed");
+        navigate("/settings/" + data.username);
       }, 3000); // Redirect after 3 seconds
 
       setFormData({
