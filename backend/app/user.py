@@ -49,7 +49,6 @@ def get_profile(username):
     """Get user profile"""
 
     try:
-        print(f"Username parameter: {username}", flush=True)
         current_user_id = int(get_jwt_identity())
         user = User.query.filter_by(username=username).first()
 
@@ -58,7 +57,6 @@ def get_profile(username):
 
         # Determine if the logged-in user is the profile owner
         is_owner = current_user_id == user.user_id
-        print(f"Is owner: {is_owner}", flush=True)
 
         # Create the profile picture URL
         profile_picture_url = None

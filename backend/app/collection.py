@@ -18,6 +18,13 @@ def create_collection():
     # Validate required fields
     if not data.get("title"):
         return jsonify({"error": "Collection title is required"}), 400
+    
+    # Validate data types
+    if not isinstance(data.get("title"), str):
+        return jsonify({"error": "Title must be a string"}), 400
+
+    if "is_public" in data and not isinstance(data["is_public"], bool):
+        return jsonify({"error": "is_public must be a boolean"}), 400
 
     # Check for duplicate collection
     existing_collection = Collection.query.filter_by(

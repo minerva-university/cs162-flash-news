@@ -13,7 +13,7 @@ def test_get_profile_authenticated(client):
 def test_get_profile_unauthenticated(client):
     client.environ_base.pop("HTTP_AUTHORIZATION", None)
 
-    response = client.get("/api/user/profile")
+    response = client.get("/api/user/")
     assert response.status_code == 401
 
 
@@ -22,7 +22,7 @@ def test_update_profile(client, test_user):
         "bio": "New bio description",
         "profile_picture": "base64_encoded_image",  # In practice, this would be actual image data
     }
-    response = client.put("/api/user/profile", json=data)
+    response = client.put("/api/user/", json=data)
     assert response.status_code == 200
 
     # Verify changes in database
