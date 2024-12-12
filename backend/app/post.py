@@ -184,7 +184,6 @@ def update_post(post_id):
     if description:
         post.description = description
 
-
     if categories:
         # Check if the number of categories is within the limit
         if len(categories) > MAX_CATEGORIES:

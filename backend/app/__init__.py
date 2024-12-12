@@ -29,11 +29,7 @@ def load_user(jwt_header, jwt_data):
 def user_identity_lookup(user):
     """Define how the user object is encoded in the JWT."""
     # User id is going to be a string since JWT sub needs to be a string
-    # So just return it directly — typecast when doing comparisons
-    #if isinstance(user, str):
     return str(user) # Always return a string
-    # If user is a User object, return its ID
-    #return user.user_id
 
 
 @jwt.token_in_blocklist_loader
@@ -78,16 +74,6 @@ def create_app():
 
     db.init_app(app)
     jwt.init_app(app)
-
-    '''
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-
-    from .models import User
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
-    '''
 
     # blueprint for auth routes in our app
     from .auth import auth as auth_blueprint
