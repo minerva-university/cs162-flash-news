@@ -13,7 +13,16 @@ class User(db.Model):  # Removed UserMixin
         db.DateTime(timezone=True), default=datetime.now(timezone.utc)
     )
     bio_description = db.Column(db.Text)
-    profile_picture = db.Column(db.LargeBinary)
+    profile_picture = db.Column(db.String(255))
+    tags = db.Column(db.Text, nullable=True)  # TO-DO: Revisit the idea of tags as a list (normalization?)
+
+    @property
+    def tags_list(self):
+        return self.tags.split(",") if self.tags else []
+
+    @tags_list.setter
+    def tags_list(self, value):
+        self.tags = ",".join(value)
 
     posts = db.relationship(
         "Post", backref="user", lazy=True, cascade="all, delete-orphan"
@@ -87,7 +96,7 @@ class Post(db.Model):
 
 class CategoryEnum(enum.Enum):
     POLITICS = "Politics"
-    TECH = "Tech"
+    TECHNOLOGY = "Technology"
     HEALTH = "Health"
     SPORTS = "Sports"
     ENTERTAINMENT = "Entertainment"
