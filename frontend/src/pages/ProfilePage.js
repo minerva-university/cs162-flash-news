@@ -11,9 +11,9 @@ import {
 import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
+import { DB_HOST } from "../controllers/config.ts";
 
 const ProfilePage = () => {
-  const DB_HOST = "http://127.0.0.1:5000/api";
   const { username } = useParams();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
