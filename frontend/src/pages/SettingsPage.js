@@ -19,7 +19,7 @@ import {
 // TODO: Add tags as dropdown
 
 const SettingsPage = () => {
-  const DB_HOST = "http://127.0.0.1:5000/api";
+  const DB_HOST = process.env.REACT_APP_DB_HOST;
   const { username } = useParams();
   const navigate = useNavigate();
 

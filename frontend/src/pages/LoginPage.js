@@ -44,7 +44,8 @@ function LoginPage() {
     const { email, password } = formData;
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/login", {
+      const DB_HOST = process.env.REACT_APP_DB_HOST;
+      const response = await fetch(`${DB_HOST}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

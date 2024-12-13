@@ -13,7 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 function SignupPage() {
-  const DB_HOST = "http://127.0.0.1:5000/api";
+  const DB_HOST = process.env.REACT_APP_DB_HOST;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
