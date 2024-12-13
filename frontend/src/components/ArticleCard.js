@@ -18,11 +18,11 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { DB_HOST } from "../controllers/config.ts";
 
 // TODO: Fix the styling of the card
 
 const ArticleCard = ({ post, username, onPostUpdate }) => {
-  const DB_HOST = process.env.REACT_APP_DB_HOST;
   //const navigate = useNavigate();
   const loggedInUsername = localStorage.getItem("username");
   const accessToken = localStorage.getItem("access_token");

@@ -15,11 +15,11 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
+import { DB_HOST } from "../controllers/config.ts";
 
 // TODO: Add tags as dropdown
 
 const SettingsPage = () => {
-  const DB_HOST = process.env.REACT_APP_DB_HOST;
   const { username } = useParams();
   const navigate = useNavigate();
 

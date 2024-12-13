@@ -13,7 +13,7 @@ This application allows users to:
 
 The frontend integrates with the backend APIs for seamless functionality, offering a responsive design for both desktop and mobile.
 
-## Technologies 
+## Technologies
 
 - React: Component-based library for building the user interface.
 - Material UI: Pre-styled components for responsive and modern design.
@@ -21,17 +21,19 @@ The frontend integrates with the backend APIs for seamless functionality, offeri
 - Prettier: Ensures code formatting consistency.
 - React Router: For navigation and routing across pages.
 
-## Set Up 
+## Set Up
 
 Follow the subsequent steps to be ready to run the app:
 
 1. **Install Dependencies:**
+
    ```bash
    cd frontend
    npm install
    ```
 
 2. **Start the Development Server:**
+
    ```bash
    npm start
    ```
@@ -44,22 +46,29 @@ Follow the subsequent steps to be ready to run the app:
 ## Available Scripts
 
 ### `npm start`
+
 Runs the app in development mode.
 
 ### `npm run build`
+
 Builds the app for production.
 
 ### `npm test`
+
 Runs the test suite in watch mode.
 
 ### `npm run lint`
+
 Lints all files in the project using ESLint.
 
 ### `npm run format`
+
 Formats the codebase using Prettier.
 
 ### `npm run eject`
+
 Ejects from the default CRA configuration (irreversible).
 
 ## Additional Notes
+
 For backend setup and API details, refer to the [Backend README](backend/README.md) and for general setup and information, go to the [General README](README.md).

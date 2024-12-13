@@ -11,6 +11,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import { DB_HOST } from "../controllers/config.ts";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
@@ -44,7 +45,6 @@ function LoginPage() {
     const { email, password } = formData;
 
     try {
-      const DB_HOST = process.env.REACT_APP_DB_HOST;
       const response = await fetch(`${DB_HOST}/login`, {
         method: "POST",
         headers: {

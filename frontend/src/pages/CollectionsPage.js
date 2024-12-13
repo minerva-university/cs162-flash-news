@@ -13,9 +13,9 @@ import {
 } from "@mui/material";
 import CollectionCard from "../components/CollectionCard";
 import EmojiPicker from "emoji-picker-react";
+import { DB_HOST } from "../controllers/config.ts";
 
 const CollectionsPage = () => {
-  const DB_HOST = process.env.REACT_APP_DB_HOST;
   const { username } = useParams();
   const navigate = useNavigate();
 

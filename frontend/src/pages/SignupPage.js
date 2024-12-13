@@ -11,9 +11,9 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { DB_HOST } from "../controllers/config.ts";
 
 function SignupPage() {
-  const DB_HOST = process.env.REACT_APP_DB_HOST;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
