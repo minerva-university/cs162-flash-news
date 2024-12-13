@@ -8,6 +8,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useNavigate } from "react-router-dom";
+import { DB_HOST } from "../controllers/config.js";
 
 function Header() {
   const username = localStorage.getItem("username"); // Get username from local storage to be used in the header
@@ -29,7 +30,7 @@ function Header() {
       try {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(
-          `http://127.0.0.1:5000/api/user/search?q=${q}`,
+          `${DB_HOST}/api/user/search?q=${q}`,
           {
             method: "GET",
             headers: {

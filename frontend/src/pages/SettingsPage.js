@@ -15,7 +15,7 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
-import { DB_HOST } from "../controllers/config.ts";
+import { DB_HOST } from "../controllers/config.js";
 
 // TODO: Add tags as dropdown
 

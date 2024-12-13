@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import CollectionCard from "../components/CollectionCard";
 import EmojiPicker from "emoji-picker-react";
-import { DB_HOST } from "../controllers/config.ts";
+import { DB_HOST } from "../controllers/config.js";
 
 const CollectionsPage = () => {
   const { username } = useParams();

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ThemedButton from "../components/ThemedButton";
 import PropTypes from "prop-types"; // For type-checking props
+import { DB_HOST } from "../controllers/config.js";
+
 
 const FollowButton = ({ userId }) => {
   const [isFollowing, setIsFollowing] = useState(false);
@@ -16,7 +18,7 @@ const FollowButton = ({ userId }) => {
         }
 
         const response = await fetch(
-          `http://127.0.0.1:5000/api/user/following`,
+          `${DB_HOST}/api/user/following`,
           {
             method: "GET",
             headers: {
@@ -43,8 +45,8 @@ const FollowButton = ({ userId }) => {
 
   const handleFollowToggle = async () => {
     const endpoint = isFollowing
-      ? `http://127.0.0.1:5000/api/user/unfollow/${userId}`
-      : `http://127.0.0.1:5000/api/user/follow/${userId}`;
+      ? `${DB_HOST}/api/user/unfollow/${userId}`
+      : `${DB_HOST}/api/user/follow/${userId}`;
 
     try {
       const accessToken = localStorage.getItem("access_token");

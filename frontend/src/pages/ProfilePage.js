@@ -11,7 +11,7 @@ import {
 import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
-import { DB_HOST } from "../controllers/config.ts";
+import { DB_HOST } from "../controllers/config.js";
 import FollowButton from "../components/FollowButton";
 
 const ProfilePage = () => {
