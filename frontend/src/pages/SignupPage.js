@@ -80,7 +80,8 @@ function SignupPage() {
 
       setSnackbar({
         open: true,
-        message: "Signup successful! You are being redirected to your settings page.",
+        message:
+          "Signup successful! You are being redirected to your settings page.",
         severity: "success",
       });
 
