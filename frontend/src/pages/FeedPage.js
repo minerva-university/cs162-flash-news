@@ -11,10 +11,10 @@ const FeedPage = () => {
   const getPosts = async () => {
     try {
       const response = await PostController.getFeedPosts();
-      setPosts(response.posts || []); 
+      setPosts(response.posts || []);
     } catch (error) {
       console.error("Error fetching posts:", error);
-      setPosts([]); 
+      setPosts([]);
     }
   };
 

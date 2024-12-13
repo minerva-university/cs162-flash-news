@@ -59,7 +59,7 @@ const ProfilePage = () => {
       const profile = result.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
-      console.log(isOwner)
+      console.log(isOwner);
     } catch (error) {
       console.error("Error in fetchProfileData:", error);
     }
@@ -193,7 +193,7 @@ const ProfilePage = () => {
       </Box>
     );
   }
- 
+
   return (
     <Box
       sx={{
@@ -284,29 +284,26 @@ const ProfilePage = () => {
         </Box>
         {/* Settings Button and Follow Button*/}
         {isOwner ? (
-        <Button
-          variant="contained"
-          startIcon={<Settings />}
-          sx={{
-            backgroundColor: "#D9EAF3",
-            color: "#5F848C",
-            fontWeight: "bold",
-            fontFamily: "'Raleway', sans-serif",
-            "&:hover": {
-              backgroundColor: "#6b949c",
-            },
-          }}
-          onClick={() => navigate(`/${profileData.username}/settings`)}
-        >
-          Settings
-        </Button>
-      ) : (
-        profileData && profileData.user_id && (
-          <FollowButton 
-          userId={profileData.user_id} />
-        )
-      )}
-
+          <Button
+            variant="contained"
+            startIcon={<Settings />}
+            sx={{
+              backgroundColor: "#D9EAF3",
+              color: "#5F848C",
+              fontWeight: "bold",
+              fontFamily: "'Raleway', sans-serif",
+              "&:hover": {
+                backgroundColor: "#6b949c",
+              },
+            }}
+            onClick={() => navigate(`/${profileData.username}/settings`)}
+          >
+            Settings
+          </Button>
+        ) : (
+          profileData &&
+          profileData.user_id && <FollowButton userId={profileData.user_id} />
+        )}
       </Box>
 
       {/* Most Recent Posts Section */}

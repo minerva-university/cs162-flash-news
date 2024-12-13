@@ -36,7 +36,7 @@ function Header() {
               Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (response.ok) {
@@ -55,7 +55,7 @@ function Header() {
 
   const handleSearchSelect = (selectedUser) => {
     if (selectedUser && selectedUser.username) {
-      navigate(`/${selectedUser.username}/profile`); 
+      navigate(`/${selectedUser.username}/profile`);
     }
     setSearchValue("");
     setUserSuggestions([]);

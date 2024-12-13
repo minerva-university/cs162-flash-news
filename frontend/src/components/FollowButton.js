@@ -15,13 +15,16 @@ const FollowButton = ({ userId }) => {
           return;
         }
 
-        const response = await fetch(`http://127.0.0.1:5000/api/user/following`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `http://127.0.0.1:5000/api/user/following`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -77,12 +80,12 @@ const FollowButton = ({ userId }) => {
         textTransform: "none",
         marginLeft: "auto",
         backgroundColor: "#D9EAF3",
-            color: "#5F848C",
-            fontWeight: "bold",
-            fontFamily: "'Raleway', sans-serif",
-            "&:hover": {
-              backgroundColor: "#6b949c",
-            },
+        color: "#5F848C",
+        fontWeight: "bold",
+        fontFamily: "'Raleway', sans-serif",
+        "&:hover": {
+          backgroundColor: "#6b949c",
+        },
       }}
     >
       {isFollowing ? "Unfollow" : "Follow"}
