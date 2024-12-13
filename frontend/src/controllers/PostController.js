@@ -48,10 +48,10 @@ class PostController {
     }
   }
 
-  static async updatePost(postID, description) {
+  static async updatePost(postID, newPost) {
     const response = await fetch(`${DB_HOST}/posts/${postID}`, {
       method: "PUT",
-      body: JSON.stringify({ description }),
+      body: JSON.stringify(newPost),
       headers: HEADERS_WITH_JWT(this.accessToken),
     });
 

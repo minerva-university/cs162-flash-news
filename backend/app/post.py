@@ -140,44 +140,13 @@ def update_post(post_id):
 
     data = request.get_json()
 
-    # Define the fields that can be updated
-    article_link = data.get("article_link")
-    description = data.get("description")
+    # Articles cannot be updated
+    # Only update post description and categories
+    post_description = data.get("post_description")
     categories = data.get("categories")
-    article.source = data.get("source")
-    title = data.get("title", "")
 
-    # Check if the article already exists
-    article = Article.query.filter_by(link=article_link).first()
-    if not article:
-        article = Article(link=article_link)
-        db.session.add(article)
-
-    article.title = title
-    post.description = description
-
-    """
-    This version was not working, did directly, change later with Pei
-
-    if article_link:
-        article = Article.query.filter_by(link=article_link).first()
-        if not article:
-            article = Article(
-                link=article_link,
-                source=None,  # Implement later
-                title=title,
-                caption=None,  # Implement later
-                preview=None,  # Implement later
-            )  # What if the automated fields fail? Implement later
-    """
-
-    db.session.add(article)
-    db.session.commit()
-
-    post.article_id = article.article_id  # Update post's article_id to new article
-
-    if description:
-        post.description = description
+    if post_description:
+        post.description = post_description
 
     if categories:
         # Check if the number of categories is within the limit

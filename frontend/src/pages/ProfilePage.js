@@ -295,7 +295,7 @@ const ProfilePage = () => {
                 backgroundColor: "#6b949c",
               },
             }}
-            onClick={() => navigate(`/${profileData.username}/settings`)}
+            onClick={() => navigate(`/settings/${profileData.username}`)}
           >
             Settings
           </Button>

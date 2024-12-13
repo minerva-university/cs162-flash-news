@@ -13,7 +13,7 @@ function Header() {
   const pages = [
     { name: "Home", path: "/feed" },
     { name: "Collections", path: `/user/${username}/collections` },
-    { name: "Profile", path: `${username}/profile` },
+    { name: "Profile", path: `/profile/${username}` },
   ];
 
   const handleLogout = () => {
@@ -35,7 +35,7 @@ function Header() {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="/feed"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },

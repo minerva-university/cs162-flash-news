@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import CommentController from "../controllers/CommentController";
 import PostController from "../controllers/PostController";
+import TagController from "../controllers/TagController";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 
 import {
@@ -24,12 +25,15 @@ import dayjs from "dayjs";
 import EditDeleteMenu from "../components/EditDeleteMenu";
 import UsernameAndOPChip from "../components/UsernameAndOPChip";
 import ThemedButton from "../components/ThemedButton";
+import MultipleSelectChip from "../components/MultipleSelectChip";
 
 const PostDetailPage = () => {
   const navigate = useNavigate();
   const CURRENT_USERNAME = localStorage.getItem("username");
   const { id } = useParams(); // from URL params
   const [post, setPost] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [comments, setComments] = useState([]);
   const [isEditingPost, setIsEditingPost] = useState(false);
   const mainTextareaRef = useRef(null);
@@ -54,7 +58,7 @@ const PostDetailPage = () => {
     if (selectedItem === "delete") {
       // Confirm before deleting the post
       const confirmDelete = window.confirm(
-        "Are you sure you want to delete this post? This cannot be undone!",
+        "Are you sure you want to delete this post? This cannot be undone!"
       );
       if (confirmDelete) {
         PostController.deletePost(postID).then(() => navigate("/feed"));
@@ -69,13 +73,13 @@ const PostDetailPage = () => {
     // You can't edit your comments! Accept the consequences of your actions!
     if (selectedItem === "delete") {
       const confirmDelete = window.confirm(
-        "Are you sure you want to delete this comment?",
+        "Are you sure you want to delete this comment?"
       );
       if (confirmDelete) {
         CommentController.deleteComment(commentID).then(() =>
           setComments(
-            comments.filter((comment) => comment.comment_id !== commentID),
-          ),
+            comments.filter((comment) => comment.comment_id !== commentID)
+          )
         );
       }
     }
@@ -85,10 +89,16 @@ const PostDetailPage = () => {
     const newDescription = mainTextareaRef.current.value;
     if (!newDescription || !post) return;
 
-    PostController.updatePost(post.post_id, newDescription).then(() => {
+    const newPost = {
+      post_description: newDescription,
+      categories: selectedCategories,
+    };
+
+    PostController.updatePost(post.post_id, newPost).then(() => {
       setPost({
         ...post,
         description: newDescription,
+        categories: selectedCategories,
       });
       setIsEditingPost(false);
     });
@@ -104,20 +114,23 @@ const PostDetailPage = () => {
       .catch((error) => console.log(error));
   };
 
-  const getPostDetails = () => {
+  useEffect(() => {
+    if (!id) return;
+
     // Get the post's details
     PostController.getPost(id)
       .then((response) => {
         setPost(response);
+        setSelectedCategories(response.categories);
         getAllCommentsForPost();
       })
       .catch((error) => console.log(error));
-  };
 
-  useEffect(() => {
-    if (!id) return;
-
-    getPostDetails();
+    // Get all tags in the database
+    TagController.getAll().then((response) => {
+      if (response && response.categories && response.categories.length > 0)
+        setCategories(response?.categories?.map((c) => c.category_id));
+    });
   }, [id]);
 
   return post ? (
@@ -175,9 +188,9 @@ const PostDetailPage = () => {
           <Card sx={{ marginBottom: "1.5rem" }}>
             <CardHeader
               avatar={
-                post?.profile_picture ? (
+                post?.user.profile_picture ? (
                   <Avatar
-                    src={post.profile_picture}
+                    src={post.user.profile_picture}
                     sx={(theme) => ({
                       bgcolor: theme.palette.primary.main,
                     })}
@@ -202,13 +215,14 @@ const PostDetailPage = () => {
                 post?.user.username === CURRENT_USERNAME && (
                   <EditDeleteMenu
                     id={post.post_id}
-                    editLabel={"Edit Post Description"}
+                    editLabel={"Edit Post"}
                     deleteLabel={"Delete Post"}
                     onClose={handlePostEditOrDelete}
                   />
                 )
               }
             />
+            {/* Post Content (Viewing Mode) */}
             {!isEditingPost && (
               <CardContent>
                 {post?.description.split("\n").map((line, index) => {
@@ -251,7 +265,7 @@ const PostDetailPage = () => {
                 )}
               </CardContent>
             )}
-            {/* Post Editing Area */}
+            {/* Post in Editing Mode */}
             <CardContent sx={{ display: isEditingPost ? "block" : "none" }}>
               <TextareaAutosize
                 style={{
@@ -264,6 +278,17 @@ const PostDetailPage = () => {
                 aria-label="minimum height"
                 minRows={3}
                 placeholder={`What's on your mind?`}
+              />
+
+              {/* Categories */}
+              <MultipleSelectChip
+                id="categories-list"
+                label="Select Categories"
+                options={categories}
+                max={5}
+                sx={{ marginBottom: "1rem" }}
+                alreadySelected={selectedCategories}
+                onChange={(selected) => setSelectedCategories(selected)}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <ThemedButton onClick={() => setIsEditingPost(false)}>

@@ -64,8 +64,6 @@ def create_collection():
 @collections.route("/user/<int:user_id>", methods=["GET"])
 @jwt_required()
 def get_collections(user_id):
-
-    current_user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card, CardHeader, Typography } from "@mui/material";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 
@@ -6,15 +6,11 @@ import Avatar from "@mui/material/Avatar";
 import {
   Box,
   Button,
-  InputLabel,
-  FormControl,
   Modal,
-  MenuItem,
-  Select,
   TextField,
 } from "@mui/material";
-import TagController from "../controllers/TagController";
 import MultipleSelectChip from "../components/MultipleSelectChip";
+import TagController from "../controllers/TagController";
 import PostController from "../controllers/PostController";
 import UserController from "../controllers/UserController";
 import CollectionController from "../controllers/CollectionController";
@@ -34,8 +30,9 @@ const style = {
 };
 
 export default function AddPostForm({ onPostAdded }) {
-  // @TODO: MISSING OPTION TO ADD TO THE USER'S COLLECTION(S)
-  const profile_picture = ""; // @TODO current user's profile picture
+  const username = localStorage.getItem("username");
+  const [userID, setUserID] = useState(0);
+  const [profile_picture, setProfilePicture] = useState("");
   const mainTextareaRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -73,14 +70,10 @@ export default function AddPostForm({ onPostAdded }) {
       setCategories(availableCategories?.categories?.map((c) => c.category_id));
 
     // Get all collections for the user
-    // Note: this will likely have to change after Laryssa's PR because
-    // we'll be using user.py
-    const { id } = await UserController.getCurrentUserDetails();
     const collectionResponse =
-      await CollectionController.getAllCollectionsForUser(id);
+      await CollectionController.getAllCollectionsForUser(userID);
 
     // display this in multiple select chip
-    // how do I keep the IDs :'(
     if (
       collectionResponse &&
       (collectionResponse.private.length > 0 ||
@@ -91,12 +84,12 @@ export default function AddPostForm({ onPostAdded }) {
       const finalCollections = [
         ...collectionResponse.private.map((c) => {
           const title = `(Private) ${c.title}`;
-          collectionsKeyedByTitle[title] = c.id;
+          collectionsKeyedByTitle[title] = c.collection_id;
           return title;
         }),
         ...collectionResponse.public.map((c) => {
           const title = `(Public) ${c.title}`;
-          collectionsKeyedByTitle[title] = c.id;
+          collectionsKeyedByTitle[title] = c.collection_id;
           return title;
         }),
       ];
@@ -111,7 +104,7 @@ export default function AddPostForm({ onPostAdded }) {
 
   const handleClose = () => {
     const confirmation = window.confirm(
-      "Are you sure you want to exit? All changes will be lost.",
+      "Are you sure you want to exit? All changes will be lost."
     );
     if (confirmation) {
       resetAddPostForm();
@@ -147,9 +140,9 @@ export default function AddPostForm({ onPostAdded }) {
         selectedCollections.map((title) =>
           CollectionController.addPostToCollection(
             collectionsByTitle[title],
-            response.post_id,
-          ),
-        ),
+            response.post_id
+          )
+        )
       );
 
       resetAddPostForm();
@@ -186,10 +179,18 @@ export default function AddPostForm({ onPostAdded }) {
       })
       .catch((error) =>
         setLinkError(
-          "Could not get link details. You can still create a post though!",
-        ),
+          "Could not get link details. You can still create a post though!"
+        )
       );
   };
+
+  useEffect(() => {
+    UserController.getCurrentUserDetails(username).then((response) => {
+      const { data } = response
+      setUserID(data.user_id);
+      setProfilePicture(data.profile_picture);
+    });
+  }, []);
 
   return (
     <Card sx={{ width: "50%", maxWidth: "555px", margin: "0 auto 3rem" }}>
@@ -200,7 +201,7 @@ export default function AddPostForm({ onPostAdded }) {
             sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
             aria-label="Profile Picture"
           >
-            R
+            {username[0].toUpperCase()}
           </Avatar>
         }
         title="What's new and interesting?"
@@ -233,7 +234,7 @@ export default function AddPostForm({ onPostAdded }) {
               })}
               aria-label="User Profile"
             >
-              R
+              {username[0].toUpperCase()}
             </Avatar>
             <TextField
               fullWidth

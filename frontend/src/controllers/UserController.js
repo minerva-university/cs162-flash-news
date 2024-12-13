@@ -5,8 +5,8 @@ class UserController {
     return localStorage.getItem("access_token");
   }
 
-  static async getCurrentUserDetails() {
-    const response = await fetch(`${DB_HOST}/user`, {
+  static async getCurrentUserDetails(username) {
+    const response = await fetch(`${DB_HOST}/user/${username}`, {
       method: "GET",
       headers: HEADERS_WITH_JWT(this.accessToken),
     });

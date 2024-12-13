@@ -39,27 +39,32 @@ export default function PostCard({ post }) {
 
   return (
     <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
-      {/* @TODO: Link to the user profile page */}
-      <CardHeader
-        avatar={
-          post.profile_picture ? (
-            <Avatar
-              src={post.profile_picture}
-              sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="Profile Picture"
-            />
-          ) : (
-            <Avatar
-              sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
-              aria-label="Profile Picture"
-            >
-              {post.user.username[0].toUpperCase()}
-            </Avatar>
-          )
-        }
-        title={post.user.username}
-        subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
-      />
+      <Link
+        href={`/profile/${post.user.username}`}
+        title="View Profile"
+        underline="none"
+      >
+        <CardHeader
+          avatar={
+            post.user.profile_picture ? (
+              <Avatar
+                src={post.user.profile_picture}
+                sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
+                aria-label="Profile Picture"
+              />
+            ) : (
+              <Avatar
+                sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
+                aria-label="Profile Picture"
+              >
+                {post.user.username[0].toUpperCase()}
+              </Avatar>
+            )
+          }
+          title={post.user.username}
+          subheader={dayjs(post.posted_at).fromNow()} // Format this date to X time ago
+        />
+      </Link>
       <Link
         href={`/post/${post.post_id}`}
         title="View post details"
