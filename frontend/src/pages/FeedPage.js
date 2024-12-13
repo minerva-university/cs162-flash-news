@@ -3,12 +3,13 @@ import Box from "@mui/material/Box";
 import PostController from "../controllers/PostController";
 import PostCard from "../components/PostCard";
 import AddPostForm from "../forms/AddPostForm";
+import FollowButton from "../components/FollowButton";
 
 const FeedPage = () => {
   const [posts, setPosts] = useState(null);
 
   const getPosts = async () => {
-    PostController.getAll().then((posts) => {
+    PostController.getFeedPosts().then((posts) => {
       setPosts(posts);
     });
   };
@@ -21,7 +22,12 @@ const FeedPage = () => {
     <Box style={{ padding: 20 }}>
       <AddPostForm onPostAdded={getPosts} />
       {posts &&
-        posts.posts.map((post) => <PostCard key={post.post_id} post={post} />)}
+        posts.map((post) => (
+          <PostCard key={post.post_id} post={post}>
+            {/* Include FollowButton */}
+            <FollowButton userId={post.user_id} />
+          </PostCard>
+        ))}
     </Box>
   );
 };
