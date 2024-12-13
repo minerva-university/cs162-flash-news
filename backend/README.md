@@ -348,6 +348,10 @@ pytest
     }
 
     Response (400): {
+        "message": "Emoji must be a string",
+    }
+
+    Response (400): {
         "message": "A collection with this title already exists for the user",
     }
     ```
