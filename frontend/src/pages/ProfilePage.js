@@ -12,6 +12,7 @@ import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
 import { DB_HOST } from "../controllers/config.ts";
+import FollowButton from "../components/FollowButton";
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -58,6 +59,7 @@ const ProfilePage = () => {
       const profile = result.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
+      console.log(isOwner)
     } catch (error) {
       console.error("Error in fetchProfileData:", error);
     }
@@ -191,7 +193,7 @@ const ProfilePage = () => {
       </Box>
     );
   }
-
+ 
   return (
     <Box
       sx={{
@@ -280,26 +282,31 @@ const ProfilePage = () => {
             )}
           </Box>
         </Box>
+        {/* Settings Button and Follow Button*/}
+        {isOwner ? (
+        <Button
+          variant="contained"
+          startIcon={<Settings />}
+          sx={{
+            backgroundColor: "#D9EAF3",
+            color: "#5F848C",
+            fontWeight: "bold",
+            fontFamily: "'Raleway', sans-serif",
+            "&:hover": {
+              backgroundColor: "#6b949c",
+            },
+          }}
+          onClick={() => navigate(`/${profileData.username}/settings`)}
+        >
+          Settings
+        </Button>
+      ) : (
+        profileData && profileData.user_id && (
+          <FollowButton 
+          userId={profileData.user_id} />
+        )
+      )}
 
-        {/* Settings Button */}
-        {isOwner && (
-          <Button
-            variant="contained"
-            startIcon={<Settings />}
-            sx={{
-              backgroundColor: "#D9EAF3",
-              color: "#5F848C",
-              fontWeight: "bold",
-              fontFamily: "'Raleway', sans-serif",
-              "&:hover": {
-                backgroundColor: "#6b949c",
-              },
-            }}
-            onClick={() => navigate(`/${profileData.username}/settings`)}
-          >
-            Settings
-          </Button>
-        )}
       </Box>
 
       {/* Most Recent Posts Section */}

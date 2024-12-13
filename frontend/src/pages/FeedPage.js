@@ -6,12 +6,16 @@ import AddPostForm from "../forms/AddPostForm";
 import FollowButton from "../components/FollowButton";
 
 const FeedPage = () => {
-  const [posts, setPosts] = useState(null);
+  const [posts, setPosts] = useState([]); // Initialize as an empty array
 
   const getPosts = async () => {
-    PostController.getFeedPosts().then((posts) => {
-      setPosts(posts);
-    });
+    try {
+      const response = await PostController.getFeedPosts();
+      setPosts(response.posts || []); 
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setPosts([]); 
+    }
   };
 
   useEffect(() => {
@@ -21,13 +25,11 @@ const FeedPage = () => {
   return (
     <Box style={{ padding: 20 }}>
       <AddPostForm onPostAdded={getPosts} />
-      {posts &&
-        posts.map((post) => (
-          <PostCard key={post.post_id} post={post}>
-            {/* Include FollowButton */}
-            <FollowButton userId={post.user_id} />
-          </PostCard>
-        ))}
+      {posts.map((post) => (
+        <PostCard key={post.post_id} post={post}>
+          <FollowButton userId={post.user_id} />
+        </PostCard>
+      ))}
     </Box>
   );
 };
