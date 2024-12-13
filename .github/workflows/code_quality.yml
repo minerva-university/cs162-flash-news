@@ -27,3 +27,7 @@ jobs:
       - name: Check Prettier formatting
         working-directory: ./frontend
         run: npx prettier --check .
+
+      - name: Check for build errors
+        working-directory: ./frontend
+        run: npm run build
