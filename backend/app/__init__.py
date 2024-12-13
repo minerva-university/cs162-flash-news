@@ -29,8 +29,9 @@ def load_user(jwt_header, jwt_data):
 def user_identity_lookup(user):
     """Define how the user object is encoded in the JWT."""
     # User id is going to be a string since JWT sub needs to be a string
+    if isinstance(user, str):
+        return user
     return str(user) # Always return a string
-
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):

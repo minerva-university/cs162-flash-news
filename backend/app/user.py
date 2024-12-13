@@ -94,18 +94,13 @@ def update_profile():
 
     try:
         current_user_id = int(get_jwt_identity())
-        print(f"Current user ID: {current_user_id}")
         user = User.query.get(current_user_id)
         if not user:
-            print("User not found")
             return create_error_response('User not found', 404)
 
         data = request.form
-        print(f"Received data: {data}")
         new_username = data.get('username', user.username)
-        print(f"New username: {new_username}")
         file = request.files.get("profile_picture")
-        print(f"File received: {file}")
 
         if not new_username:
             return create_error_response('Username is required', 400)
@@ -134,12 +129,9 @@ def update_profile():
 
         # Updating user fields
         user.bio_description = data.get('bio_description') or None
-        print(f"Updating user: {user}")
         user.profile_picture = data.get('profile_picture', user.profile_picture) or None
-        print(f"Path to profile picture: {user.profile_picture}")
         tags = data.get('tags', '[]')  # Default to an empty list
         user.tags = json.dumps(json.loads(tags))  # Ensure JSON format
-        print(f"Tags: {user.tags}")
         db.session.commit()
 
         updated_user_data = {
@@ -154,7 +146,6 @@ def update_profile():
         return create_success_response('Profile updated successfully', 200, updated_user_data)
 
     except SQLAlchemyError as e:
-        print(f"SQLAlchemy Error: {str(e)}")
         db.session.rollback()
         return create_error_response('Database error occurred', 500, str(e))
 

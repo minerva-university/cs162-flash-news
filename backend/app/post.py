@@ -139,21 +139,21 @@ def update_post(post_id):
         return jsonify({"error": "You are not allowed to update this post"}), 403
 
     data = request.get_json()
-    print("data being sent to update_post", data)
 
+    # Define the fields that can be updated
     article_link = data.get("article_link")
     description = data.get("description")
     categories = data.get("categories")
+    article.source = data.get("source")
     title = data.get("title", "")
 
+    # Check if the article already exists
     article = Article.query.filter_by(link=article_link).first()
     if not article:
-        print("No existing article found, creating new one")
         article = Article(link=article_link)
         db.session.add(article)
 
     article.title = title
-    article.source = data.get("source")
     post.description = description
 
     """
@@ -171,11 +171,6 @@ def update_post(post_id):
             )  # What if the automated fields fail? Implement later
     """
 
-    print("article being added", article)
-    print("article link after being added", article.link)
-    print("article title after being added", article.title)
-    print("article caption after being added", article.caption)
-    print("article preview after being added", article.preview)
     db.session.add(article)
     db.session.commit()
 

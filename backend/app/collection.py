@@ -25,6 +25,9 @@ def create_collection():
 
     if "is_public" in data and not isinstance(data["is_public"], bool):
         return jsonify({"error": "is_public must be a boolean"}), 400
+    
+    if "emoji" in data and not isinstance(data["emoji"], str):
+        return jsonify({"error": "Emoji must be a string"}), 400
 
     # Check for duplicate collection
     existing_collection = Collection.query.filter_by(
@@ -69,13 +72,10 @@ def get_collections(user_id):
 
     # Fetch public and private collections
     public_collections = Collection.query.filter_by(user_id=user_id, is_public=True).all()
-    print(f"Public collections fetched: {len(public_collections)}")
 
     private_collections = []
     if int(current_user_id) == int(user_id):  # Fetch private collections only if the user is the owner
-        print("Fetching private collections")
         private_collections = Collection.query.filter_by(user_id=user_id, is_public=False).all()
-        print(f"Private collections fetched: {len(private_collections)}")
 
     public_collections_data = [{
         'collection_id': collection.collection_id,
