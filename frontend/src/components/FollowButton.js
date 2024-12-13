@@ -3,7 +3,6 @@ import ThemedButton from "../components/ThemedButton";
 import PropTypes from "prop-types"; // For type-checking props
 import { DB_HOST } from "../controllers/config.js";
 
-
 const FollowButton = ({ userId }) => {
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -17,16 +16,13 @@ const FollowButton = ({ userId }) => {
           return;
         }
 
-        const response = await fetch(
-          `${DB_HOST}/api/user/following`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
+        const response = await fetch(`${DB_HOST}/api/user/following`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
           },
-        );
+        });
 
         if (response.ok) {
           const data = await response.json();
