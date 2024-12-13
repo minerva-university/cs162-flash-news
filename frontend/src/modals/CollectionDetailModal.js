@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Typography, Button, Box } from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
-import { DB_HOST } from "../controllers/config.ts";
+import { DB_HOST } from "../controllers/config.js";
 
 // TODO: Add functionality for adding and removing articles from the collection
 

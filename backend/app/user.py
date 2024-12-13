@@ -33,7 +33,6 @@ def create_success_response(message, status_code=200, data=None):
         'message': message,
         'data': data
     }), status_code
-
 # Utility function for consistent error handling
 def create_error_response(message, status_code=400, details=None):
     return jsonify({
@@ -288,6 +287,39 @@ def get_followers():
     ]
 
     return jsonify({"followers": followers})
+
+@user_bp.route('/search', methods=['GET'])
+@jwt_required()
+def search_users():
+    """Search for users by username or other criteria."""
+    query = request.args.get('q', '').strip()
+
+    if not query:
+        return create_error_response("Search query is required.", 400)
+
+    try:
+        users = User.query.filter(User.username.ilike(f"%{query}%")).all()
+
+        if not users:
+            return create_success_response("No users found.", 200, [])
+
+        users_data = [
+            {
+                "user_id": user.user_id,
+                "username": user.username,
+                "profile_picture": user.profile_picture,
+                "bio_description": user.bio_description,
+            }
+            for user in users
+        ]
+        return create_success_response("Users found.", 200, users_data)
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return create_error_response("Database error occurred.", 500, str(e))
+
+    except Exception as e:
+        return create_error_response("An unexpected error occurred.", 500, str(e))
 
 
 """USER 2 REMAINING"""
