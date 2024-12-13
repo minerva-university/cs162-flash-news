@@ -15,7 +15,6 @@ load_dotenv()
 db = SQLAlchemy()
 jwt = JWTManager()
 
-
 @jwt.user_lookup_loader
 def load_user(jwt_header, jwt_data):
     from .models import User
@@ -26,17 +25,13 @@ def load_user(jwt_header, jwt_data):
         return User.query.get(user_id)
     return None
 
-
 @jwt.user_identity_loader
 def user_identity_lookup(user):
     """Define how the user object is encoded in the JWT."""
     # User id is going to be a string since JWT sub needs to be a string
-    # So just return it directly — typecast when doing comparisons
     if isinstance(user, str):
         return user
-    # If user is a User object, return its ID
-    return user.user_id
-
+    return str(user) # Always return a string
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
@@ -44,7 +39,6 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 
     jti = jwt_payload["jti"]
     return RevokedToken.query.filter_by(jti=jti).first() is not None
-
 
 def create_app():
     app = Flask(__name__)
@@ -76,10 +70,11 @@ def create_app():
                 "allow_headers": ["Content-Type", "Authorization"],
             }
         },
+        supports_credentials=True,
     )
 
     db.init_app(app)
-    jwt.init_app(app)  # Initialize JWT
+    jwt.init_app(app)
 
     # blueprint for auth routes in our app
     from .auth import auth as auth_blueprint
@@ -87,8 +82,7 @@ def create_app():
     app.register_blueprint(auth_blueprint)
 
     # blueprint for user routes in our app
-    from .user2 import user_bp as user_blueprint
-
+    from .user import user_bp as user_blueprint
     app.register_blueprint(user_blueprint)
 
     # blueprint for post routes in our app
