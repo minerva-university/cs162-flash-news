@@ -71,12 +71,9 @@ def get_collections(user_id):
         return jsonify({"error": "User not found"}), 404
 
     # Fetch public and private collections
-    public_collections = Collection.query.filter_by(user_id=user_id, is_public=True).all()
-
-    private_collections = []
-    if int(current_user_id) == int(user_id):  # Fetch private collections only if the user is the owner
-        private_collections = Collection.query.filter_by(user_id=user_id, is_public=False).all()
-
+    public_collections = [c for c in user.collections if c.is_public]
+    private_collections = [c for c in user.collections if not c.is_public]
+    
     public_collections_data = [{
         'collection_id': collection.collection_id,
         'title': collection.title,
