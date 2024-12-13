@@ -6,7 +6,7 @@ import AddPostForm from "../forms/AddPostForm";
 import FollowButton from "../components/FollowButton";
 
 const FeedPage = () => {
-  const [posts, setPosts] = useState([]); // Initialize as an empty array
+  const [posts, setPosts] = useState([]);
 
   const getPosts = async () => {
     try {
@@ -26,9 +26,7 @@ const FeedPage = () => {
     <Box style={{ padding: 20 }}>
       <AddPostForm onPostAdded={getPosts} />
       {posts.map((post) => (
-        <PostCard key={post.post_id} post={post}>
-          <FollowButton userId={post.user_id} />
-        </PostCard>
+        <PostCard key={post.post_id} post={post}></PostCard>
       ))}
     </Box>
   );

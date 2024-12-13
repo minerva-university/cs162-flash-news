@@ -5,7 +5,6 @@ class PostController {
     return localStorage.getItem("access_token");
   }
 
-  // Fetch posts for the feed, including followed users' posts
   static async getFeedPosts() {
     const response = await fetch(`${DB_HOST}/posts/feed`, {
       method: "GET",
@@ -20,7 +19,6 @@ class PostController {
     }
   }
 
-  // Fetch all posts (already implemented)
   static async getAll() {
     const response = await fetch(`${DB_HOST}/posts`, {
       method: "GET",

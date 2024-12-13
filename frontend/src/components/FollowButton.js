@@ -94,7 +94,7 @@ const FollowButton = ({ userId }) => {
 };
 
 FollowButton.propTypes = {
-  userId: PropTypes.number.isRequired, // Ensure `userId` is passed as a prop
+  userId: PropTypes.number.isRequired,
 };
 
 export default FollowButton;
