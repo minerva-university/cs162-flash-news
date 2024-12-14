@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
@@ -115,6 +115,17 @@ def create_app():
     from .og import opengraph_bp as og_blueprint
 
     app.register_blueprint(og_blueprint, url_prefix="/api/")
+
+    # Add a health check route
+    @app.route('/health')
+    def health_check():
+        try:
+            # Test database connection
+            db.session.execute('SELECT 1')
+            return jsonify({'status': 'healthy'}), 200
+            
+        except Exception as e:
+            return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
     # Avoids circular imports by importing models in this format
     with app.app_context():
