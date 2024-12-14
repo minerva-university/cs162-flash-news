@@ -11,7 +11,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { DB_HOST } from "../controllers/config.ts";
+import { DB_HOST } from "../controllers/config.js";
 
 function SignupPage() {
   const [formData, setFormData] = useState({

@@ -1,12 +1,26 @@
-import { DB_HOST, HEADERS_WITH_JWT } from "./config.ts";
+import { DB_HOST, HEADERS_WITH_JWT } from "./config.js";
 
 class PostController {
   static get accessToken() {
     return localStorage.getItem("access_token");
   }
 
-  static async getAll() {
+  static async getFeedPosts() {
     const response = await fetch(`${DB_HOST}/posts/feed`, {
+      method: "GET",
+      headers: HEADERS_WITH_JWT(this.accessToken),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  static async getAll() {
+    const response = await fetch(`${DB_HOST}/posts`, {
       method: "GET",
       headers: HEADERS_WITH_JWT(this.accessToken),
     });
@@ -95,6 +109,36 @@ class PostController {
     const response = await fetch(`${DB_HOST}/og`, {
       method: "POST",
       body: JSON.stringify({ url }),
+      headers: HEADERS_WITH_JWT(this.accessToken),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  // Follow a user
+  static async followUser(userID) {
+    const response = await fetch(`${DB_HOST}/follow/${userID}`, {
+      method: "POST",
+      headers: HEADERS_WITH_JWT(this.accessToken),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  // Unfollow a user
+  static async unfollowUser(userID) {
+    const response = await fetch(`${DB_HOST}/follow/${userID}`, {
+      method: "DELETE",
       headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
