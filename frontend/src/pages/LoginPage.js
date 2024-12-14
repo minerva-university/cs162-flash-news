@@ -11,6 +11,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import { DB_HOST } from "../controllers/config.ts";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
@@ -44,7 +45,7 @@ function LoginPage() {
     const { email, password } = formData;
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/login", {
+      const response = await fetch(`${DB_HOST}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

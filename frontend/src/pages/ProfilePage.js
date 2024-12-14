@@ -1,329 +1,196 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import Chip from "@mui/material/Chip";
-import Button from "@mui/material/Button";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  Typography,
+} from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
+import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
+import { DB_HOST } from "../controllers/config.ts";
 
-// TODO: Replace with actual user data fetched from the backend
-const user = {
-  username: "Username",
-  bio: "Experienced in political journalism",
-  tags: ["Journalist", "Contributor"],
-};
-
-const ProfilePage = ({ isOwner }) => {
+const ProfilePage = () => {
+  const { username } = useParams();
   const navigate = useNavigate();
+  const [profileData, setProfileData] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sharedPosts, setSharedPosts] = useState([]);
+  const [collections, setCollections] = useState([]);
 
   // Handle collection click event (navigate to collection page)
   const handleCollectionClick = (collection) => {
-    const formattedTitle = collection.name.toLowerCase().replace(/\s+/g, "-");
-    navigate(`/collections/${collection.id}/${formattedTitle}`, {
-      state: { collection },
+    const formattedTitle = collection.title?.toLowerCase().replace(/\s+/g, "-");
+    navigate(`/collections/${collection.collection_id}/${formattedTitle}`, {
+      state: { collection, username },
     });
   };
 
-  // Mock data for shared posts, collections, and articles (replace with actual data)
-  const sharedPosts = [
-    {
-      username: "User1",
-      profile_picture: "",
-      posted_at: "2024-11-26T10:30:00Z",
-      preview: "https://via.placeholder.com/300",
-      description: "Breaking News from CNN!",
-      categories: ["Politics", "World"],
-      liked: true,
-      link: "https://cnn.com",
-    },
-    {
-      username: "User2",
-      profile_picture: "",
-      posted_at: "2024-11-26T09:30:00Z",
-      preview: "https://via.placeholder.com/300",
-      description: "Opinion Piece from The Guardian.",
-      categories: ["Opinion"],
-      liked: false,
-      link: "https://theguardian.com",
-    },
-  ];
+  // Fetch profile data
+  const fetchProfileData = async () => {
+    try {
+      const accessToken = localStorage.getItem("access_token");
 
-  const collections = [
-    {
-      id: 1,
-      name: "World News",
-      description: "Stay updated with the latest global events and trends.",
-      createdAt: "2024-11-20",
-      articlesCount: 3,
-      icon: "🌍",
-      articles: [
-        {
-          title: "Global Climate Summit Highlights",
-          source: "BBC News",
-          description:
-            "World leaders discuss strategies to combat climate change in the annual summit.",
-          category: "Environment",
-          author: "John Smith",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Breaking News: Historic Peace Agreement Signed",
-          source: "CNN",
-          description:
-            "Two nations have signed a historic peace agreement ending decades of conflict.",
-          category: "World",
-          author: "Emily White",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Economic Reforms in South America",
-          source: "Al Jazeera",
-          description:
-            "South American nations agree on unified economic reforms to boost trade.",
-          category: "Finance",
-          author: "Carlos Martinez",
-          image: "https://via.placeholder.com/300x150",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Tech Trends",
-      description: "The latest in AI, software, and hardware advancements.",
-      createdAt: "2024-11-15",
-      articlesCount: 3,
-      icon: "💻",
-      articles: [
-        {
-          title: "AI Breakthrough in 2024",
-          source: "TechCrunch",
-          description:
-            "Researchers have developed a new AI model that outperforms GPT-4 in language tasks.",
-          category: "Technology",
-          author: "Jane Doe",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Stock Market Update: Tech Stocks Surge",
-          source: "Wall Street Journal",
-          description:
-            "Tech companies report record earnings, pushing the Nasdaq to new highs.",
-          category: "Finance",
-          author: "Sarah Lee",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Quantum Computing Reaches New Milestone",
-          source: "MIT Technology Review",
-          description:
-            "A new quantum algorithm promises to revolutionize cryptography.",
-          category: "Innovation",
-          author: "Adam Smith",
-          image: "https://via.placeholder.com/300x150",
-        },
-      ],
-    },
-  ];
+      if (!accessToken) {
+        throw new Error("Access token missing. Please log in.");
+      }
 
-  const allArticles = [
-    {
-      title: "AI Breakthrough in 2024",
-      source: "TechCrunch",
-      description:
-        "A new AI model surpasses GPT-4 in language processing tasks.",
-      category: "Technology",
-      author: "Jane Doe",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://techcrunch.com",
-    },
-    {
-      title: "Global Climate Change Summit",
-      source: "BBC News",
-      description:
-        "Leaders discuss climate change strategies in this year's summit.",
-      category: "Environment",
-      author: "John Smith",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://bbc.com",
-    },
-    {
-      title: "Economic Reforms in Asia",
-      source: "Al Jazeera",
-      description:
-        "Countries agree on trade reforms to boost economic growth in Asia.",
-      category: "Finance",
-      author: "Carlos Martinez",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://aljazeera.com",
-    },
-    {
-      title: "Astronomy Breakthrough with James Webb Telescope",
-      source: "NASA",
-      description:
-        "New images captured by the James Webb Telescope reveal distant galaxies.",
-      category: "Space",
-      author: "Dr. Alan Green",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://nasa.gov",
-    },
-    {
-      title: "The Future of Remote Work",
-      source: "Forbes",
-      description: "How remote work trends are shaping the global economy.",
-      category: "Business",
-      author: "Emily Chen",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://forbes.com",
-    },
-    {
-      title: "Advancements in Renewable Energy",
-      source: "The Guardian",
-      description:
-        "Solar and wind energy projects see significant technological progress.",
-      category: "Environment",
-      author: "Sarah Johnson",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://theguardian.com",
-    },
-    {
-      title: "Breakthrough in Cancer Treatment",
-      source: "Nature",
-      description:
-        "A new drug shows promise in clinical trials for lung cancer.",
-      category: "Health",
-      author: "Michael Brown",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://nature.com",
-    },
-    {
-      title: "The Evolution of Electric Vehicles",
-      source: "Wired",
-      description:
-        "New EV models offer longer ranges and improved performance.",
-      category: "Automotive",
-      author: "Alex Green",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://wired.com",
-    },
-    {
-      title: "Exploring the Metaverse",
-      source: "TechRadar",
-      description:
-        "How the metaverse is transforming virtual interactions and gaming.",
-      category: "Technology",
-      author: "Rachel Lee",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://techradar.com",
-    },
-    {
-      title: "The Rise of Quantum Computing",
-      source: "MIT Technology Review",
-      description:
-        "Quantum computing could revolutionize cryptography and AI development.",
-      category: "Technology",
-      author: "Adam Smith",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://technologyreview.com",
-    },
-    {
-      title: "Mars Mission Updates",
-      source: "Space.com",
-      description: "NASA shares new insights from its Mars rover exploration.",
-      category: "Space",
-      author: "Helen White",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://space.com",
-    },
-    {
-      title: "Impact of Social Media on Mental Health",
-      source: "Psychology Today",
-      description:
-        "Studies reveal both positive and negative effects of social media usage.",
-      category: "Health",
-      author: "Anna Kim",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://psychologytoday.com",
-    },
-    {
-      title: "Advancements in Biotechnology",
-      source: "Scientific American",
-      description: "New CRISPR techniques are enabling targeted gene therapy.",
-      category: "Science",
-      author: "Dr. Richard Nguyen",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://scientificamerican.com",
-    },
-    {
-      title: "Global Trends in Renewable Energy",
-      source: "Bloomberg",
-      description:
-        "Wind and solar power become the fastest-growing energy sources.",
-      category: "Environment",
-      author: "Natalie Fox",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://bloomberg.com",
-    },
-    {
-      title: "Art Market Booms in 2024",
-      source: "ArtDaily",
-      description: "Collectors and investors focus on contemporary art.",
-      category: "Art",
-      author: "James White",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://artdaily.com",
-    },
-    {
-      title: "The Rise of E-Sports",
-      source: "ESPN",
-      description: "E-sports events attract millions of viewers worldwide.",
-      category: "Sports",
-      author: "Kevin Brown",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://espn.com",
-    },
-    {
-      title: "Breakthroughs in Space Exploration",
-      source: "SpaceX",
-      description:
-        "Starship achieves a successful launch and landing sequence.",
-      category: "Space",
-      author: "Elon Musk",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://spacex.com",
-    },
-    {
-      title: "Global Water Crisis",
-      source: "National Geographic",
-      description: "How communities are adapting to severe water shortages.",
-      category: "Environment",
-      author: "Sophia Carter",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://nationalgeographic.com",
-    },
-    {
-      title: "The Future of Blockchain Technology",
-      source: "CoinDesk",
-      description:
-        "Applications of blockchain expand beyond cryptocurrency into various industries.",
-      category: "Technology",
-      author: "Nathan Blake",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://coindesk.com",
-    },
-    {
-      title: "Healthcare Innovations in 2024",
-      source: "MedTech News",
-      description:
-        "New wearable devices provide real-time health monitoring solutions.",
-      category: "Health",
-      author: "Laura Andrews",
-      image: "https://via.placeholder.com/300x150",
-      link: "https://medtechnews.com",
-    },
-  ];
+      const response = await fetch(`${DB_HOST}/user/${username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch profile data.");
+      }
+
+      const result = await response.json();
+      console.log("Fetched Profile Data:", result);
+
+      const profile = result.data;
+      setProfileData(profile);
+      setIsOwner(profile.is_owner);
+    } catch (error) {
+      console.error("Error in fetchProfileData:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfileData();
+  }, [username]);
+
+  // Fetch shared posts
+  const fetchSharedPosts = async () => {
+    try {
+      if (!profileData || !profileData.user_id) {
+        console.error("Profile data or user ID is missing.");
+        return;
+      }
+
+      const accessToken = localStorage.getItem("access_token");
+
+      const response = await fetch(
+        `${DB_HOST}/posts/user/${profileData.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch shared posts.");
+      }
+
+      const data = await response.json();
+      console.log("Fetched Shared Posts Raw Data:", data);
+
+      // Ensure the response is an array
+      const postsArray = data.posts || [];
+      console.log("Posts Array:", postsArray);
+
+      // Sort posts by `posted_at` in descending order
+      const sortedPosts = postsArray.sort(
+        (a, b) => new Date(b.posted_at) - new Date(a.posted_at),
+      );
+
+      console.log("Processed Shared Posts:", sortedPosts);
+
+      setSharedPosts(sortedPosts);
+    } catch (error) {
+      console.error("Error fetching shared posts:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (profileData && profileData.user_id) {
+      fetchSharedPosts();
+    }
+  }, [profileData]);
+
+  // Fetch user collections
+  const fetchCollections = async () => {
+    try {
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) {
+        console.error("Access token missing. Please log in again.");
+      }
+
+      const collectionsResponse = await fetch(
+        `${DB_HOST}/collections/user/${profileData.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const collectionsData = await collectionsResponse.json();
+      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
+      console.log("Fetched collections:", collectionsData);
+      console.log("Public Collections:", collectionsData.public);
+
+      // Sort collections based on a date
+      const sortedCollections = (collectionsData?.public || []).sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
+
+      // Set sorted collections
+      setCollections(sortedCollections);
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (profileData && profileData.user_id) {
+      fetchCollections();
+    }
+  }, [profileData]);
+
+  const handlePostUpdate = () => {
+    fetchSharedPosts(); // Re-fetch posts after update/deleting
+  };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <Box sx={{ textAlign: "center", marginTop: "40px" }}>
+        <Typography variant="h5" sx={{ color: "gray" }}>
+          User not found.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -353,61 +220,86 @@ const ProfilePage = ({ isOwner }) => {
             gap: "16px",
           }}
         >
-          <Avatar sx={{ width: 80, height: 80, bgcolor: "#fff" }} />
+          <Avatar
+            sx={{ width: 80, height: 80, bgcolor: "#fff" }}
+            src={
+              profileData.profile_picture || "https://via.placeholder.com/150"
+            }
+            alt={profileData.username[0]}
+          />
           <Box>
             <Typography
               variant="h5"
               sx={{
                 fontWeight: "bold",
-                color: "#fff",
+                color: "#D9EAF3",
               }}
             >
-              {user.username}
+              {username[0].toLocaleUpperCase()}
+              {username.slice(1).toLowerCase()}
             </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                gap: "8px",
-                marginTop: "8px",
-              }}
-            >
-              {user.tags.map((tag, index) => (
-                <Chip
-                  key={index}
-                  label={tag}
-                  sx={{
-                    backgroundColor: "#D9EAF3",
-                    color: "#5F848C",
-                    fontWeight: "bold",
-                  }}
-                />
-              ))}
-            </Box>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#F6F5EE",
-                marginTop: "8px",
-              }}
-            >
-              {user.bio}
-            </Typography>
+            {profileData.bio_description ? (
+              <Typography
+                sx={{
+                  fontSize: "1rem",
+                  color: "#a6b2bb",
+                  fontFamily: "'Roboto', sans-serif",
+                }}
+              >
+                {profileData.bio_description}
+              </Typography>
+            ) : (
+              <Typography
+                sx={{
+                  fontSize: "0.9rem",
+                  color: "#a6b2bb",
+                  fontStyle: "italic",
+                  fontFamily: "'Roboto', sans-serif",
+                }}
+              >
+                No bio available.
+              </Typography>
+            )}
+            {profileData.tags && (
+              <Box sx={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                {profileData.tags.map((tag, index) => (
+                  <Typography
+                    key={index}
+                    sx={{
+                      backgroundColor: "#D9EAF3",
+                      color: "#5F848C",
+                      borderRadius: "12px",
+                      padding: "4px 8px",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    {tag}
+                  </Typography>
+                ))}
+              </Box>
+            )}
           </Box>
         </Box>
 
-        {/* Edit Profile Button */}
-        <Button
-          sx={{
-            backgroundColor: "#D9EAF3",
-            color: "#5F848C",
-            fontWeight: "bold",
-            "&:hover": {
-              backgroundColor: "#002040",
-            },
-          }}
-        >
-          Edit Profile
-        </Button>
+        {/* Settings Button */}
+        {isOwner && (
+          <Button
+            variant="contained"
+            startIcon={<Settings />}
+            sx={{
+              backgroundColor: "#D9EAF3",
+              color: "#5F848C",
+              fontWeight: "bold",
+              fontFamily: "'Raleway', sans-serif",
+              "&:hover": {
+                backgroundColor: "#6b949c",
+              },
+            }}
+            onClick={() => navigate(`/${profileData.username}/settings`)}
+          >
+            Settings
+          </Button>
+        )}
       </Box>
 
       {/* Most Recent Posts Section */}
@@ -433,15 +325,12 @@ const ProfilePage = ({ isOwner }) => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: "30px",
+            gap: "10px",
             padding: "20px 0",
           }}
         >
-          {sharedPosts.slice(0, 3).map(
-            (
-              post,
-              index, // Show only 3 posts
-            ) => (
+          {sharedPosts.length ? (
+            sharedPosts.slice(0, 3).map((post, index) => (
               <Box
                 key={index}
                 sx={{
@@ -449,9 +338,13 @@ const ProfilePage = ({ isOwner }) => {
                   margin: "0 10px",
                 }}
               >
-                <PostCard post={post} />
+                <PostCard key={index} post={post} />
               </Box>
-            ),
+            ))
+          ) : (
+            <Typography sx={{ color: "gray", textAlign: "center" }}>
+              No posts available.
+            </Typography>
           )}
         </Box>
       </Box>
@@ -465,7 +358,7 @@ const ProfilePage = ({ isOwner }) => {
         }}
       />
 
-      {/* Most Recent Public Collections Section */}
+      {/* Public Collections Section */}
       <Typography
         variant="h4"
         sx={{
@@ -475,7 +368,8 @@ const ProfilePage = ({ isOwner }) => {
           marginBottom: "20px",
         }}
       >
-        Most Recent Public Collections
+        {username[0].toLocaleUpperCase()}
+        {username.slice(1).toLowerCase()}'s Most Recent Public Collections
       </Typography>
 
       <Box
@@ -485,64 +379,94 @@ const ProfilePage = ({ isOwner }) => {
           gap: "50px",
         }}
       >
-        {collections.map((collection, index) => (
-          <Box
-            key={index}
-            onClick={() => handleCollectionClick(collection)}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              padding: "16px",
-            }}
-          >
+        {collections.length ? (
+          collections.slice(0, 4).map((collection, index) => (
             <Box
+              key={index}
+              onClick={() => handleCollectionClick(collection)}
               sx={{
-                width: "80px",
-                height: "80px",
-                backgroundColor: "#D9EAF3",
-                borderRadius: "50%",
                 display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "16px",
+              }}
+            >
+              <Box
+                sx={{
+                  width: "80px",
+                  height: "80px",
+                  backgroundColor: "#D9EAF3",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "36px",
+                  color: "#5F848C",
+                  cursor: "pointer",
+                  transition: "transform 0.3s, box-shadow 0.3s",
+                  "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                  },
+                }}
+              >
+                {collection.emoji}
+              </Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  marginTop: "8px",
+                  color: "#5F848C",
+                  textAlign: "center",
+                  fontWeight: "bold",
+                }}
+              >
+                {collection.title}
+              </Typography>
+            </Box>
+          ))
+        ) : (
+          <Typography sx={{ color: "gray", textAlign: "center" }}>
+            No collections available.
+          </Typography>
+        )}
+
+        {/* See More Collections Button */}
+        {collections.length > 4 && ( // Show the button only if more than 4 collections exist
+          <Box sx={{ textAlign: "center", marginTop: "40px" }}>
+            <Button
+              variant="outlined"
+              onClick={() =>
+                navigate(`/user/${profileData.username}/collections`)
+              }
+              sx={{
+                borderColor: "#5F848C",
+                color: "#5F848C",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "36px",
-                color: "#5F848C",
-                cursor: "pointer",
-                transition: "transform 0.3s, box-shadow 0.3s",
+                height: "50%",
+                fontWeight: "bold",
                 "&:hover": {
-                  transform: "translateY(-5px)",
-                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                  backgroundColor: "#D9EAF3",
                 },
               }}
             >
-              {collection.icon}
-            </Box>
-            <Typography
-              variant="h6"
-              sx={{
-                marginTop: "8px",
-                color: "#5F848C",
-                textAlign: "center",
-                fontWeight: "bold",
-              }}
-            >
-              {collection.name} Collection
-            </Typography>
+              See More Collections
+            </Button>
           </Box>
-        ))}
+        )}
       </Box>
-
-      {/* Divider */}
-      <Divider
-        sx={{
-          margin: "40px 0",
-          backgroundColor: "#266a7a",
-          opacity: 0.5,
-        }}
-      />
 
       {isOwner && (
         <>
+          {/* Divider */}
+          <Divider
+            sx={{
+              margin: "40px 0",
+              backgroundColor: "#266a7a",
+              opacity: 0.5,
+            }}
+          />
           {/* All Articles Section */}
           <Typography
             variant="h4"
@@ -558,24 +482,33 @@ const ProfilePage = ({ isOwner }) => {
 
           <Box
             sx={{
+              maxWidth: "1200px",
+              justifyContent: "center",
+              padding: "20px 0",
+              marginTop: "40px",
+              alignItems: "center",
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              justifyTracks: "center",
+              flexWrap: "wrap",
               gap: "20px",
-              marginTop: "20px",
+              margin: "0 auto",
             }}
           >
-            {allArticles.map((article, index) => (
-              <ArticleCard
-                key={index}
-                article={article}
-                isOwner={true} // TODO: check user ownership
-                // TODO: Implement edit and delete functionality (log for now)
-                onEdit={(article) => console.log("Edit clicked for", article)}
-                onDelete={(article) =>
-                  console.log("Delete clicked for", article)
-                }
-              />
-            ))}
+            {sharedPosts.length ? (
+              sharedPosts.map((post, index) => (
+                <ArticleCard
+                  key={index}
+                  post={post}
+                  username={username}
+                  onPostUpdate={handlePostUpdate}
+                />
+              ))
+            ) : (
+              <Typography sx={{ color: "gray", textAlign: "center" }}>
+                No articles available.
+              </Typography>
+            )}
           </Box>
         </>
       )}

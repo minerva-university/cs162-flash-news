@@ -4,7 +4,7 @@ from .models import Post, Like
 from .utils import check_post_24h, create_success_response, create_error_response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-likes = Blueprint("like", __name__, url_prefix='/api/likes')
+likes = Blueprint("like", __name__, url_prefix="/api/likes")
 
 
 # Get likes on a post
@@ -20,8 +20,10 @@ def get_likes(post_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    paginated_likes = Like.query.filter_by(post_id=post_id).order_by(Like.liked_at.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
+    paginated_likes = (
+        Like.query.filter_by(post_id=post_id)
+        .order_by(Like.liked_at.desc())
+        .paginate(page=page, per_page=per_page, error_out=False)
     )
 
     likes_data = [
@@ -49,7 +51,9 @@ def give_like(post_id):
     if not post:
         return create_error_response("Post not found", 404)
 
-    existing_like = Like.query.filter_by(user_id=get_jwt_identity(), post_id=post_id).first()
+    existing_like = Like.query.filter_by(
+        user_id=get_jwt_identity(), post_id=post_id
+    ).first()
     if existing_like:
         return create_error_response("You have already liked this post", 400)
 

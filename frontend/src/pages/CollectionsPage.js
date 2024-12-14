@@ -1,249 +1,298 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import Button from "@mui/material/Button";
-import { TextField } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Avatar,
+  Typography,
+  Box,
+  Divider,
+  Button,
+  TextField,
+  Modal,
+  FormControlLabel,
+  Switch,
+} from "@mui/material";
 import CollectionCard from "../components/CollectionCard";
+import EmojiPicker from "emoji-picker-react";
+import { DB_HOST } from "../controllers/config.ts";
 
-const CollectionsPage = ({ isOwner }) => {
+const CollectionsPage = () => {
+  const { username } = useParams();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
 
-  // Search function to filter collections based on the search term
+  const [profileData, setProfileData] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [publicCollections, setPublicCollections] = useState([]);
+  const [privateCollections, setPrivateCollections] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [addModalOpen, setAddOpenModal] = useState(false);
+  const [addFormData, setAddFormData] = useState({
+    title: "",
+    description: "",
+    emoji: "😀",
+    isPublic: false,
+  });
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    description: "",
+    emoji: "",
+    isPublic: false,
+  });
+
+  // Emoji picker handler
+  const handleEmojiClick = (emoji) => {
+    setAddFormData({ ...addFormData, emoji: emoji.emoji });
+    setShowEmojiPicker(false);
+  };
+
+  // Open and close modal for adding collection
+  const handleOpenModal = () => setAddOpenModal(true);
+  const handleCloseModal = () => setAddOpenModal(false);
+
+  // Input change handler for adding collection
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setAddFormData({ ...addFormData, [name]: value });
+  };
+
+  // Toggle public/private
+  const handleTogglePublic = () => {
+    setAddFormData({ ...addFormData, isPublic: !addFormData.isPublic });
+  };
+
+  // Search handler
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
-  // Mock Data for Collections (replace with API calls later)
-  const publicCollectionsMock = [
-    {
-      id: 1,
-      name: "World News",
-      description: "Stay updated with the latest global events and trends.",
-      createdAt: "2024-11-20",
-      articlesCount: 3,
-      emoji: "📰",
-      articles: [
-        {
-          title: "Global Climate Summit Highlights",
-          source: "BBC News",
-          description:
-            "World leaders discuss strategies to combat climate change in the annual summit.",
-          category: "Environment",
-          author: "John Smith",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Breaking News: Historic Peace Agreement Signed",
-          source: "CNN",
-          description:
-            "Two nations have signed a historic peace agreement ending decades of conflict.",
-          category: "World",
-          author: "Emily White",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Economic Reforms in South America",
-          source: "Al Jazeera",
-          description:
-            "South American nations agree on unified economic reforms to boost trade.",
-          category: "Finance",
-          author: "Carlos Martinez",
-          image: "https://via.placeholder.com/300x150",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Tech Trends",
-      description: "The latest in AI, software, and hardware advancements.",
-      createdAt: "2024-11-15",
-      articlesCount: 3,
-      emoji: "💻",
-      articles: [
-        {
-          title: "AI Breakthrough in 2024",
-          source: "TechCrunch",
-          description:
-            "Researchers have developed a new AI model that outperforms GPT-4 in language tasks.",
-          category: "Technology",
-          author: "Jane Doe",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Stock Market Update: Tech Stocks Surge",
-          source: "Wall Street Journal",
-          description:
-            "Tech companies report record earnings, pushing the Nasdaq to new highs.",
-          category: "Finance",
-          author: "Sarah Lee",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Quantum Computing Reaches New Milestone",
-          source: "MIT Technology Review",
-          description:
-            "A new quantum algorithm promises to revolutionize cryptography.",
-          category: "Innovation",
-          author: "Adam Smith",
-          image: "https://via.placeholder.com/300x150",
-        },
-      ],
-    },
-  ];
+  // Fetch user data and collections
+  const fetchCollections = async () => {
+    try {
+      setLoading(true);
 
-  const privateCollectionsMock = [
-    {
-      id: 3,
-      name: "Space Exploration",
-      description: "Discover the mysteries of the universe.",
-      createdAt: "2024-10-05",
-      articlesCount: 2,
-      emoji: "🚀",
-      articles: [
-        {
-          title: "Mars Rover Discovers Evidence of Water",
-          source: "NASA",
-          description:
-            "The Mars Rover has uncovered compelling evidence of ancient water flows on the red planet.",
-          category: "Space",
-          author: "Dr. Alan Green",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "James Webb Telescope Captures New Galaxy Images",
-          source: "Space.com",
-          description:
-            "Stunning new images from the James Webb telescope show galaxies formed billions of years ago.",
-          category: "Astronomy",
-          author: "Dr. Helen White",
-          image: "https://via.placeholder.com/300x150",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "Health and Wellness",
-      description: "Articles to help you lead a healthier life.",
-      createdAt: "2024-09-25",
-      articlesCount: 2,
-      emoji: "🏋️",
-      articles: [
-        {
-          title: "New Study Links Exercise to Longevity",
-          source: "Nature Journal",
-          description:
-            "Scientists find that moderate daily exercise can significantly increase lifespan.",
-          category: "Health",
-          author: "Michael Brown",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "Meditation: A Path to Mental Clarity",
-          source: "Psychology Today",
-          description:
-            "Practicing meditation for just 10 minutes a day can boost your mental clarity and focus.",
-          category: "Wellness",
-          author: "Anna Lee",
-          image: "https://via.placeholder.com/300x150",
-        },
-      ],
-    },
-    {
-      id: 5,
-      name: "Travel and Adventure",
-      description: "Explore the best travel destinations and adventure tips.",
-      createdAt: "2024-08-30",
-      articlesCount: 2,
-      emoji: "✈️",
-      articles: [
-        {
-          title: "Top 10 Destinations for 2024",
-          source: "Lonely Planet",
-          description:
-            "Discover the most exciting travel destinations for the upcoming year.",
-          category: "Travel",
-          author: "Lisa Taylor",
-          image: "https://via.placeholder.com/300x150",
-        },
-        {
-          title: "How to Pack Light for Your Next Adventure",
-          source: "National Geographic",
-          description:
-            "Essential tips for packing efficiently and traveling stress-free.",
-          category: "Adventure",
-          author: "Mark Wilson",
-          image: "https://via.placeholder.com/300x150",
-        },
-      ],
-    },
-  ];
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) throw new Error("Access token missing. Please log in.");
 
-  const filteredPublicCollections = publicCollectionsMock.filter((collection) =>
-    collection.name.toLowerCase().includes(searchTerm),
-  );
+      // Fetch user data
+      const userResponse = await fetch(`${DB_HOST}/user/${username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-  const filteredPrivateCollections = privateCollectionsMock.filter(
-    (collection) => collection.name.toLowerCase().includes(searchTerm),
-  );
+      const userData = await userResponse.json();
+      if (!userResponse.ok) throw new Error(userData.message);
 
-  // Handle collection click event (navigate to collection page)
-  const handleCollectionClick = (collection) => {
-    const formattedTitle = collection.name.toLowerCase().replace(/\s+/g, "-");
-    navigate(`/collections/${collection.id}/${formattedTitle}`, {
-      state: { collection },
-    }); // Pass data through state
-  };
+      console.log("User data:", userData.data);
 
-  // State
-  const [publicCollections, setPublicCollections] = useState(
-    publicCollectionsMock,
-  );
-  const [privateCollections, setPrivateCollections] = useState(
-    privateCollectionsMock,
-  );
+      setProfileData(userData.data);
 
-  // TODO: Implement sorting by date for public and private collections
-  const sortByDate = (isPublic) => {
-    if (isPublic) {
-      const sortedPublic = [...publicCollections].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      // Check ownership
+      const isPageOwner = userData.data.is_owner;
+      setIsOwner(isPageOwner);
+
+      // Fetch collections
+      const collectionsResponse = await fetch(
+        `${DB_HOST}/collections/user/${userData.data.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
-      setPublicCollections(sortedPublic);
-    } else {
-      const sortedPrivate = [...privateCollections].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
-      setPrivateCollections(sortedPrivate);
+      const collectionsData = await collectionsResponse.json();
+      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
+
+      // Set public and private collections
+      setPublicCollections(collectionsData.public || []);
+      if (isPageOwner) {
+        setPrivateCollections(collectionsData.private || []);
+      }
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // TODO: Fetching collections articles function
-  // Based on the user's ownership, fetch the appropriate collections
-  // const fetchCollections = async (tab) => {
-  //  try {
-  //  // Placeholder for fetching logic
-  // await fetch(`${<backend_host>}/collections?type=${tab}`
-  // { method: "GET", headers: HEADERS_WITH_JWT(user) });
-  //    console.log(`Fetching ${tab} collections...`);
+  //
+  useEffect(() => {
+    fetchCollections();
+  }, [username]);
 
-  //    if (tab === "Public") {
-  //      setPublicCollections([]); // Replace with actual data
-  //    } else {
-  //      setPrivateCollections([]); // Replace with actual data
-  //    }
-  //  } catch (error) {
-  //    console.error("Error fetching collections:", error);
-  //  }
-  //};
+  // Handle create collection
+  const handleCreateCollection = async () => {
+    try {
+      if (!addFormData.title || !addFormData.emoji) {
+        alert("Please fill out all required fields.");
+        return;
+      }
 
-  // Draft of useEffect for handling backend fetching when the active tab changes
-  //useEffect(() => {
-  //  fetchCollections(activeTab);
-  //}, [activeTab]);
+      // Fetch access token and send request
+      const accessToken = localStorage.getItem("access_token");
+
+      const response = await fetch(`${DB_HOST}/collections/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: profileData.user_id,
+          title: addFormData.title,
+          description: addFormData.description || "",
+          emoji: addFormData.emoji,
+          is_public: addFormData.isPublic,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error creating collection.");
+      }
+
+      const newCollection = await response.json();
+      setAddFormData({
+        title: "",
+        description: "",
+        emoji: "😀",
+        isPublic: false,
+      });
+      setAddOpenModal(false);
+
+      if (newCollection.is_public) {
+        setPublicCollections((prev) => [...prev, newCollection]);
+      } else {
+        setPrivateCollections((prev) => [...prev, newCollection]);
+      }
+      fetchCollections();
+    } catch (error) {
+      console.error("Error creating collection:", error);
+      alert(error.message || "An error occurred. Please try again.");
+    }
+  };
+
+  // Open Edit Modal
+  const handleEditCollection = (collection) => {
+    setEditFormData({
+      collection_id: collection.collection_id,
+      title: collection.title || "",
+      description: collection.description || "",
+      emoji: collection.emoji || "",
+      isPublic: collection.is_public,
+    });
+
+    console.log("Edit form data initialized:", {
+      collection_id: collection.collection_id,
+      title: collection.title || "",
+      description: collection.description || "",
+      emoji: collection.emoji || "",
+      isPublic: collection.is_public,
+    });
+    setEditModalOpen(true);
+  };
+
+  // Submit Updated Collection
+  const submitEditCollection = async () => {
+    try {
+      console.log("Submitting edit with data:", editFormData);
+
+      if (!editFormData.title || !editFormData.emoji) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const accessToken = localStorage.getItem("access_token");
+
+      const response = await fetch(
+        `${DB_HOST}/collections/${editFormData.collection_id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: editFormData.title,
+            description: editFormData.description,
+            emoji: editFormData.emoji,
+            is_public: editFormData.isPublic,
+          }),
+        },
+      );
+
+      if (response.ok) {
+        setEditModalOpen(false);
+        fetchCollections();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to update collection");
+      }
+    } catch (error) {
+      console.error("Error updating collection:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
+  // Handle delete collection
+  const handleDeleteCollection = async (collection_id) => {
+    if (!window.confirm("Are you sure you want to delete this collection?"))
+      return;
+
+    try {
+      const accessToken = localStorage.getItem("access_token");
+
+      const response = await fetch(`${DB_HOST}/collections/${collection_id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        fetchCollections();
+      } else {
+        alert(data.error || "Error deleting collection.");
+      }
+    } catch (error) {
+      console.error("Error deleting collection:", error);
+    }
+  };
+
+  // Filter collections by title
+  const filteredPublicCollections = publicCollections.filter(
+    (collection) =>
+      collection.title?.toLowerCase().includes(searchTerm) || false,
+  );
+
+  const filteredPrivateCollections = privateCollections.filter(
+    (collection) =>
+      collection.title?.toLowerCase().includes(searchTerm) || false,
+  );
+
+  // Handle collection click
+  const handleCollectionClick = (collection) => {
+    console.log("Clicked collection:", collection);
+
+    const formattedTitle = collection.title?.toLowerCase().replace(/\s+/g, "-");
+    navigate(`/collections/${collection.collection_id}/${formattedTitle}`, {
+      state: { collection, username },
+    });
+  };
+
+  if (loading) {
+    return <Typography>Loading collections...</Typography>;
+  }
 
   return (
     <Box
@@ -272,15 +321,16 @@ const CollectionsPage = ({ isOwner }) => {
               color: "#333",
             }}
           >
-            📁 My Collections
+            {isOwner ? "📁 My Collections" : `📁 ${username}'s Collections`}
           </Typography>
           <Typography sx={{ color: "gray" }}>
-            View and manage your saved news articles.
+            View saved news articles.
           </Typography>
         </Box>
-        {isOwner && ( // Add button only if the user is the owner
+        {isOwner && (
           <Button
             variant="contained"
+            onClick={() => handleOpenModal()}
             sx={{
               marginLeft: "auto",
               backgroundColor: "#79A3B1",
@@ -323,96 +373,351 @@ const CollectionsPage = ({ isOwner }) => {
         />
       </Box>
 
-      {/* Public Collections */}
-      <Typography
-        variant="h5"
-        sx={{
-          fontWeight: "bold",
-          marginTop: "40px",
-          marginBottom: "16px",
-          textAlign: "center",
-          fontFamily: "'Roboto', serif",
-        }}
-      >
-        Public Collections
-      </Typography>
-      <Divider sx={{ marginBottom: "16px" }} />
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "24px",
-        }}
-      >
-        {filteredPublicCollections.map((collection) => (
-          <CollectionCard
-            key={collection.id}
-            collection={collection}
-            onClick={() => handleCollectionClick(collection)}
-            isOwner={true} // Conditionally set to true/false
-            // TODO: Implement edit and delete functionality (log for now)
-            onEdit={(collection) =>
-              console.log("Edit clicked for:", collection)
-            }
-            onDelete={(collection) =>
-              console.log("Delete clicked for:", collection)
-            }
-          />
-        ))}
-      </Box>
-
-      {/* Private Collections */}
-      {isOwner && (
-        <>
+      {/* Handle no collections */}
+      {publicCollections.length === 0 && privateCollections.length === 0 ? (
+        <Box sx={{ textAlign: "center", marginTop: "40px" }}>
           <Typography
             variant="h5"
             sx={{
               fontWeight: "bold",
-              marginTop: "40px",
+              fontFamily: "'Roboto', serif",
               marginBottom: "16px",
-              textAlign: "center",
-              fontFamily: "'Playfair Display', serif", // Decide on the font-family, different for private x public as a DRAFT
             }}
           >
-            Private Collections
-            <Typography
-              component="span"
-              sx={{
-                fontStyle: "italic",
-                fontSize: "0.9rem",
-                color: "gray",
-                marginLeft: "8px",
-              }}
-            >
-              (Visible only to you)
-            </Typography>
+            No Collections
           </Typography>
-          <Divider sx={{ marginBottom: "16px" }} />
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: "24px",
-            }}
-          >
-            {filteredPrivateCollections.map((collection) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
-                onClick={() => handleCollectionClick(collection)}
-                isOwner={true} // Conditionally set to true/false
-                // TODO: Implement edit and delete functionality (log for now)
-                onEdit={(collection) =>
-                  console.log("Edit clicked for:", collection)
-                }
-                onDelete={(collection) =>
-                  console.log("Delete clicked for:", collection)
-                }
-              />
-            ))}
+          <Typography sx={{ color: "gray" }}>
+            {isOwner
+              ? "You have not created any collections yet. Start by adding a new one!"
+              : `${username} has not created any collections yet.`}
+          </Typography>
+        </Box>
+      ) : (
+        <>
+          {/* Public Collections */}
+          <Box sx={{ marginTop: "40px" }}>
+            {publicCollections.length > 0 ? (
+              <>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: "bold",
+                    marginBottom: "16px",
+                    textAlign: "center",
+                    fontFamily: "'Roboto', serif",
+                  }}
+                >
+                  Public Collections
+                </Typography>
+                <Divider sx={{ marginBottom: "40px" }} />
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(300px, 1fr))",
+                    gap: "24px",
+                  }}
+                >
+                  {filteredPublicCollections.map((collection) => (
+                    <CollectionCard
+                      key={collection.collection_id}
+                      collection={collection}
+                      onClick={() => handleCollectionClick(collection)}
+                      isOwner={isOwner}
+                      onEdit={() => handleEditCollection(collection)}
+                      onDelete={() =>
+                        handleDeleteCollection(collection.collection_id)
+                      }
+                    />
+                  ))}
+                </Box>
+              </>
+            ) : (
+              <Box
+                sx={{
+                  padding: "20px",
+                  border: "1px dashed #ddd",
+                  borderRadius: "8px",
+                  marginTop: "16px",
+                  backgroundColor: "#f9f9f9",
+                  maxWidth: "400px",
+                  margin: "0 auto",
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: "1rem",
+                    color: "#888",
+                    fontStyle: "italic",
+                    fontFamily: "'Roboto', sans-serif",
+                    textAlign: "center",
+                  }}
+                >
+                  No public collections available.
+                </Typography>
+              </Box>
+            )}
           </Box>
+
+          {/* Private Collections */}
+          {isOwner && (
+            <Box sx={{ marginTop: "40px" }}>
+              {privateCollections.length > 0 ? (
+                <>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: "bold",
+                      marginBottom: "16px",
+                      textAlign: "center",
+                      fontFamily: "'Roboto', serif",
+                    }}
+                  >
+                    Private Collections
+                  </Typography>
+                  <Divider sx={{ marginBottom: "40px" }} />
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(300px, 1fr))",
+                      gap: "24px",
+                    }}
+                  >
+                    {filteredPrivateCollections.map((collection) => (
+                      <CollectionCard
+                        key={collection.collection_id}
+                        collection={collection}
+                        onClick={() => handleCollectionClick(collection)}
+                        isOwner={isOwner}
+                        onEdit={() => handleEditCollection(collection)}
+                        onDelete={() =>
+                          handleDeleteCollection(collection.collection_id)
+                        }
+                      />
+                    ))}
+                  </Box>
+                </>
+              ) : (
+                <Box
+                  sx={{
+                    padding: "20px",
+                    border: "1px dashed #ddd",
+                    borderRadius: "8px",
+                    marginTop: "16px",
+                    backgroundColor: "#f9f9f9",
+                    maxWidth: "400px",
+                    margin: "0 auto",
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: "1rem",
+                      color: "#888",
+                      fontStyle: "italic",
+                      fontFamily: "'Roboto', sans-serif",
+                      textAlign: "center",
+                    }}
+                  >
+                    You have not created any private collections yet.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
         </>
       )}
+
+      {/* Modal for Creating Collection */}
+      <Modal open={addModalOpen} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+            Create New Collection
+          </Typography>
+          <TextField
+            label="Title *"
+            name="title"
+            value={addFormData.title}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+          <TextField
+            label="Description"
+            name="description"
+            value={addFormData.description}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+          <TextField
+            label="Icon *"
+            name="emoji"
+            value={addFormData.emoji}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+            InputProps={{
+              endAdornment: (
+                <Button
+                  onClick={() => setShowEmojiPicker((prev) => !prev)}
+                  sx={{
+                    padding: 0,
+                    minWidth: 0,
+                    textTransform: "none",
+                    fontSize: "1.5rem",
+                  }}
+                >
+                  {addFormData.emoji || "😀"}
+                </Button>
+              ),
+            }}
+          />
+          {showEmojiPicker && (
+            <Box sx={{ position: "absolute", zIndex: 10 }}>
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </Box>
+          )}
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={addFormData.isPublic}
+                onChange={handleTogglePublic}
+              />
+            }
+            label="Public"
+          />
+          <Box
+            sx={{
+              mt: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 1,
+            }}
+          >
+            <Button variant="contained" onClick={handleCreateCollection}>
+              Create
+            </Button>
+            <Button variant="outlined" onClick={handleCloseModal}>
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+            Edit Collection
+          </Typography>
+
+          {/* Title Field */}
+          <TextField
+            label="Title *"
+            name="title"
+            value={editFormData.title || ""}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, title: e.target.value })
+            }
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+
+          {/* Description Field */}
+          <TextField
+            label="Description"
+            name="description"
+            value={editFormData.description || ""}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, description: e.target.value })
+            }
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+
+          {/* Emoji Field */}
+          <TextField
+            label="Icon *"
+            name="emoji"
+            value={editFormData.emoji || ""}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, emoji: e.target.value })
+            }
+            fullWidth
+            sx={{ marginBottom: "16px" }}
+          />
+
+          {/* Public/Private Toggle */}
+          <FormControlLabel
+            control={
+              <Switch
+                checked={Boolean(editFormData.isPublic)} // Ensure controlled behavior
+                onChange={() =>
+                  setEditFormData((prev) => ({
+                    ...prev,
+                    isPublic: !prev.isPublic,
+                  }))
+                }
+              />
+            }
+            label="Public"
+          />
+
+          <Box
+            sx={{
+              mt: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 1,
+            }}
+          >
+            {/* Save Changes Button */}
+            <Button
+              variant="contained"
+              onClick={submitEditCollection}
+              sx={{ marginTop: "16px" }}
+            >
+              Save Changes
+            </Button>
+
+            {/* Cancel Button */}
+            <Button
+              variant="outlined"
+              onClick={() => setEditModalOpen(false)}
+              sx={{ marginTop: "16px", marginLeft: "8px" }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };
