@@ -26,10 +26,12 @@ import EditDeleteMenu from "../components/EditDeleteMenu";
 import UsernameAndOPChip from "../components/UsernameAndOPChip";
 import ThemedButton from "../components/ThemedButton";
 import MultipleSelectChip from "../components/MultipleSelectChip";
+import { DB_HOST } from "../controllers/config.js";
 
 const PostDetailPage = () => {
   const navigate = useNavigate();
   const CURRENT_USERNAME = localStorage.getItem("username");
+  const CURRENT_PROFILE_PICTURE = localStorage.getItem("profile_picture");
   const { id } = useParams(); // from URL params
   const [post, setPost] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -44,9 +46,8 @@ const PostDetailPage = () => {
         comment_id: commentId,
         comment,
         user: {
-          // @TODO: Replace with the currently logged in user's data
           username: CURRENT_USERNAME,
-          profile_picture: "https://source.unsplash.com/random",
+          profile_picture: `${CURRENT_PROFILE_PICTURE}`,
         },
         created_at: new Date().toISOString(),
       },
@@ -58,7 +59,7 @@ const PostDetailPage = () => {
     if (selectedItem === "delete") {
       // Confirm before deleting the post
       const confirmDelete = window.confirm(
-        "Are you sure you want to delete this post? This cannot be undone!"
+        "Are you sure you want to delete this post? This cannot be undone!",
       );
       if (confirmDelete) {
         PostController.deletePost(postID).then(() => navigate("/feed"));
@@ -73,13 +74,13 @@ const PostDetailPage = () => {
     // You can't edit your comments! Accept the consequences of your actions!
     if (selectedItem === "delete") {
       const confirmDelete = window.confirm(
-        "Are you sure you want to delete this comment?"
+        "Are you sure you want to delete this comment?",
       );
       if (confirmDelete) {
         CommentController.deleteComment(commentID).then(() =>
           setComments(
-            comments.filter((comment) => comment.comment_id !== commentID)
-          )
+            comments.filter((comment) => comment.comment_id !== commentID),
+          ),
         );
       }
     }
@@ -190,7 +191,7 @@ const PostDetailPage = () => {
               avatar={
                 post?.user.profile_picture ? (
                   <Avatar
-                    src={post.user.profile_picture}
+                    src={`${DB_HOST}${post.user.profile_picture}`}
                     sx={(theme) => ({
                       bgcolor: theme.palette.primary.main,
                     })}
@@ -323,7 +324,7 @@ const PostDetailPage = () => {
                     avatar={
                       comment.user.profile_picture ? (
                         <Avatar
-                          src={comment.user.profile_picture}
+                          src={`${DB_HOST}${comment.user.profile_picture}`}
                           sx={(theme) => ({
                             bgcolor: theme.palette.primary.main,
                           })}

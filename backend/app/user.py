@@ -62,7 +62,7 @@ def get_profile(username):
         if user.profile_picture:
             profile_picture_path = os.path.join(UPLOAD_FOLDER, user.profile_picture)
             if os.path.exists(profile_picture_path):
-                profile_picture_url = f"http://127.0.0.1:5000/api/user/uploads/{user.profile_picture}"
+                profile_picture_url = f"/user/uploads/{user.profile_picture}"
 
         tags = json.loads(user.tags) if user.tags else []
 
@@ -138,7 +138,7 @@ def update_profile():
             'username': new_username,
             'email': user.email,
             'bio_description': user.bio_description,
-            'profile_picture': f"http://127.0.0.1:5000/api/user/uploads/{user.profile_picture}", # Hard-Coded for now
+            'profile_picture': f"/user/uploads/{user.profile_picture}", # Hard-Coded for now
             'created_at': user.created_at
         }
 
@@ -307,7 +307,7 @@ def search_users():
             {
                 "user_id": user.user_id,
                 "username": user.username,
-                "profile_picture": user.profile_picture,
+                "profile_picture": f"/user/uploads/{user.profile_picture}",
                 "bio_description": user.bio_description,
             }
             for user in users

@@ -1,4 +1,4 @@
-import { DB_HOST, HEADERS_WITH_JWT } from "./config.ts";
+import { DB_HOST, HEADERS_WITH_JWT } from "./config.js";
 
 class CollectionController {
   static get accessToken() {

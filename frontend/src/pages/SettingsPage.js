@@ -210,7 +210,7 @@ const SettingsPage = () => {
           src={
             profilePicture
               ? URL.createObjectURL(profilePicture)
-              : userData.profile_picture
+              : `${DB_HOST}/${userData.profile_picture}`
           }
           alt={userData.username}
           sx={{

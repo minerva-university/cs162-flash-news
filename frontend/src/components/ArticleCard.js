@@ -236,7 +236,11 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
           ))}
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Avatar
-              src={post.user.profile_picture || ""}
+              src={
+                post.user.profile_picture
+                  ? `${DB_HOST}/${post.user.profile_picture}`
+                  : ""
+              }
               alt={post.user.username}
               sx={{ bgcolor: "#D0E8F2", width: 30, height: 30 }}
             />

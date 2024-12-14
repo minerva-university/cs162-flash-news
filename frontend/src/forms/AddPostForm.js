@@ -3,17 +3,13 @@ import { Card, CardHeader, Typography } from "@mui/material";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 
 import Avatar from "@mui/material/Avatar";
-import {
-  Box,
-  Button,
-  Modal,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Modal, TextField } from "@mui/material";
 import MultipleSelectChip from "../components/MultipleSelectChip";
 import TagController from "../controllers/TagController";
 import PostController from "../controllers/PostController";
 import UserController from "../controllers/UserController";
 import CollectionController from "../controllers/CollectionController";
+import { DB_HOST } from "../controllers/config.js";
 
 // Style for the modal
 const style = {
@@ -104,7 +100,7 @@ export default function AddPostForm({ onPostAdded }) {
 
   const handleClose = () => {
     const confirmation = window.confirm(
-      "Are you sure you want to exit? All changes will be lost."
+      "Are you sure you want to exit? All changes will be lost.",
     );
     if (confirmation) {
       resetAddPostForm();
@@ -140,9 +136,9 @@ export default function AddPostForm({ onPostAdded }) {
         selectedCollections.map((title) =>
           CollectionController.addPostToCollection(
             collectionsByTitle[title],
-            response.post_id
-          )
-        )
+            response.post_id,
+          ),
+        ),
       );
 
       resetAddPostForm();
@@ -179,16 +175,16 @@ export default function AddPostForm({ onPostAdded }) {
       })
       .catch((error) =>
         setLinkError(
-          "Could not get link details. You can still create a post though!"
-        )
+          "Could not get link details. You can still create a post though!",
+        ),
       );
   };
 
   useEffect(() => {
     UserController.getCurrentUserDetails(username).then((response) => {
-      const { data } = response
+      const { data } = response;
       setUserID(data.user_id);
-      setProfilePicture(data.profile_picture);
+      setProfilePicture(`${DB_HOST}${data.profile_picture}`);
     });
   }, []);
 

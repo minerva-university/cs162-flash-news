@@ -19,6 +19,7 @@ import { ChatBubble, ThumbUp } from "@mui/icons-material";
 import PostController from "../controllers/PostController";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { DB_HOST } from "../controllers/config.js";
 
 export default function PostCard({ post }) {
   dayjs.extend(relativeTime);
@@ -48,7 +49,7 @@ export default function PostCard({ post }) {
           avatar={
             post.user.profile_picture ? (
               <Avatar
-                src={post.user.profile_picture}
+                src={`${DB_HOST}${post.user.profile_picture}`}
                 sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
                 aria-label="Profile Picture"
               />

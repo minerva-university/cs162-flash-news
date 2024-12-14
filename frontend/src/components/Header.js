@@ -29,7 +29,7 @@ function Header() {
     if (q.length > 2) {
       try {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch(`${DB_HOST}/api/user/search?q=${q}`, {
+        const response = await fetch(`${DB_HOST}/user/search?q=${q}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -53,7 +53,7 @@ function Header() {
 
   const handleSearchSelect = (selectedUser) => {
     if (selectedUser && selectedUser.username) {
-      navigate(`/${selectedUser.username}/profile`);
+      navigate(`/profile/${selectedUser.username}`);
     }
     setSearchValue("");
     setUserSuggestions([]);
