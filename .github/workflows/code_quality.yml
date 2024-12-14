@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  CI: false
+
 jobs:
   lint-and-format:
     runs-on: ubuntu-latest
@@ -27,3 +30,7 @@ jobs:
       - name: Check Prettier formatting
         working-directory: ./frontend
         run: npx prettier --check .
+
+      - name: Check for build errors
+        working-directory: ./frontend
+        run: npm run build

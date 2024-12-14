@@ -9,7 +9,7 @@ def test_create_post_success(client):
     data = {
         "article_link": "http://example.com/article",
         "post_description": "Test post description",
-        "categories": ["TECH", "SCIENCE"],
+        "categories": ["TECHNOLOGY", "SCIENCE"],
     }
     response = client.post("/api/posts/", json=data)
     assert response.status_code == 201

@@ -1,3 +1,5 @@
+![Flash News Logo](image.png)
+
 # Flash News Project
 
 Flash News is a web application designed to allow users to share and explore news articles through a social feed. Posts on Flash News are ephemeral, disappearing after 24 hours, creating a sense of immediacy and anchoring users in the present moment. The platform provides features like collections, tags, and the ability to follow users for a more curated news-sharing experience.
@@ -12,10 +14,13 @@ The app is particularly useful for intellectually curious and politically engage
 - [File Structure](#file-structure)
   - [Backend](#backend)
   - [Frontend](#frontend)
+- [Tech Stack](#tech-stack)
 - [Setup Instructions](#setup-instructions)
   - [Backend Setup](#backend-setup)
   - [Frontend Setup](#frontend-setup)
 - [Core Features](#core-features)
+- [CI/CD Integration](#cicd-integration)
+- [Demonstration](#demonstration)
 - [Project Members](#project-members)
 - [Contributing](#contributing)
 - [License](#license)
@@ -47,13 +52,22 @@ backend/
 │   ├── auth.py           # Authentication routes and logic
 │   ├── collection.py     # API for managing collections
 │   ├── comment.py        # API for comments on posts
-│   ├── like.py           # API for likes on posts and comments
+│   ├── config.py         # Configuration class for uploads
+│   ├── like.py           # API for likes on posts & comments
 │   ├── models.py         # Database models
 │   ├── og.py             # Open Graph functionality
 │   ├── post.py           # API for managing posts
-│   ├── user.py           # API for user profiles and follow functionality
-│   ├── user2.py          # Secondary user utilities
+│   ├── user.py           # API for user profiles and follows
 │   ├── utils.py          # Helper utilities
+├── tests/
+│   ├── conftest.py
+│   ├── test_auth.py
+│   ├── test_collection.py
+│   ├── test_comment.py
+│   ├── test_like.py
+│   ├── test_post.py
+│   ├── test_user.py
+├── uploads/
 ├── README.md             # Backend documentation
 ├── requirements.txt      # Python dependencies
 ```
@@ -72,24 +86,80 @@ frontend/
 │   ├── components/       # Reusable React components
 │   │   ├── ArticleCard.js
 │   │   ├── CollectionCard.js
+│   │   ├── EditDeleteMenu.js
 │   │   ├── Header.js
 │   │   ├── MultipleSelectChip.js
 │   │   ├── PostCard.js
-│   ├── controllers/      # Controllers for handling page-specific logic
+│   │   ├── ThemedButton.js
+│   │   ├── UsernameAndOPChip.js
+│   ├── controllers/      # Controllers: page-specific logic
+│   │   ├── CommenterContoller.js
+│   │   ├── config.js
 │   │   ├── PostController.js
 │   │   ├── TagsController.js
 │   ├── forms/            # Forms for user interactions
+│   │   ├── AddCommentForm.js
 │   │   ├── AddPostForm.js
-│   │   ├── ResetPasswordForm.js
 │   ├── modals/           # Modals for additional UI features
 │   │   ├── CollectionDetailModal.js
 │   ├── pages/            # Page-level components for the app
+│   │   ├── CollectionsPage.js
+│   │   ├── FeedPage.js
+│   │   ├── LoginPage.js
+│   │   ├── PostDetailPage.js
+│   │   ├── ProfilePage.js
+│   │   ├── SettingsPage.js
+│   │   ├── SignupPage.js
+│   │   ├── WelcomePage.js
 │   ├── App.js            # Main React component
 │   ├── App.css           # Global styles
 │   ├── index.js          # Entry point for the app
 ├── package.json          # Project dependencies
 ├── README.md             # Frontend documentation
 ```
+
+---
+
+## Tech Stack
+
+<h3 align="left">Languages and Tools used to build this project:</h3>
+<p align="left">
+
+  &nbsp; &nbsp; 
+  <a href="https://reactjs.org/" target="_blank" rel="noreferrer">
+    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original-wordmark.svg" alt="React" width="40" height="40"/> <span style="vertical-align:middle; font-weight:bold;">React</span>: JavaScript library for building the user interface with dynamic, interactive components.
+  </a>
+
+  &nbsp; &nbsp;
+  <a href="https://flask.palletsprojects.com/" target="_blank" rel="noreferrer"> 
+    <img src="https://raw.githubusercontent.com/bwks/vendor-icons-svg/702f2ac88acc71759ce623bc5000a596195e9db3/flask.svg" alt="Flask" width="40" height="40"/> <span style="vertical-align:middle; font-weight:bold;">Flask</span>: Python framework for the backend, managing APIs and server-side operations.
+  </a>
+
+  &nbsp; &nbsp;
+  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"> 
+    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="JavaScript" width="40" height="40"/> <span style="vertical-align:middle; font-weight:bold;">JavaScript</span>: Combines interactivity and state management in collaboration with React.
+  </a>
+  
+  &nbsp; &nbsp;
+  <a href="https://www.python.org" target="_blank" rel="noreferrer"> 
+    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="Python" width="40" height="40"/> <span style="vertical-align:middle; font-weight:bold;">Python</span>: Used on the server-side to handle backend operations and API logic.
+  </a>
+
+  &nbsp; &nbsp;
+  <a href="https://www.sqlite.org/" target="_blank" rel="noreferrer"> 
+    <img src="https://www.vectorlogo.zone/logos/sqlite/sqlite-icon.svg" alt="SQLite" width="40" height="40"/>
+    <span style="vertical-align:middle; font-weight:bold;">SQLite</span>: Lightweight database to store user and related information, such as collections, followers, posts, etc.
+  </a>
+
+  &nbsp; &nbsp;
+  <a href="https://www.w3.org/html/" target="_blank" rel="noreferrer"> 
+    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg" alt="HTML5" width="40" height="40"/>
+  <a href="https://developer.mozilla.org/es/docs/Web/CSS" target="_blank" rel="noreferrer"> 
+    <img src="https://www.vectorlogo.zone/logos/w3_css/w3_css-icon.svg" alt="CSS" width="40" height="32"/>
+    <span style="vertical-align:middle; font-weight:bold;">HTML/CSS</span>: Defines the content structure and styling for a visually appealing and responsive user interface.
+  </a>
+
+</p>
 
 ---
 
@@ -136,7 +206,7 @@ frontend/
 ## Core Features
 
 ### Backend
-- User authentication (email/password and Google OAuth).
+- User authentication (email/password).
 - APIs for creating, retrieving, updating, and deleting posts.
 - Support for collections (public/private) and tagging.
 - Like and comment functionality.
@@ -148,9 +218,54 @@ frontend/
 
 ---
 
+## CI/CD Integration 
+
+Flash News is equipped with a robust CI/CD pipeline using GitHub Actions. This pipeline ensures the quality, reliability, and seamless deployment of the application.
+
+### Overview of CI/CD Pipeline
+The CI/CD process for Flash News involves the following workflows:
+
+#### Code Quality Checks:
+
+Linting and static code analysis to maintain code quality.
+Runs on every push or pull request. Uses tools like eslint for JavaScript.
+
+#### Automated Testing:
+
+Executes unit and integration tests for both backend and frontend.
+Tests are written using pytest for Python. Runs in isolated environments to ensure clean builds.
+
+@TODO: Look at using Jest for React components.
+
+#### Deployment Pipeline: @TODO: Look at this one after deployment
+
+Automatically deploys to the staging environment upon merging into the main branch.Uses tools like Docker and cloud hosting (e.g., AWS or Heroku) for deployment.
+
+---
+
+## Demonstration
+
+Watch the  demonstration of Flash News to see its features and usability.
+
+- [YouTube Demonstration](https://youtube.com/demo-link)
+
+Screenshots of main pages:
+
+![Feed Page](images/feed-page.png)
+![Collections Page](images/collections-page.png)
+![Profile Page](images/profile-page.png)
+![Settings Page](images/settings-page.png)
+![Collection Modal Page](images/collection-modal-page.png)
+![Post Detail Page](images/post-modal-page.png)
+![Login Page](images/login-page.png)
+![Sign Up Page](images/collections-page.png)
+![Welcome Page](images/welcome-page.png)
+
+---
+
 ## Project Members
 
-- Add the list of project members here.
+- This is the list of all members that worked on this project:
   - Flávia Iespa
   - Wisdom Ifode
   - Mototada Furuta
@@ -176,4 +291,3 @@ frontend/
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
-

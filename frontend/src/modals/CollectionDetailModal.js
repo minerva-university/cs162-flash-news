@@ -1,64 +1,79 @@
-import React, { useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
+import { Typography, Button, Box } from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
+import { DB_HOST } from "../controllers/config.js";
+
+// TODO: Add functionality for adding and removing articles from the collection
 
 const CollectionDetailModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const articlesSectionRef = useRef(null);
-  const collection = location.state?.collection;
 
-  if (!collection) {
-    return <Typography>No collection found. Please navigate back.</Typography>;
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const collection = useMemo(() => {
+    return location.state?.collection || {};
+  }, [location.state]);
+  const username = location.state?.username;
+  const { title, createdAt, description, emoji } = collection;
+
+  // Fetch articles for the collection
+  useEffect(() => {
+    const fetchArticles = async () => {
+      if (!collection) return;
+
+      try {
+        setLoading(true);
+
+        const accessToken = localStorage.getItem("access_token");
+
+        const response = await fetch(
+          `${DB_HOST}/collections/${collection.collection_id}/posts`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch articles");
+        }
+
+        const postsData = await response.json();
+
+        // Transform posts data to articles data
+        const articlesData = postsData
+          .map((post) => ({
+            title: post.article.title,
+            source: post.article.source,
+            description: post.article.caption || post.description,
+            category: post.categories.join(", "),
+            author: post.user.username,
+            image: post.article.preview,
+            link: post.article.link,
+            posted_at: new Date(post.posted_at),
+          }))
+          .sort((a, b) => b.posted_at - a.posted_at);
+
+        setArticles(articlesData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, [collection]);
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
   }
-
-  // const [loading, setLoading] = useState(true);
-  const { name, articles, createdAt, description, emoji } = collection;
-
-  // Function to scroll to the articles section
-  // TODO: Implement on top of page (also scroll to bottom and top)
-  const scrollToArticles = () => {
-    articlesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // TODO: Uncomment
-  // TODO: Add error handling
-  // Might be unnecessary if articles are fetched in the collections page (parent component)
-
-  // const fetchArticles = async (user) => {
-  //  // Add user token to headers if necessary + loading functionality + error handling
-  //   try {
-  //     const response = await fetch(`${<backend_host>}/articles`, {
-  //       method: "GET",
-  //       headers: {
-  //        HEADERS_WITH_JWT(user),
-  //        "Content-Type": "application/json",
-  //       },
-  //     });
-
-  //     const data = await response.json();
-
-  //     // Check if the response was successful
-  //     if (response.ok) {
-  //       // Return the data if the response is successful
-  //       return data;
-  //     } else {
-  //       // Throw an error with a message from the backend if the response was not successful
-  //       throw new Error(data.message || "Failed to fetch articles");
-  //     }
-  //   } catch (error) {
-  //     // Log any errors that could happen during the fetch process
-  //     console.error("Error fetching articles:", error);
-  //   }
-  // };
-
-  // Use useEffect to call fetchArticles when the component renders
-  // useEffect(() => {
-  // fetchArticles();
-  // }, []);
 
   return (
     <Box
@@ -70,7 +85,7 @@ const CollectionDetailModal = () => {
     >
       {/* Back to Collections Button */}
       <Button
-        onClick={() => navigate("/collections")}
+        onClick={() => navigate(`/user/${username}/collections`)}
         variant="contained"
         sx={{
           marginBottom: "32px",
@@ -92,28 +107,22 @@ const CollectionDetailModal = () => {
       <Box
         sx={{
           display: "flex",
-          gap: "48px",
-          padding: "24px",
+          flexDirection: "column",
+          gap: "32px",
           alignItems: "center",
-          justifyContent: "space-between",
           marginBottom: "48px",
         }}
       >
-        {/* Title Section */}
         <Box
           sx={{
-            flex: "1",
             padding: "24px",
             borderRadius: "8px",
             background: "linear-gradient(135deg, #79A3B1, #5F848C)",
             color: "#FCF8EC",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "16px",
-            height: "300px",
+            textAlign: "center",
+            width: "100%",
+            maxWidth: "800px",
           }}
         >
           <Box
@@ -131,7 +140,7 @@ const CollectionDetailModal = () => {
               marginBottom: "8px",
             }}
           >
-            {name}
+            {title}
           </Typography>
           <Typography
             variant="body1"
@@ -155,22 +164,33 @@ const CollectionDetailModal = () => {
             Created on: {new Date(createdAt || Date.now()).toLocaleDateString()}
           </Typography>
         </Box>
+      </Box>
 
-        {/* Article  Preview*/}
-        {/* TODO: change the fetching logic to be the most recent */}
+      {/* Featured Article Section */}
+      {articles.length > 0 && (
         <Box
           sx={{
-            flex: "2",
-            padding: "16px",
+            marginBottom: "48px",
             backgroundColor: "#FFFFFF",
             borderRadius: "8px",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            height: "100%",
+            padding: "16px",
+            textAlign: "center",
+            maxWidth: "800px",
+            margin: "0 auto",
           }}
         >
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              fontFamily: "'Roboto', serif",
+              marginBottom: "16px",
+              color: "#333",
+            }}
+          >
+            Featured Article
+          </Typography>
           <Box
             component="img"
             src={articles[0]?.image || "https://via.placeholder.com/600x300"}
@@ -189,6 +209,7 @@ const CollectionDetailModal = () => {
               fontWeight: "bold",
               fontFamily: "'Roboto', serif",
               color: "#333",
+              marginTop: "16px",
             }}
           >
             {articles[0]?.title}
@@ -199,6 +220,7 @@ const CollectionDetailModal = () => {
               fontSize: "1rem",
               fontFamily: "'Lato', sans-serif",
               color: "#666",
+              margin: "16px 0",
             }}
           >
             {articles[0]?.description}
@@ -210,7 +232,7 @@ const CollectionDetailModal = () => {
             by {articles[0]?.author || "Unknown Author"}
           </Typography>
         </Box>
-      </Box>
+      )}
 
       {/* Divider */}
       <Box
@@ -221,38 +243,79 @@ const CollectionDetailModal = () => {
         }}
       ></Box>
 
-      {/* More Articles */}
-      <Typography
-        variant="h5"
-        sx={{
-          fontWeight: "bold",
-          fontFamily: "'Roboto', serif",
-          marginBottom: "16px",
-          color: "#333",
-          textAlign: "center",
-        }}
-      >
-        More Articles
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "24px",
-          alignItems: "start",
-        }}
-      >
-        {articles.slice(1).map((article, index) => (
-          <ArticleCard
-            key={index}
-            article={article}
-            isOwner={true} // TODO: check user ownership
-            // TODO: Implement edit and delete functionality (log for now)
-            onEdit={(article) => console.log("Edit clicked for", article)}
-            onDelete={(article) => console.log("Delete clicked for", article)}
-          />
-        ))}
-      </Box>
+      {/* More Articles Section */}
+      {articles.length > 1 && (
+        <Box>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              fontFamily: "'Roboto', serif",
+              marginBottom: "16px",
+              color: "#333",
+              textAlign: "center",
+            }}
+          >
+            More Articles
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gap: "24px",
+              alignItems: "start",
+            }}
+          >
+            {articles.slice(1).map((article, index) => (
+              <ArticleCard
+                key={index}
+                article={article}
+                username={username}
+                onEdit={(article) => console.log("Edit clicked for", article)}
+                onDelete={(article) =>
+                  console.log("Delete clicked for", article)
+                }
+              />
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {error && (
+        <Typography
+          color="error"
+          sx={{ textAlign: "center", marginTop: "32px" }}
+        >
+          {error}
+        </Typography>
+      )}
+
+      {articles.length === 0 && !loading && !error && (
+        <Box
+          sx={{
+            padding: "20px",
+            border: "1px dashed #ddd",
+            borderRadius: "8px",
+            marginTop: "16px",
+            backgroundColor: "#f9f9f9",
+            maxWidth: "400px",
+            margin: "0 auto",
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: "1rem",
+              color: "#888",
+              fontStyle: "italic",
+              fontFamily: "'Roboto', sans-serif",
+              textAlign: "center",
+            }}
+          >
+            No articles available.
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };

@@ -89,7 +89,7 @@ def get_post(post_id):
             "user_id": post.user.user_id,
             "username": post.user.username,
             "bio_description": post.user.bio_description,
-            "profile_picture": post.user.profile_picture,
+            "profile_picture": f"/user/uploads/{post.user.profile_picture}",
         },
         "description": post.description,
         "posted_at": post.posted_at,
@@ -139,47 +139,37 @@ def update_post(post_id):
         return jsonify({"error": "You are not allowed to update this post"}), 403
 
     data = request.get_json()
-    article_link = data.get("article_link")
-    description = data.get("description")
+
+    # Articles cannot be updated
+    # Only update post description and categories
+    post_description = data.get("post_description")
     categories = data.get("categories")
 
-    if article_link:
-        article = Article.query.filter_by(link=article_link).first()
-        if not article:
-            article = Article(
-                link=article_link,
-                source=None,  # Implement later
-                title=None,  # Implement later
-                caption=None,  # Implement later
-                preview=None,  # Implement later
-            )  # What if the automated fields fail? Implement later
-            db.session.add(article)
-            db.session.commit()
-
-        post.article_id = article.article_id  # Update post's article_id to new article
-
-    if description:
-        post.description = description
+    if post_description:
+        post.description = post_description
 
     if categories:
         # Check if the number of categories is within the limit
         if len(categories) > MAX_CATEGORIES:
-            return (
-                jsonify({"error": "Maximum of {MAX_CATEGORIES} categories allowed"}),
-                400,
-            )
+            return jsonify({"error": f"Maximum of {MAX_CATEGORIES} categories allowed"}), 400
+
         # Remove existing categories
         PostCategory.query.filter_by(post_id=post_id).delete()
+
         # Add new categories
         for category_name in categories:
-            if category_name in CategoryEnum.__members__:
+            category_key = category_name.upper().replace(" ", "_")  # Normalize input to match enum keys
+            if category_key in CategoryEnum.__members__:
                 post_category = PostCategory(
                     post_id=post_id,
-                    category=CategoryEnum[category_name],
+                    category=CategoryEnum[category_key],
                 )
                 db.session.add(post_category)
-    db.session.commit()
+                print(f"post_category being added: {post_category.category.name}")
+            else:
+                print(f"Category not added because it's not in enum: {category_name}")
 
+    db.session.commit()
     return jsonify({"message": "Post updated successfully"}), 200
 
 
@@ -219,7 +209,7 @@ def get_feed():
                     "user_id": post.user.user_id,
                     "username": post.user.username,
                     "bio_description": post.user.bio_description,
-                    "profile_picture": post.user.profile_picture,
+                    "profile_picture": f"/user/uploads/{post.user.profile_picture}",
                 },
                 "user_id": post.user_id,
                 "description": post.description,
@@ -250,7 +240,6 @@ def get_feed():
         ),
         200,
     )
-
 
 # Get posts (posted by the user) with pagination
 @posts.route("/user/<int:user_id>", methods=["GET"])
@@ -283,6 +272,12 @@ def get_user_posts(user_id):
                 "post_id": post.post_id,
                 "description": post.description,
                 "posted_at": post.posted_at,
+                "user": {
+                    "user_id": post.user.user_id,
+                    "username": post.user.username,
+                    "bio_description": post.user.bio_description,
+                    "profile_picture": f"/user/uploads/{post.user.profile_picture}",
+                },
                 "article": {
                     "article_id": post.article.article_id,
                     "link": post.article.link,

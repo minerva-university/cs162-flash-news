@@ -35,9 +35,10 @@ export default function MultipleSelectChip({
   max = -1,
   onChange,
   sx,
+  alreadySelected = [],
 }) {
   const theme = useTheme();
-  const [selected, setSelected] = React.useState([]);
+  const [selected, setSelected] = React.useState(alreadySelected);
 
   // Handle change (add/removal) of selected items
   const handleChange = (event) => {
