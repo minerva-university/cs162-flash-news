@@ -181,8 +181,7 @@ export default function AddPostForm({ onPostAdded }) {
   };
 
   useEffect(() => {
-    UserController.getCurrentUserDetails(username).then((response) => {
-      const { data } = response;
+    UserController.getCurrentUserDetails(username).then((data) => {
       setUserID(data.user_id);
       setProfilePicture(`${DB_HOST}${data.profile_picture}`);
     });

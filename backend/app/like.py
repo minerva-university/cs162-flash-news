@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from . import db
 from .models import Post, Like
 from .utils import check_post_24h, create_success_response, create_error_response
