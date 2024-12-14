@@ -5,6 +5,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import os
 from flask_cors import CORS  # https://stackoverflow.com/a/78849992/11620221
+from flask_restx import Api
 
 
 # Load environment variables from .env file
@@ -59,6 +60,7 @@ def create_app():
         days=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES_DAYS", 30))
     )
     app.config["debug"] = os.getenv("DEBUG", "true").lower() == "true"
+    app.config["RESTX_MASK_SWAGGER"] = False
 
     # https://stackoverflow.com/a/40365514/11620221
     # Don't be strict about trailing slashes in routes
@@ -82,40 +84,32 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
 
-    # blueprint for auth routes in our app
-    from .auth import auth as auth_blueprint
+    # Initialize RESTx API
+    api = Api(
+        app,
+        title="Your App API",
+        version="1.0",
+        description="Comprehensive API documentation for your Flask app",
+        doc="/",
+    )
 
-    app.register_blueprint(auth_blueprint)
+    # Import namespaces
+    from .auth import api as auth_ns
+    from .user import api as user_ns
+    from .post import api as post_ns
+    from .comment import api as comment_ns
+    from .like import api as like_ns
+    from .collection import api as collection_ns
+    from .og import api as og_ns
 
-    # blueprint for user routes in our app
-    from .user import user_bp as user_blueprint
-
-    app.register_blueprint(user_blueprint)
-
-    # blueprint for post routes in our app
-    from .post import posts as posts_blueprint
-
-    app.register_blueprint(posts_blueprint)
-
-    # blueprint for comment routes in our app
-    from .comment import comments as comments_blueprint
-
-    app.register_blueprint(comments_blueprint)
-
-    # blueprint for like routes in our app
-    from .like import likes as likes_blueprint
-
-    app.register_blueprint(likes_blueprint)
-
-    # blueprint for collection routes in our app
-    from .collection import collections as collections_blueprint
-
-    app.register_blueprint(collections_blueprint)
-
-    # blueprint for OpenGraph routes in our app
-    from .og import opengraph_bp as og_blueprint
-
-    app.register_blueprint(og_blueprint, url_prefix="/api/")
+    # Add namespaces to the API
+    api.add_namespace(auth_ns, path="/api")
+    api.add_namespace(user_ns, path="/api/user")
+    api.add_namespace(post_ns, path="/api/posts")
+    api.add_namespace(comment_ns, path="/api/comments")
+    api.add_namespace(like_ns, path="/api/likes")
+    api.add_namespace(collection_ns, path="/api/collections")
+    api.add_namespace(og_ns, path="/api/og")
 
     # Avoids circular imports by importing models in this format
     with app.app_context():
