@@ -79,7 +79,7 @@ def register():
                 "access_token": access_token,
                 "refresh_token": refresh_token,
                 "username": new_user.username,
-                "profile_picture": new_user.profile_picture,  # Ensure this field exists in the User model
+                "profile_picture": f"/user/uploads/{new_user.profile_picture}",  # Ensure this field exists in the User model
             }
         ),
         201,
@@ -110,7 +110,7 @@ def login():
                 "access_token": access_token,
                 "refresh_token": refresh_token,
                 "username": user.username,
-                "profile_picture": user.profile_picture,  # Ensure this field exists in the User model
+                "profile_picture": f"/user/uploads/{user.profile_picture}",  # Ensure this field exists in the User model
             }
         ),
         200,

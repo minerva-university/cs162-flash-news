@@ -225,7 +225,9 @@ const ProfilePage = () => {
           <Avatar
             sx={{ width: 80, height: 80, bgcolor: "#fff" }}
             src={
-              profileData.profile_picture || "https://via.placeholder.com/150"
+              profileData.profile_picture
+                ? `${DB_HOST}/${profileData.profile_picture}`
+                : "https://via.placeholder.com/150"
             }
             alt={profileData.username[0]}
           />
@@ -296,7 +298,7 @@ const ProfilePage = () => {
                 backgroundColor: "#6b949c",
               },
             }}
-            onClick={() => navigate(`/${profileData.username}/settings`)}
+            onClick={() => navigate(`/settings/${profileData.username}`)}
           >
             Settings
           </Button>

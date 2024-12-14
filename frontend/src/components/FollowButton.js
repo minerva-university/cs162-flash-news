@@ -16,7 +16,7 @@ const FollowButton = ({ userId }) => {
           return;
         }
 
-        const response = await fetch(`${DB_HOST}/api/user/following`, {
+        const response = await fetch(`${DB_HOST}/user/following`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -41,8 +41,8 @@ const FollowButton = ({ userId }) => {
 
   const handleFollowToggle = async () => {
     const endpoint = isFollowing
-      ? `${DB_HOST}/api/user/unfollow/${userId}`
-      : `${DB_HOST}/api/user/follow/${userId}`;
+      ? `${DB_HOST}/user/unfollow/${userId}`
+      : `${DB_HOST}/user/follow/${userId}`;
 
     try {
       const accessToken = localStorage.getItem("access_token");

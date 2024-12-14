@@ -16,7 +16,7 @@ function Header() {
   const pages = [
     { name: "Home", path: "/feed" },
     { name: "Collections", path: `/user/${username}/collections` },
-    { name: "Profile", path: `${username}/profile` },
+    { name: "Profile", path: `/profile/${username}` },
   ];
 
   const [searchValue, setSearchValue] = useState("");
@@ -26,10 +26,10 @@ function Header() {
     const q = event.target.value;
     setSearchValue(q);
 
-    if (q.length > 2) {
+    if (q && q.length > 2) {
       try {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch(`${DB_HOST}/api/user/search?q=${q}`, {
+        const response = await fetch(`${DB_HOST}/user/search?q=${q}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -53,7 +53,7 @@ function Header() {
 
   const handleSearchSelect = (selectedUser) => {
     if (selectedUser && selectedUser.username) {
-      navigate(`/${selectedUser.username}/profile`);
+      navigate(`/profile/${selectedUser.username}`);
     }
     setSearchValue("");
     setUserSuggestions([]);
@@ -78,7 +78,7 @@ function Header() {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="/feed"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },

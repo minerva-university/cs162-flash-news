@@ -125,7 +125,7 @@ const SettingsPage = () => {
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
       // Redirect to the user's profile page
-      navigate(`/${userData.username}/profile`);
+      navigate(`/profile/${userData.username}`);
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     } finally {
@@ -210,7 +210,7 @@ const SettingsPage = () => {
           src={
             profilePicture
               ? URL.createObjectURL(profilePicture)
-              : userData.profile_picture
+              : `${DB_HOST}/${userData.profile_picture}`
           }
           alt={userData.username}
           sx={{
@@ -312,7 +312,7 @@ const SettingsPage = () => {
       {/* Go Back to Profile */}
       <Button
         variant="outlined"
-        onClick={() => navigate(`/${username}/profile`)}
+        onClick={() => navigate(`/profile/${username}`)}
         fullWidth
         sx={{
           marginTop: "16px",
