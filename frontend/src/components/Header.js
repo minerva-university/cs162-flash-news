@@ -26,7 +26,7 @@ function Header() {
     const q = event.target.value;
     setSearchValue(q);
 
-    if (q.length > 2) {
+    if (q && q.length > 2) {
       try {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(`${DB_HOST}/user/search?q=${q}`, {
