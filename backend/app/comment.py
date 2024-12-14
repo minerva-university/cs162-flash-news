@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import db
 from .models import Post, Comment
-from .utils import check_post_24h
+from .utils import check_post_24h, create_success_response, create_error_response
 
 comments = Blueprint("comment", __name__, url_prefix="/api/comments")
 
@@ -13,13 +13,10 @@ comments = Blueprint("comment", __name__, url_prefix="/api/comments")
 def get_comments(post_id):
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({"error": "Post not found"}), 404
+        return create_error_response("Post not found", status_code=404)
 
     if check_post_24h(post):
-        return (
-            jsonify({"error": "You are not allowed to view comments on this post"}),
-            403,
-        )
+        return create_error_response("You are not allowed to view comments on this post", status_code=403)
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
@@ -44,17 +41,12 @@ def get_comments(post_id):
         for comment in paginated_comments.items
     ]
 
-    return (
-        jsonify(
-            {
-                "total_comments": paginated_comments.total,
-                "page": paginated_comments.page,
-                "per_page": paginated_comments.per_page,
-                "comments": comments_data,
-            }
-        ),
-        200,
-    )
+    return create_success_response("Comments fetched successfully", status_code=200, data={
+        "total_comments": paginated_comments.total,
+        "page": paginated_comments.page,
+        "per_page": paginated_comments.per_page,
+        "comments": comments_data,
+    })
 
 
 # Create a comment on a post
@@ -63,28 +55,22 @@ def get_comments(post_id):
 def create_comment(post_id):
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({"error": "Post not found"}), 404
+        return create_error_response("Post not found", status_code=404)
 
     if check_post_24h(post):
-        return jsonify({"error": "You are not allowed to comment on this post"}), 403
+        return create_error_response("You are not allowed to comment on this post", status_code=403)
 
     data = request.get_json()
     comment = data.get("comment")
     if not comment:
-        return jsonify({"error": "Comment is required"}), 400
+        return create_error_response("Comment is required", status_code=400)
 
     post_comment = Comment(user_id=get_jwt_identity(), post_id=post_id, content=comment)
     db.session.add(post_comment)
     db.session.commit()
 
-    return (
-        jsonify(
-            {
-                "message": "Comment created successfully",
-                "comment_id": post_comment.comment_id,
-            }
-        ),
-        201,
+    return create_success_response("Comment created successfully", status_code=201, 
+    {"comment_id": post_comment.comment_id}
     )
 
 
@@ -94,23 +80,23 @@ def create_comment(post_id):
 def update_comment(comment_id):
     post_comment = Comment.query.get(comment_id)
     if not post_comment:
-        return jsonify({"error": "Comment not found"}), 404
+        return create_error_response("Comment not found", status_code=404)
 
     if post_comment.user_id != int(get_jwt_identity()):
-        return jsonify({"error": "You are not allowed to update this comment"}), 403
+        return create_error_response("You are not allowed to update this comment", status_code=403)
 
     if check_post_24h(post_comment.post):
-        return jsonify({"error": "You are not allowed to update this comment"}), 403
+        return create_error_response("You are not allowed to update this comment", status_code=403)
 
     data = request.get_json()
     comment = data.get("comment")
     if not comment:
-        return jsonify({"error": "Comment is required"}), 400
+        return create_error_response("Comment is required", status_code=400)
 
     post_comment.content = comment
     db.session.commit()
 
-    return jsonify({"message": "Comment updated successfully"}), 200
+    return create_success_response("Comment updated successfully", status_code=200)
 
 
 # Delete a comment on a post
@@ -119,15 +105,15 @@ def update_comment(comment_id):
 def delete_comment(comment_id):
     post_comment = Comment.query.get(comment_id)
     if not post_comment:
-        return jsonify({"error": "Comment not found"}), 404
+        return create_error_response("Comment not found", status_code=404)
 
     if post_comment.user_id != int(get_jwt_identity()):
-        return jsonify({"error": "You are not allowed to delete this comment"}), 403
+        return create_error_response("You are not allowed to delete this comment", status_code=403)
 
     if check_post_24h(post_comment.post):
-        return jsonify({"error": "You are not allowed to delete this comment"}), 403
+        return create_error_response("You are not allowed to delete this comment", status_code=403)
 
     db.session.delete(post_comment)
     db.session.commit()
 
-    return jsonify({"message": "Comment deleted successfully"}), 200
+    return create_success_response("Comment deleted successfully", status_code=200)

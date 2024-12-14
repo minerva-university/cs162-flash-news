@@ -52,7 +52,8 @@ def get_profile(username):
         user = User.query.filter_by(username=username).first()
 
         if not user:
-            return create_error_response('User not found', 404)
+            return create_error_response('User not found', status_code=404)
+            
 
         # Determine if the logged-in user is the profile owner
         is_owner = current_user_id == user.user_id
@@ -76,14 +77,14 @@ def get_profile(username):
             'created_at': user.created_at,
             'is_owner': is_owner
         }
-        return create_success_response('User profile fetched successfully', 200, user_data)
+        return create_success_response('User profile fetched successfully', status_code=200, data=user_data)
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return create_error_response('Database error occurred', 500, str(e))
+        return create_error_response('Database error occurred', status_code=500, details=str(e))
 
     except Exception as e:
-        return create_error_response('An unexpected error occurred', 500, str(e))
+        return create_error_response('An unexpected error occurred', status_code=500, details=str(e))
 
 # Update user profile
 @user_bp.route('/', methods=['PUT'])
@@ -95,20 +96,20 @@ def update_profile():
         current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         if not user:
-            return create_error_response('User not found', 404)
+            return create_error_response('User not found', status_code=404)
 
         data = request.form
         new_username = data.get('username', user.username)
         file = request.files.get("profile_picture")
 
         if not new_username:
-            return create_error_response('Username is required', 400)
+            return create_error_response('Username is required', status_code=400)
 
         # Check if the new username already exists
         if new_username != user.username:
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user:
-                return create_error_response('Username already exists', 400)
+                return create_error_response('Username already exists', status_code=400)
 
         # Commenting this out because users should not be able to change their email
         #new_email = data.get('email', user.email)
@@ -118,7 +119,7 @@ def update_profile():
         if new_email != user.email:
             existing_email_user = User.query.filter_by(email=new_email).first()
             if existing_email_user:
-                return create_error_response('Email already exists', 400)
+                return create_error_response('Email already exists', status_code=400)
         """
 
         if file and allowed_file(file.filename):
@@ -142,16 +143,16 @@ def update_profile():
             'created_at': user.created_at
         }
 
-        return create_success_response('Profile updated successfully', 200, updated_user_data)
+        return create_success_response('Profile updated successfully', status_code=200, data=updated_user_data)
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return create_error_response('Database error occurred', 500, str(e))
+        return create_error_response('Database error occurred', status_code=500, details=str(e))
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return create_error_response('An unexpected error occurred', 500, str(e))
+        return create_error_response('An unexpected error occurred', status_code=500, details=str(e))
 
 # Delete user profile
 @user_bp.route('/', methods=['DELETE'])
@@ -164,20 +165,20 @@ def delete_user():
         user = User.query.filter_by(user_id=current_user_id).first()
 
         if not user:
-            return create_error_response('User not found', 404)
+            return create_error_response('User not found', status_code=404)
 
         # Deleting the user from the database
         db.session.delete(user)
         db.session.commit()
 
-        return create_success_response('User account deleted successfully', 200)
+        return create_success_response('User account deleted successfully', status_code=200)
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return create_error_response('Database error occurred', 500, str(e))
+        return create_error_response('Database error occurred', status_code=500, details=str(e))
 
     except Exception as e:
-        return create_error_response('An unexpected error occurred', 500, str(e))
+        return create_error_response('An unexpected error occurred', status_code=500, details=str(e))
 
 # Follow user route
 @user_bp.route('/follow/<int:user_id>', methods=['POST'])
@@ -190,32 +191,32 @@ def follow_user(user_id):
 
         # Ensure the user cannot follow themselves
         if current_user_id == user_id:
-            return create_error_response('You cannot follow yourself', 400)
+            return create_error_response('You cannot follow yourself', status_code=400)
 
         # Check if the target user exists
         user_to_follow = User.query.get(user_id)
         if not user_to_follow:
-            return create_error_response('User not found', 404)
+            return create_error_response('User not found', status_code=404)
 
         # Check if the current user is already following the target user
         existing_follow = Follow.query.filter_by(follower_id=current_user_id, user_id=user_id).first()
         if existing_follow:
-            return create_error_response('You are already following this user', 400)
+            return create_error_response('You are already following this user', status_code=400)
 
         # Create a new follow relationship
         new_follow = Follow(follower_id=current_user_id, user_id=user_id)
         db.session.add(new_follow)
         db.session.commit()
 
-        return create_success_response('Successfully followed the user', 200)
+        return create_success_response('Successfully followed the user', status_code=200)
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return create_error_response('Database error occurred', 500, str(e))
+        return create_error_response('Database error occurred', status_code=500, details=str(e))
 
     except Exception as e:
         db.session.rollback()
-        return create_error_response(str(e), 500)
+        return create_error_response('Error occurred', status_code=500, details=str(e))
 
 # Unfollow user route
 @user_bp.route('/unfollow/<int:user_id>', methods=['POST'])
@@ -228,31 +229,31 @@ def unfollow_user(user_id):
 
         # Ensure the user cannot unfollow themselves
         if current_user_id == user_id:
-            return create_error_response('You cannot unfollow yourself', 400)
+            return create_error_response('You cannot unfollow yourself', status_code=400)
 
         # Check if the target user exists
         user_to_unfollow = User.query.get(user_id)
         if not user_to_unfollow:
-            return create_error_response('User not found', 404)
+            return create_error_response('User not found', status_code=404)
 
         # Check if the current user is following the target user
         existing_follow = Follow.query.filter_by(follower_id=current_user_id, user_id=user_id).first()
         if not existing_follow:
-            return create_error_response('You are not following this user', 400)
+            return create_error_response('You are not following this user', status_code=400)
 
         # Remove the follow relationship
         db.session.delete(existing_follow)
         db.session.commit()
 
-        return create_success_response('Successfully unfollowed the user', 200)
+        return create_success_response('Successfully unfollowed the user', status_code=200)
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        return create_error_response('Database error occurred', 500, str(e))
+        return create_error_response('Database error occurred', status_code=500, details=str(e))
 
     except Exception as e:
         db.session.rollback()
-        return create_error_response(str(e), 500)
+        return create_error_response('Error occurred', status_code=500, details=str(e))
 
 # Get list of users the current user is following
 @user_bp.route('/following', methods=['GET'])
@@ -269,7 +270,8 @@ def get_followed_users():
         } for follow in current_user.followings
     ]
 
-    return jsonify({"followed_users": followed_users})
+    return create_success_response('Got list of users the user is following successfully', 
+    status_code=200, data={"followed_users": followed_users})
 
 # Get list of users following the current user
 @user_bp.route('/followers', methods=['GET'])
@@ -285,8 +287,7 @@ def get_followers():
             "username": follow.following_user.username
         } for follow in current_user.followers
     ]
-
-    return jsonify({"followers": followers})
+    return create_success_response('Got list of users successfully', status_code=200, data={"followers": followers})
 
 @user_bp.route('/search', methods=['GET'])
 @jwt_required()

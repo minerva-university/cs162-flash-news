@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta, timezone
 from . import db
 from .models import Post, Article, PostCategory, CategoryEnum, User
-from .utils import check_post_24h
+from .utils import check_post_24h, create_success_response, create_error_response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 posts = Blueprint("post", __name__, url_prefix="/api/posts")
@@ -19,7 +19,7 @@ def create_post():
 
     article_link = data.get("article_link")
     if not article_link:
-        return jsonify({"error": "Article link is required"}), 400
+        return create_error_response("Article link is required", status_code=400)
 
     # Check if the article already exists
     article = Article.query.filter_by(link=article_link).first()
@@ -49,9 +49,8 @@ def create_post():
     categories = data.get("categories")
     if categories:
         if len(categories) > MAX_CATEGORIES:
-            return (
-                jsonify({"error": "Maximum of {MAX_CATEGORIES} categories allowed"}),
-                400,
+            return create_error_response(
+                f"Maximum of {MAX_CATEGORIES} categories allowed", status_code=400
             )
         for category in categories:
             # Check if the category exists and add it to the PostCategory table
@@ -63,10 +62,7 @@ def create_post():
                 db.session.add(post_category)
         db.session.commit()
 
-    return (
-        jsonify({"message": "Post created successfully", "post_id": post.post_id}),
-        201,
-    )
+    return create_success_response("Post created successfully", status_code=201, data={"post_id": post.post_id})
 
 
 # Get a single post
@@ -75,10 +71,10 @@ def create_post():
 def get_post(post_id):
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({"error": "Post not found"}), 404
+        return create_error_response("Post not found", status_code=404)
 
     if check_post_24h(post=post):
-        return jsonify({"error": "You are not allowed to view this post"}), 403
+        return create_error_response("You are not allowed to view this post", status_code=403)
 
     current_user_id = get_jwt_identity()
     is_liked = any(like.user_id == current_user_id for like in post.likes)
@@ -107,7 +103,7 @@ def get_post(post_id):
         "is_liked": is_liked,
     }
 
-    return jsonify(post_data), 200
+    return create_success_response("Post retrieved successfully", status_code=200, data=post_data)
 
 
 # Delete a post
@@ -116,15 +112,15 @@ def get_post(post_id):
 def delete_post(post_id):
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({"error": "Post not found"}), 404
+        return create_error_response("Post not found", status_code=404)
 
     if post.user_id != int(get_jwt_identity()):
-        return jsonify({"error": "You are not allowed to delete this post"}), 403
+        return create_error_response("You are not allowed to delete this post", status_code=403) 
 
     db.session.delete(post)
     db.session.commit()
 
-    return jsonify({"message": "Post deleted successfully"}), 200
+    return create_success_response("Post deleted successfully", status_code=200)
 
 
 # Update a post
@@ -133,10 +129,10 @@ def delete_post(post_id):
 def update_post(post_id):
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({"error": "Post not found"}), 404
+        return create_error_response("Post not found", status_code=404)
 
     if post.user_id != int(get_jwt_identity()):
-        return jsonify({"error": "You are not allowed to update this post"}), 403
+        return create_error_response("You are not allowed to update this post", status_code=403)
 
     data = request.get_json()
 
@@ -151,8 +147,9 @@ def update_post(post_id):
     if categories:
         # Check if the number of categories is within the limit
         if len(categories) > MAX_CATEGORIES:
-            return jsonify({"error": f"Maximum of {MAX_CATEGORIES} categories allowed"}), 400
-
+            return create_error_response(
+                f"Maximum of {MAX_CATEGORIES} categories allowed", status_code=400
+            )
         # Remove existing categories
         PostCategory.query.filter_by(post_id=post_id).delete()
 
@@ -170,7 +167,8 @@ def update_post(post_id):
                 print(f"Category not added because it's not in enum: {category_name}")
 
     db.session.commit()
-    return jsonify({"message": "Post updated successfully"}), 200
+
+    return create_success_response("Post updated successfully", status_code=200)
 
 
 # Get feed (posts by self + followed users) with pagination
@@ -229,17 +227,12 @@ def get_feed():
             }
         )
 
-    return (
-        jsonify(
-            {
-                "total_posts": paginated_posts.total,
-                "page": paginated_posts.page,
-                "per_page": paginated_posts.per_page,
-                "posts": posts_data,
-            }
-        ),
-        200,
-    )
+    return create_success_response("Posts fetched successfully", status_code=200, {
+    "total_posts": paginated_posts.total,
+    "page": paginated_posts.page,
+    "per_page": paginated_posts.per_page,
+    "posts": posts_data,
+})
 
 # Get posts (posted by the user) with pagination
 @posts.route("/user/<int:user_id>", methods=["GET"])
@@ -293,17 +286,12 @@ def get_user_posts(user_id):
             }
         )
 
-    return (
-        jsonify(
-            {
-                "total_posts": paginated_posts.total,
-                "page": paginated_posts.page,
-                "per_page": paginated_posts.per_page,
-                "posts": posts_data,
-            }
-        ),
-        200,
-    )
+    return success_response("Posts fetched successfully", 200, data={
+        "total_posts": paginated_posts.total,
+        "page": paginated_posts.page,
+        "per_page": paginated_posts.per_page,
+        "posts": posts_data,
+    })
 
 
 # Get available categories
@@ -338,4 +326,6 @@ def get_categories():
     """
     categories_data = [{"category_id": category.value} for category in CategoryEnum]
 
-    return jsonify({"categories": categories_data}), 200
+    return success_response("Categories fetched successfully", 200, data={
+        "categories": categories_data,
+    })
