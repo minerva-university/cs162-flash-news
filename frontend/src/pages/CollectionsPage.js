@@ -143,6 +143,7 @@ const CollectionsPage = () => {
         },
       );
       const collectionsData = await collectionsResponse.json();
+      console.log("Collections data:", collectionsData);
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
       // Set public and private collections
@@ -157,11 +158,11 @@ const CollectionsPage = () => {
     }
   };
 
-  //
+  // Fetch collections on initial load
   useEffect(() => {
     fetchCollections();
-  }, [username]);
-
+  }, [username, isOwner]); // Ensure dependencies are correct
+  
   // Handle create collection
   const handleCreateCollection = async () => {
     try {
