@@ -64,13 +64,15 @@ def create_app():
     # Don't be strict about trailing slashes in routes
     app.url_map.strict_slashes = False
 
+    origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+
     # Allow CORS for all API routes
     CORS(
         app,
         resources={
             r"/*": {
-                "origins": ["http://localhost:3000"],
-                "methods": ["GET", "POST", "PUT", "DELETE"],
+                "origins": origins,
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
                 "allow_headers": ["Content-Type", "Authorization"],
             }
         },
