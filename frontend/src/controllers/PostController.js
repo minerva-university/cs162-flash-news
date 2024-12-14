@@ -13,7 +13,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -27,7 +28,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -41,7 +43,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -56,7 +59,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -71,7 +75,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -85,7 +90,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -99,7 +105,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -114,37 +121,8 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
-    } else {
-      throw new Error(`${responseBody.message}`);
-    }
-  }
-
-  // Follow a user
-  static async followUser(userID) {
-    const response = await fetch(`${DB_HOST}/follow/${userID}`, {
-      method: "POST",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
-
-    const responseBody = await response.json();
-    if (response?.ok) {
-      return responseBody;
-    } else {
-      throw new Error(`${responseBody.message}`);
-    }
-  }
-
-  // Unfollow a user
-  static async unfollowUser(userID) {
-    const response = await fetch(`${DB_HOST}/follow/${userID}`, {
-      method: "DELETE",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
-
-    const responseBody = await response.json();
-    if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }

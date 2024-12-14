@@ -110,9 +110,9 @@ const CollectionsPage = () => {
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
       // Set public and private collections
-      setPublicCollections(collectionsData.public || []);
+      setPublicCollections(collectionsData.data.public || []);
       if (isPageOwner) {
-        setPrivateCollections(collectionsData.private || []);
+        setPrivateCollections(collectionsData.data.private || []);
       }
     } catch (error) {
       console.error("Error fetching collections:", error);
@@ -157,7 +157,7 @@ const CollectionsPage = () => {
         throw new Error(error.message || "Error creating collection.");
       }
 
-      const newCollection = await response.json();
+      // const newCollection = await response.json();
       setAddFormData({
         title: "",
         description: "",
@@ -166,11 +166,11 @@ const CollectionsPage = () => {
       });
       setAddOpenModal(false);
 
-      if (newCollection.is_public) {
-        setPublicCollections((prev) => [...prev, newCollection]);
-      } else {
-        setPrivateCollections((prev) => [...prev, newCollection]);
-      }
+      // if (newCollection.is_public) {
+      //   setPublicCollections((prev) => [...prev, newCollection]);
+      // } else {
+      //   setPrivateCollections((prev) => [...prev, newCollection]);
+      // }
       fetchCollections();
     } catch (error) {
       console.error("Error creating collection:", error);
