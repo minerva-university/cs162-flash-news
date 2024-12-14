@@ -137,19 +137,20 @@ def update_profile():
             user.profile_picture = filename
 
         # Updating user fields
-        user.bio_description = data.get("bio_description", user.bio_description) or None
-        user.profile_picture = data.get("profile_picture", user.profile_picture) or None
-        tags = data.get("tags", "[]")  # Default to an empty list
+        user.username = new_username
+        user.bio_description = data.get('bio_description') or None
+        user.profile_picture = data.get('profile_picture', user.profile_picture) or None
+        tags = data.get('tags', '[]')  # Default to an empty list
         user.tags = json.dumps(json.loads(tags))  # Ensure JSON format
         db.session.commit()
 
         updated_user_data = {
-            "user_id": user.user_id,
-            "username": new_username,
-            "email": user.email,
-            "bio_description": user.bio_description,
-            "profile_picture": f"/user/uploads/{user.profile_picture}",  # Hard-Coded for now
-            "created_at": user.created_at,
+            'user_id': user.user_id,
+            'username': user.username,
+            'email': user.email,
+            'bio_description': user.bio_description,
+            'profile_picture': f"http://127.0.0.1:5000/api/user/uploads/{user.profile_picture}", # Hard-Coded for now
+            'created_at': user.created_at
         }
 
         return create_success_response(
