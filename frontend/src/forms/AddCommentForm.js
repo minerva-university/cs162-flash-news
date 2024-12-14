@@ -4,6 +4,7 @@ import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 import { Avatar, Box, Card, CardHeader, CardContent } from "@mui/material";
 import ThemedButton from "../components/ThemedButton";
 import CommentController from "../controllers/CommentController";
+import { DB_HOST } from "../controllers/config.js";
 
 export default function AddCommentForm({ post, onCommentAdded }) {
   const CURRENT_USERNAME = localStorage.getItem("username");
@@ -29,7 +30,7 @@ export default function AddCommentForm({ post, onCommentAdded }) {
         avatar={
           profile_picture ? (
             <Avatar
-              src={profile_picture}
+              src={`${DB_HOST}${profile_picture}`}
               sx={(theme) => ({ bgcolor: theme.palette.primary.main })}
               aria-label="Profile Picture"
             />

@@ -11,7 +11,8 @@ import {
 import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
-import { DB_HOST } from "../controllers/config.ts";
+import { DB_HOST } from "../controllers/config.js";
+import FollowButton from "../components/FollowButton";
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -58,6 +59,7 @@ const ProfilePage = () => {
       const profile = result.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
+      console.log(isOwner);
     } catch (error) {
       console.error("Error in fetchProfileData:", error);
     }
@@ -223,7 +225,9 @@ const ProfilePage = () => {
           <Avatar
             sx={{ width: 80, height: 80, bgcolor: "#fff" }}
             src={
-              profileData.profile_picture || "https://via.placeholder.com/150"
+              profileData.profile_picture
+                ? `${DB_HOST}/${profileData.profile_picture}`
+                : "https://via.placeholder.com/150"
             }
             alt={profileData.username[0]}
           />
@@ -280,9 +284,8 @@ const ProfilePage = () => {
             )}
           </Box>
         </Box>
-
-        {/* Settings Button */}
-        {isOwner && (
+        {/* Settings Button and Follow Button*/}
+        {isOwner ? (
           <Button
             variant="contained"
             startIcon={<Settings />}
@@ -295,10 +298,13 @@ const ProfilePage = () => {
                 backgroundColor: "#6b949c",
               },
             }}
-            onClick={() => navigate(`/${profileData.username}/settings`)}
+            onClick={() => navigate(`/settings/${profileData.username}`)}
           >
             Settings
           </Button>
+        ) : (
+          profileData &&
+          profileData.user_id && <FollowButton userId={profileData.user_id} />
         )}
       </Box>
 

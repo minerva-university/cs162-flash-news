@@ -13,9 +13,12 @@ def scrape():
     if url is None:
         return create_error_response("No URL provided", status_code=400)
 
-    og_data = parse_opengraph_tags(url)
+    try:
+        og_data = parse_opengraph_tags(url)
 
-    if og_data:
-        return create_success_response("OpenGraph data retrieved successfully", data=og_data)
-    else:
-        create_error_response("Invalid link or OpenGraph data", status_code=400)
+        if og_data:
+            return create_success_response("OpenGraph data retrieved successfully", data=og_data)
+        else:
+            return create_error_response("Invalid link or OpenGraph data", status_code=400)
+    except Exception:
+        return create_error_response("Could not parse OpenGraph link", status_code=403)

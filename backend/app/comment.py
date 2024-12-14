@@ -33,7 +33,7 @@ def get_comments(post_id):
             "user": {
                 "user_id": comment.user.user_id,
                 "username": comment.user.username,
-                "profile_picture": comment.user.profile_picture,
+                "profile_picture": f"/user/uploads/{comment.user.profile_picture}",
             },
             "comment": comment.content,
             "commented_at": comment.commented_at,

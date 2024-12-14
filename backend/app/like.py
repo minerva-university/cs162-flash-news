@@ -30,7 +30,7 @@ def get_likes(post_id):
         {
             "user_id": like.user_id,
             "username": like.user.username,
-            "profile_picture": like.user.profile_picture,
+            "profile_picture": f"/user/uploads/{like.user.profile_picture}",
         }
         for like in paginated_likes.items
     ]

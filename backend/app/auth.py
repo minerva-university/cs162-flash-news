@@ -73,12 +73,13 @@ def register():
     db.session.commit()
     access_token = create_access_token(identity=str(new_user.user_id))
     refresh_token = create_refresh_token(identity=str(new_user.user_id))
+
     return create_success_response("User registered successfully", status_code=201, data=
     {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "username": new_user.username,
-        "profile_picture": new_user.profile_picture,  # Ensure this field exists in the User model
+        "profile_picture": f"/user/uploads/{new_user.profile_picture}",
     }
     )
 
@@ -101,11 +102,12 @@ def login():
     refresh_token = create_refresh_token(identity=str(user.user_id))
 
     # Includes username and profile picture as Pei suggested
+
     return create_success_response("User logged in successfully", status_code=200, data={
     "access_token": access_token, 
     "refresh_token": refresh_token,
     "username": user.username, 
-    "profile_picture": user.profile_picture
+    "profile_picture": f"/user/uploads/{user.profile_picture}"
     }
     )
 

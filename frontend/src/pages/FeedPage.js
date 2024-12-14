@@ -3,14 +3,17 @@ import Box from "@mui/material/Box";
 import PostController from "../controllers/PostController";
 import PostCard from "../components/PostCard";
 import AddPostForm from "../forms/AddPostForm";
-
 const FeedPage = () => {
-  const [posts, setPosts] = useState(null);
+  const [posts, setPosts] = useState([]);
 
   const getPosts = async () => {
-    PostController.getAll().then((posts) => {
-      setPosts(posts);
-    });
+    try {
+      const response = await PostController.getFeedPosts();
+      setPosts(response.posts || []);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setPosts([]);
+    }
   };
 
   useEffect(() => {
@@ -20,8 +23,9 @@ const FeedPage = () => {
   return (
     <Box style={{ padding: 20 }}>
       <AddPostForm onPostAdded={getPosts} />
-      {posts &&
-        posts.posts.map((post) => <PostCard key={post.post_id} post={post} />)}
+      {posts.map((post) => (
+        <PostCard key={post.post_id} post={post}></PostCard>
+      ))}
     </Box>
   );
 };

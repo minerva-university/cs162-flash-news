@@ -44,7 +44,7 @@ function App() {
             path="/collections/:id/:title"
             element={<CollectionDetailModal />}
           />
-          <Route path="/:username/profile" element={<ProfilePage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/settings/:username" element={<SettingsPage />} />
         </Routes>

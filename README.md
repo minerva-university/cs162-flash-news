@@ -94,7 +94,7 @@ frontend/
 │   │   ├── UsernameAndOPChip.js
 │   ├── controllers/      # Controllers: page-specific logic
 │   │   ├── CommenterContoller.js
-│   │   ├── config.ts
+│   │   ├── config.js
 │   │   ├── PostController.js
 │   │   ├── TagsController.js
 │   ├── forms/            # Forms for user interactions
