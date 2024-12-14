@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 )
 from .models import User, RevokedToken
 from . import db
-from .utils import create_success_response, create_error_response 
+from .utils import create_success_response, create_error_response
 
 auth = Blueprint("auth", __name__, url_prefix="/api")
 
@@ -47,7 +47,9 @@ def register():
     password = data.get("password")
 
     if not username or not email or not password:
-        return create_error_response("Missing username, email or password", status_code=400)
+        return create_error_response(
+            "Missing username, email or password", status_code=400
+        )
 
     if (
         User.query.filter((User.username == username) | (User.email == email)).first()
@@ -58,12 +60,16 @@ def register():
     # Validate email address
     is_valid_email, email_message = validate_email(email)
     if not is_valid_email:
-        return create_error_response('Is not valid email', email_message, status_code=400)
+        return create_error_response(
+            "Is not valid email", email_message, status_code=400
+        )
 
     # Validate password
     is_valid_password, password_message = validate_password(password)
     if not is_valid_password:
-        return create_error_response('Is not valid password', password_message, status_code=400)
+        return create_error_response(
+            "Is not valid password", password_message, status_code=400
+        )
 
     hashed_password = generate_password_hash(
         password
@@ -74,13 +80,15 @@ def register():
     access_token = create_access_token(identity=str(new_user.user_id))
     refresh_token = create_refresh_token(identity=str(new_user.user_id))
 
-    return create_success_response("User registered successfully", status_code=201, data=
-    {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "username": new_user.username,
-        "profile_picture": f"/user/uploads/{new_user.profile_picture}",
-    }
+    return create_success_response(
+        "User registered successfully",
+        status_code=201,
+        data={
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "username": new_user.username,
+            "profile_picture": f"/user/uploads/{new_user.profile_picture}",
+        },
     )
 
 
@@ -103,12 +111,15 @@ def login():
 
     # Includes username and profile picture as Pei suggested
 
-    return create_success_response("User logged in successfully", status_code=200, data={
-    "access_token": access_token, 
-    "refresh_token": refresh_token,
-    "username": user.username, 
-    "profile_picture": f"/user/uploads/{user.profile_picture}"
-    }
+    return create_success_response(
+        "User logged in successfully",
+        status_code=200,
+        data={
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "username": user.username,
+            "profile_picture": f"/user/uploads/{user.profile_picture}",
+        },
     )
 
 
@@ -127,4 +138,8 @@ def logout():
 def refresh():
     current_user_id = get_jwt_identity()
     new_access_token = create_access_token(identity=str(current_user_id))
-    return create_success_response("Token refreshed successfully", status_code=200, data={"access_token": new_access_token})
+    return create_success_response(
+        "Token refreshed successfully",
+        status_code=200,
+        data={"access_token": new_access_token},
+    )
