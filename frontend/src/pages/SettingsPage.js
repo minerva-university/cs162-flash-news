@@ -122,10 +122,24 @@ const SettingsPage = () => {
         }
       }
 
+      const updatedData = await response.json();
+
+      // Update localStorage with the new username
+      localStorage.setItem("username", updatedData.data.username);
+
+      // Update userData state with the returned data
+      setUserData((prevState) => ({
+        ...prevState,
+        username: updatedData.data.username,
+        bio_description: updatedData.data.bio_description,
+        tags: updatedData.data.tags,
+        profile_picture: updatedData.data.profile_picture,
+      }));
+
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
       // Redirect to the user's profile page
-      navigate(`/profile/${userData.username}`);
+      navigate(`/profile/${updatedData.data.username}`);
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     } finally {

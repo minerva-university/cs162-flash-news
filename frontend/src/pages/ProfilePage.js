@@ -223,24 +223,27 @@ const ProfilePage = () => {
           }}
         >
           <Avatar
-            sx={{ width: 80, height: 80, bgcolor: "#fff" }}
-            src={
-              profileData.profile_picture
-                ? `${DB_HOST}/${profileData.profile_picture}`
-                : "https://via.placeholder.com/150"
-            }
-            alt={profileData.username[0]}
-          />
+            sx={{ width: 80, height: 80, bgcolor: "#79A3B1", color: "#fff", fontSize: 20, fontWeight: "bold" }}
+          >
+            {profileData.profile_picture ? (
+              <img
+                src={profileData.profile_picture}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+              />
+            ) : (
+              profileData.username ? profileData.username.charAt(0).toUpperCase() : "?"
+            )}
+          </Avatar>
           <Box>
             <Typography
               variant="h5"
               sx={{
                 fontWeight: "bold",
-                color: "#D9EAF3",
+                color: "#e2f2fb",
               }}
             >
-              {username[0].toLocaleUpperCase()}
-              {username.slice(1).toLowerCase()}
+              {username}
             </Typography>
             {profileData.bio_description ? (
               <Typography
@@ -270,7 +273,7 @@ const ProfilePage = () => {
                   <Typography
                     key={index}
                     sx={{
-                      backgroundColor: "#D9EAF3",
+                      backgroundColor: "#e2f2fb",
                       color: "#5F848C",
                       borderRadius: "12px",
                       padding: "4px 8px",

@@ -67,6 +67,42 @@ const CollectionsPage = () => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
+  const fetchProfileData = async () => {
+    try {
+      const accessToken = localStorage.getItem("access_token");
+
+      if (!accessToken) {
+        throw new Error("Access token missing. Please log in.");
+      }
+
+      const response = await fetch(`${DB_HOST}/user/${username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch profile data.");
+      }
+
+      const result = await response.json();
+      console.log("Fetched Profile Data:", result);
+
+      const profile = result.data;
+      setProfileData(profile);
+      setIsOwner(profile.is_owner);
+    } catch (error) {
+      console.error("Error in fetchProfileData:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfileData();
+  }, [username]);
+
   // Fetch user data and collections
   const fetchCollections = async () => {
     try {
@@ -84,16 +120,16 @@ const CollectionsPage = () => {
         },
       });
 
-      const userData = await userResponse.json();
       if (!userResponse.ok) throw new Error(userData.message);
 
+      const userData = await userResponse.json();
       console.log("User data:", userData.data);
 
-      setProfileData(userData.data);
+      const profile = userData.data;
 
-      // Check ownership
-      const isPageOwner = userData.data.is_owner;
-      setIsOwner(isPageOwner);
+      // Set profile data and check ownership
+      setProfileData(profile);
+      setIsOwner(profile.is_owner);
 
       // Fetch collections
       const collectionsResponse = await fetch(
@@ -111,7 +147,7 @@ const CollectionsPage = () => {
 
       // Set public and private collections
       setPublicCollections(collectionsData.public || []);
-      if (isPageOwner) {
+      if (isOwner) {
         setPrivateCollections(collectionsData.private || []);
       }
     } catch (error) {
@@ -311,7 +347,27 @@ const CollectionsPage = () => {
           gap: "16px",
         }}
       >
-        <Avatar sx={{ width: 80, height: 80, bgcolor: "#79A3B1" }} />
+         <Avatar
+          sx={{
+            width: 80,
+            height: 80,
+            bgcolor: "#79A3B1",
+            color: "#fff",
+            fontSize: 20,
+            fontWeight: "bold",
+          }}
+        >
+          {profileData?.profile_picture ? (
+            <img
+              src={profileData.profile_picture}
+              alt="Profile"
+              style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+            />
+          ) : (
+            profileData?.username?.charAt(0).toUpperCase() || "?"
+          )}
+        </Avatar>
+
         <Box>
           <Typography
             variant="h4"
