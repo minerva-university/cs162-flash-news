@@ -16,7 +16,9 @@ def get_comments(post_id):
         return create_error_response("Post not found", status_code=404)
 
     if check_post_24h(post):
-        return create_error_response("You are not allowed to view comments on this post", status_code=403)
+        return create_error_response(
+            "You are not allowed to view comments on this post", status_code=403
+        )
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
@@ -41,12 +43,16 @@ def get_comments(post_id):
         for comment in paginated_comments.items
     ]
 
-    return create_success_response("Comments fetched successfully", status_code=200, data={
-        "total_comments": paginated_comments.total,
-        "page": paginated_comments.page,
-        "per_page": paginated_comments.per_page,
-        "comments": comments_data,
-    })
+    return create_success_response(
+        "Comments fetched successfully",
+        status_code=200,
+        data={
+            "total_comments": paginated_comments.total,
+            "page": paginated_comments.page,
+            "per_page": paginated_comments.per_page,
+            "comments": comments_data,
+        },
+    )
 
 
 # Create a comment on a post
@@ -58,7 +64,9 @@ def create_comment(post_id):
         return create_error_response("Post not found", status_code=404)
 
     if check_post_24h(post):
-        return create_error_response("You are not allowed to comment on this post", status_code=403)
+        return create_error_response(
+            "You are not allowed to comment on this post", status_code=403
+        )
 
     data = request.get_json()
     comment = data.get("comment")
@@ -69,8 +77,10 @@ def create_comment(post_id):
     db.session.add(post_comment)
     db.session.commit()
 
-    return create_success_response("Comment created successfully", status_code=201, 
-    {"comment_id": post_comment.comment_id}
+    return create_success_response(
+        "Comment created successfully",
+        status_code=201,
+        data={"comment_id": post_comment.comment_id},
     )
 
 
@@ -83,10 +93,14 @@ def update_comment(comment_id):
         return create_error_response("Comment not found", status_code=404)
 
     if post_comment.user_id != int(get_jwt_identity()):
-        return create_error_response("You are not allowed to update this comment", status_code=403)
+        return create_error_response(
+            "You are not allowed to update this comment", status_code=403
+        )
 
     if check_post_24h(post_comment.post):
-        return create_error_response("You are not allowed to update this comment", status_code=403)
+        return create_error_response(
+            "You are not allowed to update this comment", status_code=403
+        )
 
     data = request.get_json()
     comment = data.get("comment")
@@ -108,10 +122,14 @@ def delete_comment(comment_id):
         return create_error_response("Comment not found", status_code=404)
 
     if post_comment.user_id != int(get_jwt_identity()):
-        return create_error_response("You are not allowed to delete this comment", status_code=403)
+        return create_error_response(
+            "You are not allowed to delete this comment", status_code=403
+        )
 
     if check_post_24h(post_comment.post):
-        return create_error_response("You are not allowed to delete this comment", status_code=403)
+        return create_error_response(
+            "You are not allowed to delete this comment", status_code=403
+        )
 
     db.session.delete(post_comment)
     db.session.commit()

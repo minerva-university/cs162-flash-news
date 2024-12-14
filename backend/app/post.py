@@ -62,7 +62,9 @@ def create_post():
                 db.session.add(post_category)
         db.session.commit()
 
-    return create_success_response("Post created successfully", status_code=201, data={"post_id": post.post_id})
+    return create_success_response(
+        "Post created successfully", status_code=201, data={"post_id": post.post_id}
+    )
 
 
 # Get a single post
@@ -74,7 +76,9 @@ def get_post(post_id):
         return create_error_response("Post not found", status_code=404)
 
     if check_post_24h(post=post):
-        return create_error_response("You are not allowed to view this post", status_code=403)
+        return create_error_response(
+            "You are not allowed to view this post", status_code=403
+        )
 
     current_user_id = get_jwt_identity()
     is_liked = any(like.user_id == current_user_id for like in post.likes)
@@ -103,7 +107,9 @@ def get_post(post_id):
         "is_liked": is_liked,
     }
 
-    return create_success_response("Post retrieved successfully", status_code=200, data=post_data)
+    return create_success_response(
+        "Post retrieved successfully", status_code=200, data=post_data
+    )
 
 
 # Delete a post
@@ -115,7 +121,9 @@ def delete_post(post_id):
         return create_error_response("Post not found", status_code=404)
 
     if post.user_id != int(get_jwt_identity()):
-        return create_error_response("You are not allowed to delete this post", status_code=403) 
+        return create_error_response(
+            "You are not allowed to delete this post", status_code=403
+        )
 
     db.session.delete(post)
     db.session.commit()
@@ -132,7 +140,9 @@ def update_post(post_id):
         return create_error_response("Post not found", status_code=404)
 
     if post.user_id != int(get_jwt_identity()):
-        return create_error_response("You are not allowed to update this post", status_code=403)
+        return create_error_response(
+            "You are not allowed to update this post", status_code=403
+        )
 
     data = request.get_json()
 
@@ -155,7 +165,9 @@ def update_post(post_id):
 
         # Add new categories
         for category_name in categories:
-            category_key = category_name.upper().replace(" ", "_")  # Normalize input to match enum keys
+            category_key = category_name.upper().replace(
+                " ", "_"
+            )  # Normalize input to match enum keys
             if category_key in CategoryEnum.__members__:
                 post_category = PostCategory(
                     post_id=post_id,
@@ -227,12 +239,17 @@ def get_feed():
             }
         )
 
-    return create_success_response("Posts fetched successfully", status_code=200, {
-    "total_posts": paginated_posts.total,
-    "page": paginated_posts.page,
-    "per_page": paginated_posts.per_page,
-    "posts": posts_data,
-})
+    return create_success_response(
+        "Posts fetched successfully",
+        status_code=200,
+        data={
+            "total_posts": paginated_posts.total,
+            "page": paginated_posts.page,
+            "per_page": paginated_posts.per_page,
+            "posts": posts_data,
+        },
+    )
+
 
 # Get posts (posted by the user) with pagination
 @posts.route("/user/<int:user_id>", methods=["GET"])
@@ -286,12 +303,16 @@ def get_user_posts(user_id):
             }
         )
 
-    return success_response("Posts fetched successfully", 200, data={
-        "total_posts": paginated_posts.total,
-        "page": paginated_posts.page,
-        "per_page": paginated_posts.per_page,
-        "posts": posts_data,
-    })
+    return create_success_response(
+        "Posts fetched successfully",
+        200,
+        data={
+            "total_posts": paginated_posts.total,
+            "page": paginated_posts.page,
+            "per_page": paginated_posts.per_page,
+            "posts": posts_data,
+        },
+    )
 
 
 # Get available categories
@@ -326,6 +347,10 @@ def get_categories():
     """
     categories_data = [{"category_id": category.value} for category in CategoryEnum]
 
-    return success_response("Categories fetched successfully", 200, data={
-        "categories": categories_data,
-    })
+    return create_success_response(
+        "Categories fetched successfully",
+        200,
+        data={
+            "categories": categories_data,
+        },
+    )
