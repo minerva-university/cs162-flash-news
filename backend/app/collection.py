@@ -94,12 +94,12 @@ def get_collections(user_id):
     } for collection in private_collections]
 
     if int(get_jwt_identity()) != user_id:
-        return create_success_response("Public collections fetched successfully", status_code=200, {
+        return create_success_response("Public collections fetched successfully", status_code=200, data={
         'public': public_collections_data
     })
 
     else:
-        return create_success_response("Collections fetched successfully", status_code=200, {
+        return create_success_response("Collections fetched successfully", status_code=200, data={
         'public': public_collections_data,
         'private': private_collections_data
     })
@@ -131,7 +131,7 @@ def get_collection_posts(collection_id):
         else:
             return response, status_code
             
-    return create_success_response("Posts fetched successfully", status_code=200, posts_data)
+    return create_success_response("Posts fetched successfully", status_code=200, data=posts_data)
 
 
 # Add a post to a collection

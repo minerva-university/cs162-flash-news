@@ -19,7 +19,7 @@ def create_post():
 
     article_link = data.get("article_link")
     if not article_link:
-        return create_error_response("Article link is required")
+        return create_error_response("Article link is required", status_code=400)
 
     # Check if the article already exists
     article = Article.query.filter_by(link=article_link).first()
@@ -50,7 +50,7 @@ def create_post():
     if categories:
         if len(categories) > MAX_CATEGORIES:
             return create_error_response(
-                f"Maximum of {MAX_CATEGORIES} categories allowed"
+                f"Maximum of {MAX_CATEGORIES} categories allowed", status_code=400
             )
         for category in categories:
             # Check if the category exists and add it to the PostCategory table
@@ -62,7 +62,7 @@ def create_post():
                 db.session.add(post_category)
         db.session.commit()
 
-    return create_success_response("Post created successfully", 201, data={"post_id": post.post_id})
+    return create_success_response("Post created successfully", status_code=201, data={"post_id": post.post_id})
 
 
 # Get a single post
@@ -258,7 +258,7 @@ def get_feed():
             }
         )
 
-    return create_success_response("Posts fetched successfully", 200, {
+    return create_success_response("Posts fetched successfully", status_code=200, {
     "total_posts": paginated_posts.total,
     "page": paginated_posts.page,
     "per_page": paginated_posts.per_page,
