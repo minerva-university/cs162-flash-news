@@ -4,22 +4,26 @@ from ..models import User, Follow
 
 
 def test_get_profile_authenticated(client):
+    # get test user username
+
     response = client.get("/api/user/testuser")
     assert response.status_code == 200
-    assert response.json["username"] == "testuser"
-    assert response.json["email"] == "test@test.com"
+    assert response.json["data"]["username"] == "testuser"
+    assert response.json["data"]["email"] == "test@test.com"
 
 
 def test_get_profile_unauthenticated(client):
+
     client.environ_base.pop("HTTP_AUTHORIZATION", None)
 
-    response = client.get("/api/user/")
+    response = client.get("/api/user/testuser")
+    print(response.json)
     assert response.status_code == 401
 
 
 def test_update_profile(client, test_user):
     data = {
-        "bio": "New bio description",
+        "bio_description": "New bio description",
         "profile_picture": "base64_encoded_image",  # In practice, this would be actual image data
     }
     response = client.put("/api/user/", data=data)
@@ -156,3 +160,27 @@ def test_get_user_feed(client, test_user):
     response = client.get("/api/posts/feed")
     assert response.status_code == 200
     # assert "followed_user_ids" in response.json --> followed_user_ids is not in the response
+
+
+# Test that the search functionality works
+def test_search_users(client, test_user):
+    # Create users to search for
+    users = []
+    for i in range(3):
+        user = User(email=f"test{i**3}@test.com", password="test123", username=f"user{i**3}")
+        users.append(user)
+
+    user = User(email="test59@test.com", password="test123", username="wizzy") # test another username
+    users.append(user)
+
+    db.session.add_all(users)
+    db.session.commit()
+
+    response = client.get("/api/user/search?q=user")
+    response2 = client.get("/api/user/search?q=wizzy")
+
+    assert response.status_code == 200
+    assert len(response.json["data"]) == 4 # including test_user
+
+    assert response2.status_code == 200
+    assert len(response2.json["data"]) == 1

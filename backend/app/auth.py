@@ -10,6 +10,7 @@ from flask_jwt_extended import (
 )
 from .models import User, RevokedToken
 from . import db
+from .utils import create_success_response, create_error_response
 
 auth = Blueprint("auth", __name__, url_prefix="/api")
 
@@ -46,23 +47,29 @@ def register():
     password = data.get("password")
 
     if not username or not email or not password:
-        return jsonify({"message": "Missing username, email or password"}), 400
+        return create_error_response(
+            "Missing username, email or password", status_code=400
+        )
 
     if (
         User.query.filter((User.username == username) | (User.email == email)).first()
         is not None
     ):
-        return jsonify({"message": "User already exists"}), 400
+        return create_error_response("User already exists", status_code=400)
 
     # Validate email address
     is_valid_email, email_message = validate_email(email)
     if not is_valid_email:
-        return jsonify({"error": email_message}), 400
+        return create_error_response(
+            "Is not valid email", email_message, status_code=400
+        )
 
     # Validate password
     is_valid_password, password_message = validate_password(password)
     if not is_valid_password:
-        return jsonify({"error": password_message}), 400
+        return create_error_response(
+            "Is not valid password", password_message, status_code=400
+        )
 
     hashed_password = generate_password_hash(
         password
@@ -72,17 +79,16 @@ def register():
     db.session.commit()
     access_token = create_access_token(identity=str(new_user.user_id))
     refresh_token = create_refresh_token(identity=str(new_user.user_id))
-    return (
-        jsonify(
-            {
-                "message": "User registered successfully",
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "username": new_user.username,
-                "profile_picture": f"/user/uploads/{new_user.profile_picture}",  # Ensure this field exists in the User model
-            }
-        ),
-        201,
+
+    return create_success_response(
+        "User registered successfully",
+        status_code=201,
+        data={
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "username": new_user.username,
+            "profile_picture": f"/user/uploads/{new_user.profile_picture}",
+        },
     )
 
 
@@ -93,27 +99,27 @@ def login():
     password = data.get("password")
 
     if not email or not password:
-        return jsonify({"message": "Missing email or password"}), 400
+        return create_error_response("Missing email or password", status_code=400)
 
     user = User.query.filter_by(email=email).first()
 
     if not user or not check_password_hash(user.password, password):
-        return jsonify({"message": "Invalid credentials"}), 401
+        return create_error_response("Invalid credentials", status_code=401)
 
     access_token = create_access_token(identity=str(user.user_id))
     refresh_token = create_refresh_token(identity=str(user.user_id))
 
     # Includes username and profile picture as Pei suggested
-    return (
-        jsonify(
-            {
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "username": user.username,
-                "profile_picture": f"/user/uploads/{user.profile_picture}",  # Ensure this field exists in the User model
-            }
-        ),
-        200,
+
+    return create_success_response(
+        "User logged in successfully",
+        status_code=200,
+        data={
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "username": user.username,
+            "profile_picture": f"/user/uploads/{user.profile_picture}",
+        },
     )
 
 
@@ -124,7 +130,7 @@ def logout():
     revoked_token = RevokedToken(jti=jti)
     db.session.add(revoked_token)
     db.session.commit()
-    return jsonify({"message": "Successfully logged out"}), 200
+    return create_success_response("Successfully logged out", status_code=200)
 
 
 @auth.route("/refresh", methods=["POST"])
@@ -132,4 +138,8 @@ def logout():
 def refresh():
     current_user_id = get_jwt_identity()
     new_access_token = create_access_token(identity=str(current_user_id))
-    return jsonify(access_token=new_access_token), 200
+    return create_success_response(
+        "Token refreshed successfully",
+        status_code=200,
+        data={"access_token": new_access_token},
+    )
