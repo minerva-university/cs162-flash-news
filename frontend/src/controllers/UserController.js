@@ -18,6 +18,40 @@ class UserController {
       throw new Error(`${responseBody.message}`);
     }
   }
+
+  static async updateUserDetails(userID, { username, bio_description, tags, profile_picture }) {
+    const userData = {
+      username,
+      bio_description,
+      tags,
+      profile_picture
+    };
+
+    const response = await fetch(`${DB_HOST}/user/${userID}`, {
+      method: "PUT",
+      headers: HEADERS_WITH_JWT(this.accessToken),
+      body: JSON.stringify(userData),
+    });
+
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error("Failed to update user details");
+    }
+  } 
+
+  static async deleteUser(userID) {
+    const response = await fetch(`${DB_HOST}/user/${userID}`, {
+      method: "DELETE",
+      headers: HEADERS_WITH_JWT(this.accessToken),
+    });
+
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error("Failed to delete user");
+    }
+  }
 }
 
 export default UserController;

@@ -19,8 +19,25 @@ class PostController {
     }
   }
 
+  // TODO: Remove this
+  // I am pretty sure this is not used anywhere 
+  // Would this refer to feed or user posts? Either case there are functions already
   static async getAll() {
     const response = await fetch(`${DB_HOST}/posts`, {
+      method: "GET",
+      headers: HEADERS_WITH_JWT(this.accessToken),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      return responseBody;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  static async getUserPosts(userID) {
+    const response = await fetch(`${DB_HOST}/posts/user/${userID}`, {
       method: "GET",
       headers: HEADERS_WITH_JWT(this.accessToken),
     });
@@ -147,6 +164,22 @@ class PostController {
       return responseBody;
     } else {
       throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  // Get all categories
+  static async getCategories() {
+    try {
+      const response = await fetch(`${DB_HOST}/posts/categories`, {
+        method: "GET",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
+  
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      throw error;
     }
   }
 }
