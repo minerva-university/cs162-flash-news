@@ -99,6 +99,10 @@ class Comments(Resource):
             data={"comment_id": post_comment.comment_id},
         )
 
+
+# Modify a comment on a post
+@api.route("/<int:comment_id>")
+class ModifyComment(Resource):
     # Update a comment on a post
     @api.doc(security="Bearer Auth")
     @api.expect(comment_model)
