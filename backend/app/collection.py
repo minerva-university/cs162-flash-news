@@ -1,5 +1,6 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import json
 from . import db
 from .models import Collection, CollectionPost, User
 from .post import get_post
@@ -37,11 +38,8 @@ def create_collection():
     ).first()
 
     if existing_collection:
-        return (
-            jsonify(
-                {"error": "A collection with this title already exists for the user"}
-            ),
-            400,
+        return create_error_response(
+            "A collection with this title already exists for the user", status_code=400
         )
 
     # Create new collection
@@ -130,19 +128,26 @@ def get_collection_posts(collection_id):
 
     # If no posts in collection, return empty list
     if not collection_posts:
-        return jsonify([]), 200
+        return create_success_response(
+            "Posts fetched successfully", status_code=200, data=[]
+        )
 
     posts_data = []
 
     for collection in collection_posts:
-        response, status_code = get_post(collection.post_id)
+        # create_success_response returns { message, data, status_code }
+        # create_error_response returns { message, status_code }
+        json_response, status_code = get_post(collection.post_id)
+        decoded_response = json.loads(json_response.get_data())
 
         # Check if post exists
-        if status_code == 200:
-            posts_data.append(response.json)
+        if status_code == 200 and "data" in decoded_response:
+            posts_data.append(decoded_response["data"])
 
         else:
-            return response, status_code
+            return create_error_response(
+                decoded_response["message"], status_code=status_code
+            )
 
     return create_success_response(
         "Posts fetched successfully", status_code=200, data=posts_data

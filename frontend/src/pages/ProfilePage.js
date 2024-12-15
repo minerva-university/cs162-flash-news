@@ -95,7 +95,7 @@ const ProfilePage = () => {
         throw new Error(errorData.message || "Failed to fetch shared posts.");
       }
 
-      const data = await response.json();
+      const { data } = await response.json();
       console.log("Fetched Shared Posts Raw Data:", data);
 
       // Ensure the response is an array
@@ -140,8 +140,10 @@ const ProfilePage = () => {
         },
       );
 
-      const collectionsData = await collectionsResponse.json();
-      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
+      const response = await collectionsResponse.json();
+      if (!collectionsResponse.ok) throw new Error(response.message);
+
+      const collectionsData = response.data;
       console.log("Fetched collections:", collectionsData);
       console.log("Public Collections:", collectionsData.public);
 
