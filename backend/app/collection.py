@@ -176,7 +176,7 @@ class GetCollectionPosts(Resource):
             # Check if post exists
             if status_code == 200:
                 response = json.loads(response[0].decode("utf-8"))
-                posts_data.append(response)
+                posts_data.append(response["data"])
             else:
                 return response, status_code
 
