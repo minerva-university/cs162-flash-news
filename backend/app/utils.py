@@ -11,10 +11,7 @@ def check_post_24h(post):
     # Remove the timezone because SQLite datetime isn't timezone-aware
     time_threshold_naive = time_threshold.replace(tzinfo=None)
 
-    return (
-        post.user_id != int(get_jwt_identity())
-        and post.posted_at < time_threshold_naive
-    )
+    return post.user_id != int(get_jwt_identity()) and post.posted_at < time_threshold
 
 
 # ChatGPT-generated function to parse OpenGraph tags from HTML content
