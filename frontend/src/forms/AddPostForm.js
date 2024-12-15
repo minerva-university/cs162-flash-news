@@ -201,6 +201,22 @@ export default function AddPostForm({ onPostAdded }) {
         title="What's new and interesting?"
         sx={{ cursor: "pointer", userSelect: "none" }}
         onClick={handleOpen}
+        action={
+          <Typography
+            variant="body2"
+            sx={{
+              fontStyle: "italic",
+              color: "gray",
+              whiteSpace: "nowrap",
+              marginRight: "1rem",
+              alignItems: "center",
+              marginTop: "14px",
+              height: "90%",
+            }}
+          >
+            Make Post
+          </Typography>
+        }
       />
 
       {/* New Post Modal */}

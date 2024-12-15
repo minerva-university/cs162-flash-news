@@ -88,9 +88,7 @@ export default function MultipleSelectChip({
             </MenuItem>
           ))
         ) : (
-          <MenuItem disabled>
-            No collections available
-          </MenuItem>
+          <MenuItem disabled>No collections available</MenuItem>
         )}
       </Select>
     </FormControl>
