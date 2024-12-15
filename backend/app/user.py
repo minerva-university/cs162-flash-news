@@ -137,23 +137,14 @@ class ModifyUserProfile(Resource):
                         "Username already exists", status_code=400
                     )
 
-            # Commenting this out because users should not be able to change their email
-            # new_email = data.get('email', user.email)
-
-            """
-            # Check if the new email already exists
-            if new_email != user.email:
-                existing_email_user = User.query.filter_by(email=new_email).first()
-                if existing_email_user:
-                    return create_error_response('Email already exists', status_code=400)
-            """
-
+            # Profile Picture Upload
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(UPLOAD_FOLDER, filename))
                 user.profile_picture = filename
 
             # Updating user fields
+            user.username = new_username
             user.bio_description = (
                 data.get("bio_description", user.bio_description) or None
             )
