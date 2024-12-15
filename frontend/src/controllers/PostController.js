@@ -46,7 +46,23 @@ class PostController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
+    } else {
+      throw new Error(`${responseBody.message}`);
+    }
+  }
+
+  static async getUserPosts(userID) {
+    const response = await fetch(`${DB_HOST}/posts/user/${userID}`, {
+      method: "GET",
+      headers: HEADERS_WITH_JWT(this.accessToken),
+    });
+
+    const responseBody = await response.json();
+    if (response?.ok) {
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -142,22 +158,6 @@ class PostController {
       return data;
     } else {
       throw new Error(`${responseBody.message}`);
-    }
-  }
-
-  // Get all categories
-  static async getCategories() {
-    try {
-      const response = await fetch(`${DB_HOST}/posts/categories`, {
-        method: "GET",
-        headers: HEADERS_WITH_JWT(this.accessToken),
-      });
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      throw error;
     }
   }
 }
