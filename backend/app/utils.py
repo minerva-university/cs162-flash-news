@@ -18,6 +18,7 @@ def check_post_24h(post):
     except:
         user_id = None
 
+    # Using timezone-aware datetime objects since deployment is done in Postgres
     return user_id != post.user_id and post.posted_at < time_threshold
 
 
