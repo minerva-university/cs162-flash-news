@@ -251,15 +251,15 @@ Watch the  demonstration of Flash News to see its features and usability.
 
 Screenshots of main pages:
 
+![Welcome Page](images/welcome-page.png)
 ![Feed Page](images/feed-page.png)
 ![Collections Page](images/collections-page.png)
 ![Profile Page](images/profile-page.png)
 ![Settings Page](images/settings-page.png)
-![Collection Modal Page](images/collection-modal-page.png)
-![Post Detail Page](images/post-modal-page.png)
+![Collection Detail Page](images/collection-detail-page.png)
+![Post Detail Page](images/post-detail-page.png)
 ![Login Page](images/login-page.png)
-![Sign Up Page](images/collections-page.png)
-![Welcome Page](images/welcome-page.png)
+![Sign Up Page](images/signup-page.png)
 
 ---
 
