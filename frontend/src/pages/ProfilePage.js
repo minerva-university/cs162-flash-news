@@ -62,7 +62,7 @@ const ProfilePage = () => {
         },
       });
 
-      if (!response.ok) {
+      if (!response?.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch profile data.");
       }
@@ -101,12 +101,12 @@ const ProfilePage = () => {
         },
       );
 
-      if (!response.ok) {
+      if (!response?.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch shared posts.");
       }
 
-      const data = await response.json();
+      const { data } = await response.json();
 
       // Ensure the response is an array
       const postsArray = data.posts || [];
@@ -121,12 +121,6 @@ const ProfilePage = () => {
       console.error("Error fetching shared posts:", error);
     }
   };
-
-  useEffect(() => {
-    if (profileData && profileData.user_id) {
-      fetchSharedPosts();
-    }
-  }, [profileData]);
 
   // Fetch user collections
   const fetchCollections = async () => {
@@ -151,7 +145,7 @@ const ProfilePage = () => {
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
       // Sort collections based on a date
-      const sortedCollections = (collectionsData?.public || []).sort(
+      const sortedCollections = (collectionsData?.data.public || []).sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
 
@@ -167,6 +161,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (profileData && profileData.user_id) {
       fetchCollections();
+      fetchSharedPosts();
     }
   }, [profileData]);
 
@@ -183,7 +178,7 @@ const ProfilePage = () => {
 
       const response = await PostController.updatePost(postId, dataToUpdate);
 
-      if (!response.ok) {
+      if (response.status != "success") {
         setSnackbar({
           open: true,
           message: response.message || "Failed to update post",

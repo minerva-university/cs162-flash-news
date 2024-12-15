@@ -160,7 +160,7 @@ const CollectionsPage = () => {
   // Fetch collections on initial load
   useEffect(() => {
     fetchCollections();
-  }, [username, isOwner, ]);
+  }, [username, isOwner]);
 
   // Handle create collection
   const handleCreateCollection = async () => {

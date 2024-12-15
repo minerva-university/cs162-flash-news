@@ -133,7 +133,7 @@ const SettingsPage = () => {
       if (!response.ok) {
         if (responseData.message === "Username already exists") {
           throw new Error(
-            "The username is already taken. Please choose another."
+            "The username is already taken. Please choose another.",
           );
         } else {
           throw new Error("Failed to save changes.");
@@ -144,7 +144,7 @@ const SettingsPage = () => {
       localStorage.setItem("username", responseData.data.username);
       localStorage.setItem(
         "profile_picture",
-        responseData.data.profile_picture
+        responseData.data.profile_picture,
       );
 
       // Update userData state with the returned data
@@ -162,7 +162,7 @@ const SettingsPage = () => {
       localStorage.setItem("username", responseData.data.username);
       localStorage.setItem(
         "profile_picture",
-        responseData.data.profile_picture
+        responseData.data.profile_picture,
       );
 
       // Redirect to the user's profile page

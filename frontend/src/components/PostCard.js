@@ -21,9 +21,9 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { DB_HOST } from "../controllers/config.js";
 
-export default function PostCard({ post }) {
-  dayjs.extend(relativeTime);
+dayjs.extend(relativeTime);
 
+export default function PostCard({ post }) {
   const [expanded, setExpanded] = React.useState(false);
   const [liked, setLiked] = React.useState(post.is_liked);
   const navigate = useNavigate();

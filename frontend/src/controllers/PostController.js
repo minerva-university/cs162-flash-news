@@ -92,12 +92,7 @@ class PostController {
     });
 
     const responseBody = await response.json();
-    if (response?.ok) {
-      const { data } = responseBody;
-      return data;
-    } else {
-      throw new Error(`${responseBody.message}`);
-    }
+    return responseBody;
   }
 
   static async deletePost(postID) {
