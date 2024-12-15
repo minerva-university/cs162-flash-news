@@ -120,7 +120,7 @@ const SettingsPage = () => {
         formData.append("profile_picture", profilePicture);
       }
 
-      const response = await fetch(`${DB_HOST}/user`, {
+      const response = await fetch(`${DB_HOST}/user/`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -128,9 +128,10 @@ const SettingsPage = () => {
         body: formData,
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.message === "Username already exists") {
+        if (responseData.message === "Username already exists") {
           throw new Error(
             "The username is already taken. Please choose another.",
           );
@@ -139,29 +140,23 @@ const SettingsPage = () => {
         }
       }
 
-      const updatedData = await response.json();
-
-      // Update localStorage with the new username
-      localStorage.setItem("username", updatedData.data.username);
+      // Update localStorage with the new username and profile picture
+      localStorage.setItem("username", responseData.data.username);
+      localStorage.setItem("profile_picture", responseData.data.profile_picture);
 
       // Update userData state with the returned data
       setUserData((prevState) => ({
         ...prevState,
-        username: updatedData.data.username,
-        bio_description: updatedData.data.bio_description,
-        tags: updatedData.data.tags,
-        profile_picture: updatedData.data.profile_picture,
+        username: responseData.data.username,
+        bio_description: responseData.data.bio_description,
+        tags: responseData.data.tags,
+        profile_picture: responseData.data.profile_picture,
       }));
 
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
-      // Update localstorage with new profile picture and username
-      const { data } = await response.json();
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("profile_picture", data.profile_picture);
-
       // Redirect to the user's profile page
-      navigate(`/profile/${updatedData.data.username}`);
+      navigate(`/profile/${responseData.data.username}`);
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     } finally {
@@ -334,7 +329,7 @@ const SettingsPage = () => {
         <TextField
           label="Tags"
           name="tags"
-          value={userData.tags.join(", ") || ""}
+          value={(userData.tags || []).join(", ")}
           onChange={(e) =>
             setUserData((prev) => ({
               ...prev,
