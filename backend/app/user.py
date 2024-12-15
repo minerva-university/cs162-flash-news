@@ -126,7 +126,7 @@ def update_profile():
             'username': user.username,
             'email': user.email,
             'bio_description': user.bio_description,
-            'profile_picture': f"http://127.0.0.1:5000/api/user/uploads/{user.profile_picture}", # Hard-Coded for now
+            'profile_picture': f"/user/uploads/{user.profile_picture}", # Return relative URL
             'created_at': user.created_at
         }
 
