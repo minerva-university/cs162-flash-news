@@ -1,6 +1,7 @@
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields
+import json
 from . import db
 from .models import Collection, CollectionPost, User
 from .post import SinglePostOperations
@@ -166,12 +167,16 @@ class GetCollectionPosts(Resource):
 
         for collection in collection_posts:
             post_detail = SinglePostOperations()
-            response, status_code = post_detail.get(collection.post_id)
+            response_object = post_detail.get(collection.post_id)
+            response, status_code = (
+                response_object.response,
+                response_object.status_code,
+            )
 
             # Check if post exists
             if status_code == 200:
-                posts_data.append(response.json)
-
+                response = json.loads(response[0].decode("utf-8"))
+                posts_data.append(response)
             else:
                 return response, status_code
 
