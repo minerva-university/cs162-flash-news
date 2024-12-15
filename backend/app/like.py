@@ -15,7 +15,9 @@ def get_likes(post_id):
         return create_error_response("Post not found", status_code=404)
 
     if check_post_24h(post):
-        return create_error_response("You are not allowed to view likes on this post", status_code=403)
+        return create_error_response(
+            "You are not allowed to view likes on this post", status_code=403
+        )
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
@@ -35,12 +37,16 @@ def get_likes(post_id):
         for like in paginated_likes.items
     ]
 
-    return create_success_response("Likes fetched successfully", status_code=200, data={
-    "total_likes": paginated_likes.total,
-    "page": paginated_likes.page,
-    "per_page": paginated_likes.per_page,
-    "likes": likes_data,
-})
+    return create_success_response(
+        "Likes fetched successfully",
+        status_code=200,
+        data={
+            "total_likes": paginated_likes.total,
+            "page": paginated_likes.page,
+            "per_page": paginated_likes.per_page,
+            "likes": likes_data,
+        },
+    )
 
 
 # Like a post
@@ -55,10 +61,14 @@ def give_like(post_id):
         user_id=get_jwt_identity(), post_id=post_id
     ).first()
     if existing_like:
-        return create_error_response("You have already liked this post", status_code=400)
+        return create_error_response(
+            "You have already liked this post", status_code=400
+        )
 
     if check_post_24h(post):
-        return create_error_response("You are not allowed to like this post", status_code=403)
+        return create_error_response(
+            "You are not allowed to like this post", status_code=403
+        )
 
     post_like = Like(
         user_id=get_jwt_identity(),
@@ -82,7 +92,9 @@ def remove_like(post_id):
         return create_error_response("Like not found", status_code=404)
 
     if check_post_24h(post_like.post):
-        return create_error_response("You are not allowed to remove like on this post", status_code=403)
+        return create_error_response(
+            "You are not allowed to remove like on this post", status_code=403
+        )
 
     db.session.delete(post_like)
     db.session.commit()

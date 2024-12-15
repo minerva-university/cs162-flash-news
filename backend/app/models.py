@@ -14,7 +14,9 @@ class User(db.Model):  # Removed UserMixin
     )
     bio_description = db.Column(db.Text)
     profile_picture = db.Column(db.String(255))
-    tags = db.Column(db.Text, nullable=True)  # TO-DO: Revisit the idea of tags as a list (normalization?)
+    tags = db.Column(
+        db.Text, nullable=True
+    )  # TO-DO: Revisit the idea of tags as a list (normalization?)
 
     @property
     def tags_list(self):
