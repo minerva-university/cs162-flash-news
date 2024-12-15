@@ -145,7 +145,7 @@ export default function PostCard({ post }) {
         </Box>
       )}
 
-      {/* @TODO: Implement card actions */}
+      {/* Card Actions - Like and Comment */}
       <CardActions>
         <IconButton
           aria-label="like"

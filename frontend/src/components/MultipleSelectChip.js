@@ -77,15 +77,19 @@ export default function MultipleSelectChip({
         )}
         MenuProps={MenuProps}
       >
-        {options.map((option) => (
-          <MenuItem
-            key={option}
-            value={option}
-            style={getStyles(option, selected, theme)}
-          >
-            {option}
-          </MenuItem>
-        ))}
+        {options.length > 0 ? (
+          options.map((option) => (
+            <MenuItem
+              key={option}
+              value={option}
+              style={getStyles(option, selected, theme)}
+            >
+              {option}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled>No collections available</MenuItem>
+        )}
       </Select>
     </FormControl>
   );
