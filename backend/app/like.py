@@ -13,6 +13,7 @@ api = Namespace("likes", description="Likes related operations")
 class Likes(Resource):
     # Get likes on a post
     @api.doc(security="Bearer Auth")
+    @jwt_required()
     def get(self, post_id):
         post = Post.query.get(post_id)
         if not post:
