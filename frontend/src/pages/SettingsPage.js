@@ -128,7 +128,7 @@ const SettingsPage = () => {
       const { data } = await response.json();
       localStorage.setItem("username", data.username);
       localStorage.setItem("profile_picture", data.profile_picture);
-      
+
       // Redirect to the user's profile page
       navigate(`/profile/${userData.username}`);
     } catch (error) {
