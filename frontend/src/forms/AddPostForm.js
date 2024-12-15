@@ -27,7 +27,7 @@ const style = {
 
 export default function AddPostForm({ onPostAdded }) {
   const username = localStorage.getItem("username");
-  const [userID, setUserID] = useState(0);
+  const [userID, setUserID] = useState(0);  
   const [profile_picture, setProfilePicture] = useState("");
   const mainTextareaRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -180,12 +180,14 @@ export default function AddPostForm({ onPostAdded }) {
       );
   };
 
+
   useEffect(() => {
     UserController.getCurrentUserDetails(username).then((data) => {
-      setUserID(data.user_id);
-      setProfilePicture(`${DB_HOST}${data.profile_picture}`);
-    });
-  }, []);
+      setUserID(data.data.user_id);
+      setProfilePicture(`${DB_HOST}${data.data.profile_picture}`);
+    }
+    );
+  } , []);
 
   return (
     <Card sx={{ width: "50%", maxWidth: "555px", margin: "0 auto 3rem" }}>

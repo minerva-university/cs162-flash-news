@@ -132,7 +132,7 @@ const CollectionsPage = () => {
 
       // Fetch collections
       const collectionsResponse = await fetch(
-        `${DB_HOST}/collections/user/${userData.data.user_id}`,
+        `${DB_HOST}/collections/user/${profile.user_id}`,
         {
           method: "GET",
           headers: {
@@ -141,13 +141,14 @@ const CollectionsPage = () => {
           },
         },
       );
+
       const collectionsData = await collectionsResponse.json();
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
       // Set public and private collections
-      setPublicCollections(collectionsData.public || []);
+      setPublicCollections(collectionsData.data.public || []);
       if (isOwner) {
-        setPrivateCollections(collectionsData.private || []);
+        setPrivateCollections(collectionsData.data.private || []);
       }
     } catch (error) {
       console.error("Error fetching collections:", error);
@@ -159,7 +160,7 @@ const CollectionsPage = () => {
   // Fetch collections on initial load
   useEffect(() => {
     fetchCollections();
-  }, [username, isOwner]);
+  }, [username, isOwner, ]);
 
   // Handle create collection
   const handleCreateCollection = async () => {
