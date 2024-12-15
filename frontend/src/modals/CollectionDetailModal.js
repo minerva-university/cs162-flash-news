@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { 
-  Typography, 
-  Button, 
-  Box, 
-  Modal, 
+import {
+  Typography,
+  Button,
+  Box,
+  Modal,
   Snackbar,
   Alert,
   Divider,
@@ -16,12 +16,13 @@ import { DB_HOST } from "../controllers/config.js";
 import CollectionController from "../controllers/CollectionController.js";
 import PostController from "../controllers/PostController.js";
 
+// TODO: Change to controller
 const CollectionDetailModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const [collectionArticles, setCollectionArticles] = useState([]);
-  const [userArticles, setUserArticles] = useState([]); 
+  const [userArticles, setUserArticles] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,7 +30,7 @@ const CollectionDetailModal = () => {
   const [profileData, setProfileData] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
 
-  // Specific collection details 
+  // Specific collection details
   const collection = useMemo(() => {
     return location.state?.collection || {};
   }, [location.state]);
@@ -43,7 +44,7 @@ const CollectionDetailModal = () => {
 
   const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
 
-  // Fetch profile data -- WORKING 
+  // Fetch profile data
   const fetchProfileData = async () => {
     try {
       const accessToken = localStorage.getItem("access_token");
@@ -64,7 +65,6 @@ const CollectionDetailModal = () => {
 
       const result = await response.json();
       const profile = result.data;
-      console.log("Profile data:", profile);
       setProfileData(profile);
       setIsOwner(profile.is_owner);
       return profile;
@@ -74,23 +74,24 @@ const CollectionDetailModal = () => {
     }
   };
 
-  // Fetch collection articles --- WORKING
+  // Fetch collection articles
   const fetchCollectionArticles = async () => {
-    if (!collection.collection_id) return; 
+    if (!collection.collection_id) return;
     try {
       setLoading(true);
-      const collectionArticles = await CollectionController.getCollectionPosts(parseInt(collection.collection_id));
-      
-      console.log("Raw collection articles data:", collectionArticles);
-      console.log("Collection articles array type:", typeof collectionArticles);
-      console.log("Collection articles length:", collectionArticles?.length);  
+      const collectionArticles = await CollectionController.getCollectionPosts(
+        parseInt(collection.collection_id),
+      );
 
       setCollectionArticles(collectionArticles);
       return collectionArticles;
-  
     } catch (error) {
       console.error("Error fetching collection articles:", error.message);
-      setSnackbar({ open: true, message: "Error fetching collection articles", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Error fetching collection articles",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -99,8 +100,6 @@ const CollectionDetailModal = () => {
   // Fetch user articles (Keep this because we might need to fetch directly later)
   const fetchUserArticles = async (userId) => {
     try {
-      console.log("User ID for articles:", userId);
-
       // Fetch fresh user articles
       const userArticlesData = await PostController.getUserPosts(userId);
 
@@ -112,20 +111,18 @@ const CollectionDetailModal = () => {
 
       // Get current collection articles
       const currentCollectionArticles = await fetchCollectionArticles();
-      
+
       // Create a Set of post IDs that are in the collection
       const existingPostIds = new Set(
-        currentCollectionArticles.map(article => article.post_id)
+        currentCollectionArticles.map((article) => article.post_id),
       );
 
       // Filter out articles that are already in the collection
       const filteredArticles = userArticlesData.posts.filter(
-        post => !existingPostIds.has(post.post_id)
+        (post) => !existingPostIds.has(post.post_id),
       );
 
-      console.log("Filtered available articles:", filteredArticles);
       setUserArticles(filteredArticles);
-
     } catch (error) {
       console.error("Error fetching user articles:", error.message);
       setSnackbar({
@@ -136,140 +133,150 @@ const CollectionDetailModal = () => {
     }
   };
 
-// Handle adding article to collection
-const handleAddArticleToCollection = async () => {
-  try {
-    if (!selectedArticle || !selectedArticle.post_id) {
-      console.error("No article selected or invalid article data");
-      return;
-    }
-
-    setLoading(true);
-    
-    // Add the article
-    await CollectionController.addPostToCollection(
-      collection.collection_id, 
-      selectedArticle.post_id
-    );
-
-    // Update local state immediately
-    setCollectionArticles(prev => [...prev, selectedArticle]);
-    
-    // Remove the added article from userArticles
-    setUserArticles(prev => 
-      prev.filter(article => article.post_id !== selectedArticle.post_id)
-    );
-
-    setSnackbar({ 
-      open: true, 
-      message: "Article added to collection!", 
-      severity: "success" 
-    });
-    setSelectedArticle(null);
-    setIsAddArticleModalOpen(false);
-  } catch (error) {
-    console.error("Error adding article:", error.message);
-    // On error, refresh both states to ensure consistency
-    const [updatedCollectionArticles, userArticlesData] = await Promise.all([
-      fetchCollectionArticles(),
-      PostController.getUserPosts(profileData.user_id)
-    ]);
-    
-    setCollectionArticles(updatedCollectionArticles);
-    setUserArticles(userArticlesData.posts.filter(post => 
-      !updatedCollectionArticles.some(collectionPost => 
-        collectionPost.post_id === post.post_id
-      )
-    ));
-
-    setSnackbar({ 
-      open: true, 
-      message: error.message, 
-      severity: "error" 
-    });
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // Modified handleRemoveArticleFromCollection
-  const handleRemoveArticleFromCollection = async (articleID) => {
+  // Handle adding article to collection
+  const handleAddArticleToCollection = async () => {
     try {
-      setLoading(true);
-
-      // Find the article being removed
-      const removedArticle = collectionArticles.find(
-        article => article.post_id === articleID
-      );
-
-      // Optimistically update collection articles
-      setCollectionArticles(prev => 
-        prev.filter(article => article.post_id !== articleID)
-      );
-
-      // Add the removed article back to userArticles if it belongs to the current user
-      if (removedArticle && removedArticle.user.user_id === profileData.user_id) {
-        setUserArticles(prev => [...prev, removedArticle]);
+      if (!selectedArticle || !selectedArticle.post_id) {
+        console.error("No article selected or invalid article data");
+        return;
       }
 
-      // Call API to remove the article
-      await CollectionController.removePostFromCollection(
-        collection.collection_id, 
-        articleID
+      setLoading(true);
+
+      // Add the article
+      await CollectionController.addPostToCollection(
+        collection.collection_id,
+        selectedArticle.post_id,
+      );
+
+      // Update local state immediately
+      setCollectionArticles((prev) => [...prev, selectedArticle]);
+
+      // Remove the added article from userArticles
+      setUserArticles((prev) =>
+        prev.filter((article) => article.post_id !== selectedArticle.post_id),
       );
 
       setSnackbar({
         open: true,
-        message: "Article removed from collection!",
-        severity: "success"
+        message: "Article added to collection!",
+        severity: "success",
       });
+      setSelectedArticle(null);
+      setIsAddArticleModalOpen(false);
     } catch (error) {
-      console.error("Error removing article:", error.message);
-      
+      console.error("Error adding article:", error.message);
       // On error, refresh both states to ensure consistency
       const [updatedCollectionArticles, userArticlesData] = await Promise.all([
         fetchCollectionArticles(),
-        PostController.getUserPosts(profileData.user_id)
+        PostController.getUserPosts(profileData.user_id),
       ]);
-      
+
       setCollectionArticles(updatedCollectionArticles);
-      setUserArticles(userArticlesData.posts.filter(post => 
-        !updatedCollectionArticles.some(collectionPost => 
-          collectionPost.post_id === post.post_id
-        )
-      ));
+      setUserArticles(
+        userArticlesData.posts.filter(
+          (post) =>
+            !updatedCollectionArticles.some(
+              (collectionPost) => collectionPost.post_id === post.post_id,
+            ),
+        ),
+      );
 
       setSnackbar({
         open: true,
         message: error.message,
-        severity: "error"
+        severity: "error",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Single useEffect for initial load
+  // Remove article from collection
+  const handleRemoveArticleFromCollection = async (articleID) => {
+    try {
+      setLoading(true);
+
+      // Find the article being removed
+      const removedArticle = collectionArticles.find(
+        (article) => article.post_id === articleID,
+      );
+
+      // Update collection articles
+      setCollectionArticles((prev) =>
+        prev.filter((article) => article.post_id !== articleID),
+      );
+
+      // Add the removed article back to userArticles if it belongs to the current user
+      if (
+        removedArticle &&
+        removedArticle.user.user_id === profileData.user_id
+      ) {
+        setUserArticles((prev) => [...prev, removedArticle]);
+      }
+
+      // Remove the article from the collection in the database
+      await CollectionController.removePostFromCollection(
+        collection.collection_id,
+        articleID,
+      );
+
+      setSnackbar({
+        open: true,
+        message: "Article removed from collection!",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error removing article:", error.message);
+
+      // On error, refresh both states to ensure consistency
+      const [updatedCollectionArticles, userArticlesData] = await Promise.all([
+        fetchCollectionArticles(),
+        PostController.getUserPosts(profileData.user_id),
+      ]);
+
+      setCollectionArticles(updatedCollectionArticles);
+      setUserArticles(
+        userArticlesData.posts.filter(
+          (post) =>
+            !updatedCollectionArticles.some(
+              (collectionPost) => collectionPost.post_id === post.post_id,
+            ),
+        ),
+      );
+
+      setSnackbar({
+        open: true,
+        message: error.message,
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial load
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         const profile = await fetchProfileData();
-        
+
         if (profile) {
           const [collectionArticles, userArticlesData] = await Promise.all([
             fetchCollectionArticles(),
-            PostController.getUserPosts(profile.user_id)
+            PostController.getUserPosts(profile.user_id),
           ]);
 
           setCollectionArticles(collectionArticles);
-          
+
           // Filter user articles in one go
-          const filteredUserArticles = userArticlesData.posts.filter(post => 
-            !collectionArticles.some(collectionPost => 
-              collectionPost.post_id === post.post_id
-            )
+          const filteredUserArticles = userArticlesData.posts.filter(
+            (post) =>
+              !collectionArticles.some(
+                (collectionPost) => collectionPost.post_id === post.post_id,
+              ),
           );
-          
+
           setUserArticles(filteredUserArticles);
         }
       } catch (error) {
@@ -281,36 +288,38 @@ const handleAddArticleToCollection = async () => {
     loadInitialData();
   }, [collection.collection_id, username]);
 
-  // Modified handleEditPost
+  // Edit post
   const handleEditPost = async (postId, updatedData) => {
     try {
       const accessToken = localStorage.getItem("access_token");
       if (!accessToken) {
         throw new Error("Access token missing. Please log in.");
       }
-  
+
       setLoading(true);
-  
+
       // Find the post to edit
-      const postToEdit = collectionArticles.find(article => article.post_id === postId);
+      const postToEdit = collectionArticles.find(
+        (article) => article.post_id === postId,
+      );
       if (!postToEdit) {
         throw new Error("Post not found");
       }
-  
-      // Create optimistically updated post
+
+      // Create updated post
       const updatedPost = {
         ...postToEdit,
-        ...updatedData
+        ...updatedData,
       };
-  
-      // Optimistically update the UI
-      setCollectionArticles(prev => 
-        prev.map(article => 
-          article.post_id === postId ? updatedPost : article
-        )
+
+      // Update the frontend state
+      setCollectionArticles((prev) =>
+        prev.map((article) =>
+          article.post_id === postId ? updatedPost : article,
+        ),
       );
-  
-      // Make the API call
+
+      // Update the post in the database
       const response = await fetch(`${DB_HOST}/posts/${postId}`, {
         method: "PUT",
         headers: {
@@ -319,29 +328,28 @@ const handleAddArticleToCollection = async () => {
         },
         body: JSON.stringify(updatedData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to update the post.");
       }
-  
-      setSnackbar({ 
-        open: true, 
-        message: "Post updated successfully!", 
-        severity: "success" 
+
+      setSnackbar({
+        open: true,
+        message: "Post updated successfully!",
+        severity: "success",
       });
-  
     } catch (error) {
       console.error("Error editing post:", error.message);
-      
+
       // On error, refresh the collection articles to ensure consistency
       const updatedCollectionArticles = await fetchCollectionArticles();
       setCollectionArticles(updatedCollectionArticles);
-  
-      setSnackbar({ 
-        open: true, 
-        message: error.message, 
-        severity: "error" 
+
+      setSnackbar({
+        open: true,
+        message: error.message,
+        severity: "error",
       });
     } finally {
       setLoading(false);
@@ -364,17 +372,15 @@ const handleAddArticleToCollection = async () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      
+
       if (response.ok) {
-        console.log("Deletion successful");
-      
         // After successful deletion, fetch updated collection articles
         const updatedCollectionArticles = await fetchCollectionArticles();
         setCollectionArticles(updatedCollectionArticles);
 
-        // Optionally update userArticles if necessary
+        // Update userArticles
         const updatedUserArticles = userArticles.filter(
-          (article) => article.post_id !== postId
+          (article) => article.post_id !== postId,
         );
         setUserArticles(updatedUserArticles);
 
@@ -384,7 +390,6 @@ const handleAddArticleToCollection = async () => {
           message: "Post deleted successfully!",
           severity: "success",
         });
-
       } else {
         const errorData = await response.json();
 
@@ -395,7 +400,6 @@ const handleAddArticleToCollection = async () => {
           severity: "error",
         });
       }
-
     } catch (error) {
       setSnackbar({
         open: true,
@@ -409,8 +413,6 @@ const handleAddArticleToCollection = async () => {
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
-
-  console.log("what is being passed as user articles:", userArticles);
 
   return (
     <Box
@@ -484,13 +486,13 @@ const handleAddArticleToCollection = async () => {
           display: "flex",
           flexDirection: collectionArticles.length > 0 ? "row" : "column", // Row for articles, column otherwise
           justifyContent: "space-between",
-          alignItems: "stretch", 
-          gap: "48px", 
+          alignItems: "stretch",
+          gap: "48px",
           marginBottom: "48px",
           marginTop: "40px",
           maxHeight: "500px",
-          width: "80%", 
-          margin: "0 auto", 
+          width: "80%",
+          margin: "0 auto",
         }}
       >
         {/* Header Section */}
@@ -502,7 +504,7 @@ const handleAddArticleToCollection = async () => {
             color: "#FCF8EC",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
             textAlign: "center",
-            flex: 1, // Take equal space with the featured article
+            flex: 1,
             display: "flex",
             flexDirection: "column",
             marginTop: "30px",
@@ -514,7 +516,7 @@ const handleAddArticleToCollection = async () => {
               fontSize: "50px",
             }}
           >
-            {collection?.emoji || "🌕"} {/* Use optional chaining */}
+            {collection?.emoji || "🌕"}
           </Box>
           <Typography
             variant="h4"
@@ -524,7 +526,7 @@ const handleAddArticleToCollection = async () => {
               marginBottom: "8px",
             }}
           >
-            {collection?.title || "Untitled Collection"} {/* Use optional chaining */}
+            {collection?.title || "Untitled Collection"}
           </Typography>
           <Typography
             variant="body1"
@@ -534,7 +536,7 @@ const handleAddArticleToCollection = async () => {
               marginBottom: "16px",
             }}
           >
-            {collection?.description || "No description available."} {/* Use optional chaining */}
+            {collection?.description || "No description available."}
           </Typography>
           <Typography
             variant="body2"
@@ -547,7 +549,7 @@ const handleAddArticleToCollection = async () => {
             Created on:{" "}
             {collection?.created_at
               ? new Date(collection.created_at).toLocaleDateString()
-              : "N/A"} {/* Provide default value */}
+              : "N/A"}
           </Typography>
         </Box>
 
@@ -632,7 +634,7 @@ const handleAddArticleToCollection = async () => {
             </Typography>
           </Box>
         )}
-        </Box>
+      </Box>
 
       {/* Divider */}
       {collectionArticles.length > 0 && (
@@ -668,10 +670,8 @@ const handleAddArticleToCollection = async () => {
               alignItems: "start",
             }}
           >
-
             {/* Articles List */}
             {collectionArticles.slice(1).map((post, index) => (
-              
               <Box
                 key={post.post_id || index}
                 sx={{
@@ -681,58 +681,61 @@ const handleAddArticleToCollection = async () => {
                   alignItems: "stretch",
                 }}
               >
-                <ArticleCard 
-                  key={post.post_id} 
-                  post={post} 
+                <ArticleCard
+                  key={post.post_id}
+                  post={post}
                   username={username}
-                  onEdit={(postId, updatedData) => handleEditPost(postId, updatedData)}
+                  onEdit={(postId, updatedData) =>
+                    handleEditPost(postId, updatedData)
+                  }
                   onDelete={() => handleDeletePost(post.post_id)}
                 />
                 <Button
-                  onClick={() => handleRemoveArticleFromCollection(post.post_id)}
+                  onClick={() =>
+                    handleRemoveArticleFromCollection(post.post_id)
+                  }
                   variant="outlined"
                   color="error"
                   sx={{
                     marginTop: "20px",
-                    width: "100%", // Ensures button width is consistent
+                    width: "100%",
                   }}
                 >
                   Remove
                 </Button>
               </Box>
             ))}
-          </Box>            
+          </Box>
         </Box>
       ) : (
-
-      // Message when there are no more articles
-      collectionArticles.length === 1 && (
-        <Box
-          sx={{
-            padding: "20px",
-            border: "1px dashed #ddd",
-            borderRadius: "8px",
-            marginTop: "16px",
-            backgroundColor: "#f9f9f9",
-            maxWidth: "400px",
-            margin: "0 auto",
-          }}
-        >
-          <Typography
-            variant="body1"
+        // If there is only one article in the collection
+        collectionArticles.length === 1 && (
+          <Box
             sx={{
-              fontSize: "1rem",
-              color: "#888",
-              fontStyle: "italic",
-              fontFamily: "'Roboto', sans-serif",
-              textAlign: "center",
+              padding: "20px",
+              border: "1px dashed #ddd",
+              borderRadius: "8px",
+              marginTop: "16px",
+              backgroundColor: "#f9f9f9",
+              maxWidth: "400px",
+              margin: "0 auto",
             }}
           >
-            No additional articles available in this collection.
-          </Typography>
-        </Box>)
-    )}
-
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: "1rem",
+                color: "#888",
+                fontStyle: "italic",
+                fontFamily: "'Roboto', sans-serif",
+                textAlign: "center",
+              }}
+            >
+              No additional articles available in this collection.
+            </Typography>
+          </Box>
+        )
+      )}
 
       {error && (
         <Typography
@@ -803,13 +806,20 @@ const handleAddArticleToCollection = async () => {
 
           <Autocomplete
             options={userArticles || []}
-            getOptionLabel={(option) => option.article?.title || "Untitled Article"}
-            isOptionEqualToValue={(option, value) => option.post_id === value.post_id}
+            getOptionLabel={(option) =>
+              option.article?.title || "Untitled Article"
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.post_id === value.post_id
+            }
             renderInput={(params) => (
-              <TextField {...params} label="Select an Article" variant="outlined" />
+              <TextField
+                {...params}
+                label="Select an Article"
+                variant="outlined"
+              />
             )}
             onChange={(event, newValue) => {
-              console.log("Selected article:", newValue); // Debug log
               setSelectedArticle(newValue);
             }}
             renderOption={(props, option) => (
@@ -841,4 +851,4 @@ const handleAddArticleToCollection = async () => {
   );
 };
 
-export default CollectionDetailModal; 
+export default CollectionDetailModal;

@@ -29,25 +29,22 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
   // Initialize edit form state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    description: post?.description || "", 
+    description: post?.description || "",
     categories: post?.categories || [],
   });
 
   // Open and close edit modal
   const handleOpenModal = () => {
-    console.log("Opening modal for editing");
     setEditModalOpen(true);
   };
 
   const handleCloseModal = () => {
-    console.log("Closing modal");
     setEditModalOpen(false);
   };
 
   // Handle Save Changes by calling onEdit function in parent component
   const handleSave = () => {
-    console.log("Edit form data before save:", editFormData);
-    onEdit(post.post_id, editFormData); 
+    onEdit(post.post_id, editFormData);
     handleCloseModal();
   };
 
@@ -63,7 +60,6 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
   // Handle category selection
   const handleCategoryChange = (event) => {
     const selectedCategories = event.target.value;
-    console.log("Selected categories:", selectedCategories);
     setEditFormData((prev) => ({
       ...prev,
       categories: selectedCategories,
@@ -75,12 +71,10 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
     const fetchCategories = async () => {
       try {
         const response = await PostController.getCategories();
-        console.log("Raw categories response:", response);
-        
-        // Extract just the category_id values from the categories array
 
-        const categoryValues = response.categories.map(cat => cat.category_id);
-        console.log("Processed categories:", categoryValues);
+        const categoryValues = response.categories.map(
+          (cat) => cat.category_id,
+        );
         setCategories(categoryValues);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -112,7 +106,7 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
       }}
     >
       {/* Handle Missing Preview */}
-      
+
       <Box
         sx={{
           width: "100%",
@@ -151,7 +145,6 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
         )}
       </Box>
 
-      
       {/* Article Content */}
       <CardContent
         sx={{
@@ -201,7 +194,7 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
             alignItems: "center",
           }}
         >
-           {(post?.categories || []).map((category, index) => (
+          {(post?.categories || []).map((category, index) => (
             <Chip
               key={index}
               label={category}
@@ -306,11 +299,10 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
               renderValue={(selected) => selected.join(", ")}
             >
               {categories.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </MenuItem>
-                )
-              )}
+                <MenuItem key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <Box

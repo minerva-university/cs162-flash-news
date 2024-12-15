@@ -17,6 +17,8 @@ import { DB_HOST } from "../controllers/config.js";
 import FollowButton from "../components/FollowButton";
 import PostController from "../controllers/PostController";
 
+// TODO: Change to controller
+
 const ProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
@@ -66,12 +68,9 @@ const ProfilePage = () => {
       }
 
       const result = await response.json();
-      console.log("Fetched Profile Data:", result);
-
       const profile = result.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
-      console.log(isOwner);
     } catch (error) {
       console.error("Error in fetchProfileData:", error);
     }
@@ -108,18 +107,14 @@ const ProfilePage = () => {
       }
 
       const data = await response.json();
-      console.log("Fetched Shared Posts Raw Data:", data);
 
       // Ensure the response is an array
       const postsArray = data.posts || [];
-      console.log("Posts Array:", postsArray);
 
       // Sort posts by `posted_at` in descending order
       const sortedPosts = postsArray.sort(
         (a, b) => new Date(b.posted_at) - new Date(a.posted_at),
       );
-
-      console.log("Processed Shared Posts:", sortedPosts);
 
       setSharedPosts(sortedPosts);
     } catch (error) {
@@ -154,8 +149,6 @@ const ProfilePage = () => {
 
       const collectionsData = await collectionsResponse.json();
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
-      console.log("Fetched collections:", collectionsData);
-      console.log("Public Collections:", collectionsData.public);
 
       // Sort collections based on a date
       const sortedCollections = (collectionsData?.public || []).sort(
@@ -181,46 +174,45 @@ const ProfilePage = () => {
   const handleEditPost = async (postId, updatedData) => {
     try {
       setLoading(true);
-      
+
       // Ensure we're sending the right data to the backend
       const dataToUpdate = {
         post_description: updatedData.description,
-        categories: updatedData.categories || []
+        categories: updatedData.categories || [],
       };
-  
+
       const response = await PostController.updatePost(postId, dataToUpdate);
-  
+
       // Update state while preserving ALL post data
-      setSharedPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.post_id === postId 
+      setSharedPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.post_id === postId
             ? {
-                ...post,                    // Keep all existing post data
-                description: updatedData.description,  // Update description
+                ...post, // Keep all existing post data
+                description: updatedData.description, // Update description
                 categories: updatedData.categories || [], // Update categories
-                article: post.article,      // Explicitly preserve article data
-                user: post.user,           // Explicitly preserve user data
+                article: post.article, // Explicitly preserve article data
+                user: post.user, // Explicitly preserve user data
                 posted_at: post.posted_at, // Preserve timestamp
                 comments_count: post.comments_count,
                 likes_count: post.likes_count,
-                is_liked: post.is_liked
+                is_liked: post.is_liked,
               }
-            : post
-        )
+            : post,
+        ),
       );
-  
+
       setSnackbar({
         open: true,
         message: "Post updated successfully!",
-        severity: "success"
+        severity: "success",
       });
-  
     } catch (error) {
       console.error("Error updating post:", error);
       setSnackbar({
         open: true,
         message: error.message || "Failed to update post",
-        severity: "error"
+        severity: "error",
       });
     } finally {
       setLoading(false);
@@ -231,37 +223,32 @@ const ProfilePage = () => {
   const handleDelete = async (postId) => {
     try {
       setLoading(true);
-      
+
       // Optimistically update UI
-      setSharedPosts(prev => 
-        prev.filter(post => post.post_id !== postId)
-      );
-  
+      setSharedPosts((prev) => prev.filter((post) => post.post_id !== postId));
+
       await PostController.deletePost(postId);
-  
+
       setSnackbar({
         open: true,
         message: "Post deleted successfully!",
-        severity: "success"
+        severity: "success",
       });
-  
     } catch (error) {
       console.error("Error deleting post:", error);
-      
+
       // Revert changes on error by refetching posts
       await fetchSharedPosts();
-      
+
       setSnackbar({
         open: true,
         message: error.message || "Failed to delete post",
-        severity: "error"
+        severity: "error",
       });
     } finally {
       setLoading(false);
     }
   };
-
-
 
   if (loading) {
     return (
@@ -296,7 +283,6 @@ const ProfilePage = () => {
         minHeight: "100vh",
       }}
     >
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={5000} // Lasts 5 seconds
@@ -333,24 +319,33 @@ const ProfilePage = () => {
           }}
         >
           <Avatar
-            sx={{ width: 80, height: 80, bgcolor: "#79A3B1", color: "#fff", fontSize: 20, fontWeight: "bold" }}
+            sx={{
+              width: 80,
+              height: 80,
+              bgcolor: "#79A3B1",
+              color: "#fff",
+              fontSize: 20,
+              fontWeight: "bold",
+            }}
           >
             {profileData.profile_picture ? (
               <img
-              src={`${DB_HOST}${profileData.profile_picture}`}
+                src={`${DB_HOST}${profileData.profile_picture}`}
                 alt="Profile"
                 style={{ width: "100%", height: "100%", borderRadius: "50%" }}
                 onError={(e) => {
                   setSnackbar({
                     open: true,
                     message: "Error loading image",
-                    severity: "error"
+                    severity: "error",
                   });
-                  e.target.src = null; 
+                  e.target.src = null;
                 }}
               />
+            ) : profileData.username ? (
+              profileData.username.charAt(0).toUpperCase()
             ) : (
-              profileData.username ? profileData.username.charAt(0).toUpperCase() : "?"
+              "?"
             )}
           </Avatar>
           <Box>
@@ -610,13 +605,13 @@ const ProfilePage = () => {
           <Box
             sx={{
               maxWidth: "1200px",
-              display: "flex",  // Changed from grid to flex
+              display: "flex", // Changed from grid to flex
               flexWrap: "wrap", // Allow wrapping
               justifyContent: "center", // Center items horizontally
-              gap: "20px",      // Reduced gap
+              gap: "20px", // Reduced gap
               padding: "20px 0",
               marginTop: "40px",
-              margin: "0 auto",  // Center the container
+              margin: "0 auto", // Center the container
             }}
           >
             {sharedPosts.length ? (
@@ -624,15 +619,17 @@ const ProfilePage = () => {
                 <Box
                   key={index}
                   sx={{
-                    width: "300px",  // Fixed width for each article
-                    margin: "0 10px 20px",  // Add some margin
+                    width: "300px", // Fixed width for each article
+                    margin: "0 10px 20px", // Add some margin
                   }}
                 >
                   <ArticleCard
                     key={index}
                     post={post}
                     username={username}
-                    onEdit={(postId, updatedData) => handleEditPost(postId, updatedData)}
+                    onEdit={(postId, updatedData) =>
+                      handleEditPost(postId, updatedData)
+                    }
                     onDelete={(postId) => handleDelete(postId)}
                   />
                 </Box>
