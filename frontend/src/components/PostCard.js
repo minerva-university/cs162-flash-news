@@ -39,8 +39,14 @@ export default function PostCard({ post }) {
   };
 
   return (
-    <Card 
-      sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem", height: "530px" }}>
+    <Card
+      sx={{
+        width: "90%",
+        maxWidth: "555px",
+        margin: "0 auto 2rem",
+        height: "530px",
+      }}
+    >
       <Link
         href={`/profile/${post.user.username}`}
         title="View Profile"

@@ -14,7 +14,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Snackbar
+  Snackbar,
 } from "@mui/material";
 import { DB_HOST } from "../controllers/config.js";
 import UserController from "../controllers/UserController.js";
@@ -65,18 +65,15 @@ const SettingsPage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        console.log("Fetching data for username:", username);
-        
         const response = await UserController.getCurrentUserDetails(username);
-        console.log("Raw response:", response);
-        
-        if (response.status === 'success') {
+
+        if (response.status === "success") {
           setUserData({
             username: response.data.username,
             bio_description: response.data.bio_description || "",
             tags: response.data.tags || [],
             profile_picture: response.data.profile_picture,
-            id: response.data.user_id  
+            id: response.data.user_id,
           });
         } else {
           setSnackbar({
@@ -168,11 +165,9 @@ const SettingsPage = () => {
   // Handle account deletion
   const handleDeleteAccount = async () => {
     try {
-
       const response = await UserController.deleteUser(userData.id);
 
-      if (response.status === 'success') {
-
+      if (response.status === "success") {
         setSnackbar({
           open: true,
           message: "Account deleted successfully!",
@@ -185,7 +180,6 @@ const SettingsPage = () => {
       } else {
         throw new Error("Failed to delete account.");
       }
-
     } catch (error) {
       setSnackbar({
         open: true,
@@ -223,7 +217,6 @@ const SettingsPage = () => {
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={5000} // Lasts 5 seconds

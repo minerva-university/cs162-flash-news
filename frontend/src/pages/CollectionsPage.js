@@ -15,6 +15,8 @@ import CollectionCard from "../components/CollectionCard";
 import EmojiPicker from "emoji-picker-react";
 import { DB_HOST } from "../controllers/config.js";
 
+// TODO: Change to controller
+
 const CollectionsPage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
@@ -89,7 +91,6 @@ const CollectionsPage = () => {
       }
 
       const result = await response.json();
-      console.log("Fetched Profile Data:", result);
 
       const profile = result.data;
       setProfileData(profile);
@@ -123,8 +124,6 @@ const CollectionsPage = () => {
       if (!userResponse.ok) throw new Error(userData.message);
 
       const userData = await userResponse.json();
-      console.log("User data:", userData.data);
-
       const profile = userData.data;
 
       // Set profile data and check ownership
@@ -143,7 +142,6 @@ const CollectionsPage = () => {
         },
       );
       const collectionsData = await collectionsResponse.json();
-      console.log("Collections data:", collectionsData);
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
       // Set public and private collections
@@ -162,7 +160,7 @@ const CollectionsPage = () => {
   useEffect(() => {
     fetchCollections();
   }, [username, isOwner]); // Ensure dependencies are correct
-  
+
   // Handle create collection
   const handleCreateCollection = async () => {
     try {
@@ -225,21 +223,12 @@ const CollectionsPage = () => {
       isPublic: collection.is_public,
     });
 
-    console.log("Edit form data initialized:", {
-      collection_id: collection.collection_id,
-      title: collection.title || "",
-      description: collection.description || "",
-      emoji: collection.emoji || "",
-      isPublic: collection.is_public,
-    });
     setEditModalOpen(true);
   };
 
   // Submit Updated Collection
   const submitEditCollection = async () => {
     try {
-      console.log("Submitting edit with data:", editFormData);
-
       if (!editFormData.title || !editFormData.emoji) {
         alert("Please fill in all required fields.");
         return;
@@ -319,8 +308,6 @@ const CollectionsPage = () => {
 
   // Handle collection click
   const handleCollectionClick = (collection) => {
-    console.log("Clicked collection:", collection);
-
     const formattedTitle = collection.title?.toLowerCase().replace(/\s+/g, "-");
     navigate(`/collections/${collection.collection_id}/${formattedTitle}`, {
       state: { collection, username },
@@ -348,7 +335,7 @@ const CollectionsPage = () => {
           gap: "16px",
         }}
       >
-         <Avatar
+        <Avatar
           sx={{
             width: 80,
             height: 80,
