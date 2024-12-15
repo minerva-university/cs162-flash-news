@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta, timezone
 from flask_jwt_extended import get_jwt_identity
-from flask import jsonify
+from flask import jsonify, make_response
 
 
 def check_post_24h(post):
@@ -58,7 +58,10 @@ def create_success_response(message, status_code=200, data=None):
     Returns:
         tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
     """
-    return jsonify({"status": "success", "message": message, "data": data}), status_code
+    return (
+        make_response(jsonify({"status": "success", "message": message, "data": data})),
+        status_code,
+    )
 
 
 # Utility function for consistent error handling
@@ -75,6 +78,8 @@ def create_error_response(message, status_code=400, details=None):
         tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
     """
     return (
-        jsonify({"status": "error", "message": message, "details": details}),
+        make_response(
+            jsonify({"status": "error", "message": message, "details": details})
+        ),
         status_code,
     )
