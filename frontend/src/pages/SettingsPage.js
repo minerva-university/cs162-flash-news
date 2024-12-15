@@ -172,7 +172,7 @@ const SettingsPage = () => {
   // Handle account deletion
   const handleDeleteAccount = async () => {
     try {
-      const response = await UserController.deleteUser(userData.id);
+      const response = await UserController.deleteUser();
 
       if (response.status === "success") {
         setSnackbar({

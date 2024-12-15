@@ -38,8 +38,8 @@ class UserController {
     }
   }
 
-  static async deleteUser(userID) {
-    const response = await fetch(`${DB_HOST}/user/${userID}`, {
+  static async deleteUser() {
+    const response = await fetch(`${DB_HOST}/user/`, {
       method: "DELETE",
       headers: HEADERS_WITH_JWT(this.accessToken),
     });
