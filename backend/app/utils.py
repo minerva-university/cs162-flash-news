@@ -58,7 +58,7 @@ def create_success_response(message, status_code=200, data=None):
     Returns:
         tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
     """
-    return jsonify({"status": "success", "message": message, "data": data}), status_code
+    return {"status": "success", "message": message, "data": data}, status_code
 
 
 # Utility function for consistent error handling
@@ -75,6 +75,6 @@ def create_error_response(message, status_code=400, details=None):
         tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
     """
     return (
-        jsonify({"status": "error", "message": message, "details": details}),
+        {"status": "error", "message": message, "details": details},
         status_code,
     )

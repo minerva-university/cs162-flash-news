@@ -1,5 +1,5 @@
 from flask import request, send_from_directory
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import SQLAlchemyError
 import json
@@ -11,6 +11,27 @@ from . import db
 from .models import User, Follow
 
 api = Namespace("users", description="User related operations")
+
+user_model = api.model(
+    "User",
+    {
+        "username": fields.String(
+            required=True,
+            description="Username",
+            example="john_doe",
+        ),
+        "bio_description": fields.String(
+            description="Bio description",
+            example="I am a software developer",
+        ),
+        "tags": fields.List(
+            fields.String,
+            description="User tags",
+            example=["tag1", "tag2"],
+        ),
+    },
+)
+
 
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
@@ -35,6 +56,7 @@ class Uploads(Resource):
 # Get (view) user's profile
 @api.route("/<string:username>")
 class GetUserProfile(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self, username):
         """Get user profile"""
@@ -88,6 +110,8 @@ class GetUserProfile(Resource):
 @api.route("/")
 class ModifyUserProfile(Resource):
     # Update user profile
+    @api.doc(security="Bearer Auth")
+    @api.expect(user_model)
     @jwt_required()
     def put(self):
         """Update user profile"""
@@ -168,6 +192,7 @@ class ModifyUserProfile(Resource):
             )
 
     # Delete user profile
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def delete(self):
         """Delete user account"""
@@ -202,6 +227,7 @@ class ModifyUserProfile(Resource):
 # Follow user route
 @api.route("/follow/<int:user_id>")
 class FollowUser(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def post(self, user_id):
         """Follow a user"""
@@ -254,6 +280,7 @@ class FollowUser(Resource):
 # Unfollow user route
 @api.route("/unfollow/<int:user_id>")
 class UnfollowUser(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def post(self, user_id):
         """Unfollow a user"""
@@ -305,6 +332,7 @@ class UnfollowUser(Resource):
 # Get list of users the current user is following
 @api.route("/following")
 class GetFollowedUsers(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self):
         """Get list of users the current user is following"""
@@ -326,6 +354,7 @@ class GetFollowedUsers(Resource):
 # Get list of users following the current user
 @api.route("/followers")
 class GetFollowers(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self):
         """Get list of users following the current user"""
@@ -346,6 +375,8 @@ class GetFollowers(Resource):
 # Search for users
 @api.route("/search")
 class SearchUsers(Resource):
+    @api.doc(security="Bearer Auth")
+    @api.expect(api.parser().add_argument("q", type=str, required=True))
     @jwt_required()
     def get(self):
         """Search for users by username or other criteria."""

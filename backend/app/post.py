@@ -1,6 +1,6 @@
 from flask import request
 from datetime import datetime, timedelta, timezone
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from . import db
 from .models import Post, Article, PostCategory, CategoryEnum, User
 from .utils import check_post_24h, create_success_response, create_error_response
@@ -10,10 +10,54 @@ api = Namespace("posts", description="Posts related operations")
 
 MAX_CATEGORIES = 5  # Maximum number of categories a post can have
 
+post_model = api.model(
+    "Post",
+    {
+        "article_link": fields.String(
+            required=True,
+            description="Link to the article",
+        ),
+        "site_name": fields.String(
+            description="Name of the site",
+        ),
+        "title": fields.String(
+            description="Title of the article",
+        ),
+        "description": fields.String(
+            description="Description of the article",
+        ),
+        "image": fields.String(
+            description="Image preview of the article",
+        ),
+        "post_description": fields.String(
+            description="Description of the post",
+        ),
+        "categories": fields.List(
+            fields.String,
+            description="Categories for the post",
+        ),
+    },
+)
+
+post_update_model = api.model(
+    "PostUpdate",
+    {
+        "post_description": fields.String(
+            description="Description of the post",
+        ),
+        "categories": fields.List(
+            fields.String,
+            description="Categories for the post",
+        ),
+    },
+)
+
 
 # Create a post
 @api.route("/")
 class Posts(Resource):
+    @api.doc(security="Bearer Auth")
+    @api.expect(post_model)
     @jwt_required()
     def post(self):
         data = request.get_json()
@@ -32,7 +76,7 @@ class Posts(Resource):
                 title=data.get("title"),  # og:title
                 caption=data.get("description"),  # og:description
                 preview=data.get("image"),  # og:image
-            )  # What if the automated fields fail? Implement later
+            )
             db.session.add(article)
             db.session.commit()
 
@@ -71,6 +115,7 @@ class Posts(Resource):
 @api.route("/<int:post_id>")
 class SinglePostOperations(Resource):
     # Get a single post
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self, post_id):
         post = Post.query.get(post_id)
@@ -114,6 +159,7 @@ class SinglePostOperations(Resource):
         )
 
     # Delete a post
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def delete(self, post_id):
         post = Post.query.get(post_id)
@@ -131,6 +177,8 @@ class SinglePostOperations(Resource):
         return create_success_response("Post deleted successfully", status_code=200)
 
     # Update a post
+    @api.doc(security="Bearer Auth")
+    @api.expect(post_update_model)
     @jwt_required()
     def put(self, post_id):
         post = Post.query.get(post_id)
@@ -186,6 +234,7 @@ class SinglePostOperations(Resource):
 # Get feed (posts by self + followed users) with pagination
 @api.route("/feed")
 class Feed(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self):
         # Set pagination parameters
@@ -259,6 +308,7 @@ class Feed(Resource):
 # Get posts (posted by the user) with pagination
 @api.route("/user/<int:user_id>")
 class GetUserPosts(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self, user_id):
         page = request.args.get("page", 1, type=int)
@@ -328,6 +378,7 @@ class GetUserPosts(Resource):
 # Get available categories
 @api.route("/categories")
 class GetCategories(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self):
         categories_data = [{"category_id": category.value} for category in CategoryEnum]

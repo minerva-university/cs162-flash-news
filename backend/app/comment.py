@@ -1,17 +1,28 @@
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from . import db
 from .models import Post, Comment
 from .utils import check_post_24h, create_success_response, create_error_response
 
 api = Namespace("comments", description="Comments related operations")
 
+comment_model = api.model(
+    "Comment",
+    {
+        "comment": fields.String(
+            required=True,
+            description="Comment content",
+        ),
+    },
+)
+
 
 # Comments on a post
 @api.route("/<int:post_id>")
 class Comments(Resource):
     # Get comments on a post
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self, post_id):
         post = Post.query.get(post_id)
@@ -58,6 +69,8 @@ class Comments(Resource):
         )
 
     # Create a comment on a post
+    @api.doc(security="Bearer Auth")
+    @api.expect(comment_model)
     @jwt_required()
     def post(self, post_id):
         post = Post.query.get(post_id)
@@ -87,6 +100,8 @@ class Comments(Resource):
         )
 
     # Update a comment on a post
+    @api.doc(security="Bearer Auth")
+    @api.expect(comment_model)
     @jwt_required()
     def put(self, comment_id):
         post_comment = Comment.query.get(comment_id)
@@ -114,6 +129,7 @@ class Comments(Resource):
         return create_success_response("Comment updated successfully", status_code=200)
 
     # Delete a comment on a post
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def delete(self, comment_id):
         post_comment = Comment.query.get(comment_id)

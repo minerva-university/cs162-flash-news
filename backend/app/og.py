@@ -8,6 +8,7 @@ api = Namespace("opengraph", description="OpenGraph related operations")
 # Scrape the URL's opengraph tags
 @api.route("/")
 class OpenGraph(Resource):
+    @api.expect(api.parser().add_argument("url", type=str, required=True))
     def post(self):
         data = request.get_json()
         url = data["url"]

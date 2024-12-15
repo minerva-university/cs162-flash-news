@@ -84,6 +84,10 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
 
+    authorizations = {
+        "Bearer Auth": {"type": "apiKey", "in": "header", "name": "Authorization"}
+    }
+
     # Initialize RESTx API
     api = Api(
         app,
@@ -91,6 +95,8 @@ def create_app():
         version="1.0",
         description="Comprehensive API documentation for your Flask app",
         doc="/",
+        authorizations=authorizations,
+        security="Bearer Auth",
     )
 
     # Import namespaces

@@ -8,12 +8,50 @@ from flask_jwt_extended import (
     get_jwt_identity,
     get_jwt,
 )
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from .models import User, RevokedToken
 from . import db
 from .utils import create_success_response, create_error_response
 
 api = Namespace("auth", description="Authentication operations")
+
+register_model = api.model(
+    "Register",
+    {
+        "username": fields.String(
+            required=True,
+            description="Username",
+            example="john_doe",
+        ),
+        "email": fields.String(
+            required=True,
+            description="Email address",
+            example="john_doe@gmail.com",
+        ),
+        "password": fields.String(
+            required=True,
+            description="Password",
+            example="password123",
+        ),
+    },
+)
+
+
+login_model = api.model(
+    "Login",
+    {
+        "email": fields.String(
+            required=True,
+            description="Email address",
+            example="john_doe@gmail.com",
+        ),
+        "password": fields.String(
+            required=True,
+            description="Password",
+            example="password123",
+        ),
+    },
+)
 
 
 def validate_password(password):
@@ -42,6 +80,7 @@ def validate_email(email):
 
 @api.route("/register")
 class Register(Resource):
+    @api.expect(register_model)
     def post(self):
         data = request.get_json()
         username = data.get("username")
@@ -98,6 +137,7 @@ class Register(Resource):
 
 @api.route("/login")
 class Login(Resource):
+    @api.expect(login_model)
     def post(self):
         data = request.get_json()
         email = data.get("email")
@@ -130,6 +170,7 @@ class Login(Resource):
 
 @api.route("/logout")
 class Logout(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def post(self):
         jti = get_jwt()["jti"]
@@ -141,6 +182,7 @@ class Logout(Resource):
 
 @api.route("/refresh")
 class Refresh(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required(refresh=True)
     def post(self):
         current_user_id = get_jwt_identity()

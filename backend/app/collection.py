@@ -1,6 +1,6 @@
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from . import db
 from .models import Collection, CollectionPost, User
 from .post import SinglePostOperations
@@ -8,10 +8,31 @@ from .utils import create_success_response, create_error_response
 
 api = Namespace("collections", description="Collections related operations")
 
+collection_model = api.model(
+    "Collection",
+    {
+        "title": fields.String(
+            required=True,
+            description="Collection title",
+        ),
+        "description": fields.String(
+            description="Collection description",
+        ),
+        "emoji": fields.String(
+            description="Emoji for collection",
+        ),
+        "is_public": fields.Boolean(
+            description="Public or private collection",
+        ),
+    },
+)
+
 
 # Create a new collection
 @api.route("/")
 class AddCollections(Resource):
+    @api.doc(security="Bearer Auth")
+    @api.expect(collection_model)
     @jwt_required()
     def post(self):
         user_id = int(get_jwt_identity())
@@ -67,6 +88,7 @@ class AddCollections(Resource):
 # Get user's collections
 @api.route("/user/<int:user_id>")
 class GetUserCollections(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self, user_id):
         user = User.query.get(user_id)
@@ -126,6 +148,7 @@ class GetUserCollections(Resource):
 # Get posts from a specific collection
 @api.route("/<int:collection_id>/posts")
 class GetCollectionPosts(Resource):
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def get(self, collection_id):
 
@@ -161,6 +184,7 @@ class GetCollectionPosts(Resource):
 @api.route("/<int:collection_id>/posts/<int:post_id>")
 class ModifyCollectionPosts(Resource):
     # Add a post to a collection
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def post(self, collection_id, post_id):
 
@@ -182,6 +206,7 @@ class ModifyCollectionPosts(Resource):
         )
 
     # Remove a post from a collection
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def delete(self, collection_id, post_id):
         # Check if user owns the collection
@@ -207,6 +232,8 @@ class ModifyCollectionPosts(Resource):
 @api.route("/<int:collection_id>")
 class ModifyCollections(Resource):
     # Update a collection
+    @api.doc(security="Bearer Auth")
+    @api.expect(collection_model)
     @jwt_required()
     def put(self, collection_id):
         data = request.get_json()
@@ -226,8 +253,9 @@ class ModifyCollections(Resource):
         )
 
     # Delete a collection
+    @api.doc(security="Bearer Auth")
     @jwt_required()
-    def delete(collection_id):
+    def delete(self, collection_id):
         collection = Collection.query.filter_by(
             collection_id=collection_id, user_id=int(get_jwt_identity())
         ).first_or_404()

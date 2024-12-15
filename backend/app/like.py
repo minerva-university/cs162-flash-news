@@ -12,6 +12,7 @@ api = Namespace("likes", description="Likes related operations")
 @api.route("/<int:post_id>")
 class Likes(Resource):
     # Get likes on a post
+    @api.doc(security="Bearer Auth")
     def get(self, post_id):
         post = Post.query.get(post_id)
         if not post:
@@ -52,6 +53,7 @@ class Likes(Resource):
         )
 
     # Like a post
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def post(self, post_id):
         post = Post.query.get(post_id)
@@ -81,6 +83,7 @@ class Likes(Resource):
         return create_success_response("Post liked successfully", status_code=201)
 
     # Unlike a post
+    @api.doc(security="Bearer Auth")
     @jwt_required()
     def delete(self, post_id):
         post_like = Like.query.filter_by(
