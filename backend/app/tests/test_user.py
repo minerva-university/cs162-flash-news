@@ -17,7 +17,6 @@ def test_get_profile_unauthenticated(client):
     client.environ_base.pop("HTTP_AUTHORIZATION", None)
 
     response = client.get("/api/user/testuser")
-    print(response.json)
     assert response.status_code == 401
 
 
@@ -121,7 +120,7 @@ def test_get_following_list(client, test_user):
 
     response = client.get("/api/user/following")
     assert response.status_code == 200
-    assert len(response.json["followed_users"]) == 3
+    assert len(response.json["data"]["followed_users"]) == 3
 
 
 def test_get_followers_list(client, test_user):
@@ -140,7 +139,7 @@ def test_get_followers_list(client, test_user):
 
     response = client.get("/api/user/followers")
     assert response.status_code == 200
-    assert len(response.json["followers"]) == 3
+    assert len(response.json["data"]["followers"]) == 3
 
 
 def test_get_user_feed(client, test_user):
