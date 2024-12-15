@@ -20,7 +20,7 @@ class PostController {
   }
 
   // TODO: Remove this
-  // I am pretty sure this is not used anywhere 
+  // I am pretty sure this is not used anywhere
   // Would this refer to feed or user posts? Either case there are functions already
   static async getAll() {
     const response = await fetch(`${DB_HOST}/posts`, {
@@ -174,7 +174,7 @@ class PostController {
         method: "GET",
         headers: HEADERS_WITH_JWT(this.accessToken),
       });
-  
+
       const data = await response.json();
       return data;
     } catch (error) {

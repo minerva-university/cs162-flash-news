@@ -6,39 +6,37 @@ class UserController {
   }
 
   static async getCurrentUserDetails(username) {
-    const response = await fetch(`${DB_HOST}/user/${username}`, {
-      method: "GET",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
+    try {
+      const response = await fetch(`${DB_HOST}/user/${username}`, {
+        method: "GET",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
 
-    const responseBody = await response.json();
-    if (response?.ok) {
-      return responseBody;
-    } else {
-      throw new Error(`${responseBody.message}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("UserController error:", error);
+      throw error;
     }
   }
 
-  static async updateUserDetails(userID, { username, bio_description, tags, profile_picture }) {
-    const userData = {
-      username,
-      bio_description,
-      tags,
-      profile_picture
-    };
+  static async updateUserDetails(formData) {
+    try {
+      const response = await fetch(`${DB_HOST}/user`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+        body: formData,
+      });
 
-    const response = await fetch(`${DB_HOST}/user/${userID}`, {
-      method: "PUT",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-      body: JSON.stringify(userData),
-    });
-
-    if (response.ok) {
-      return response.json();
-    } else {
-      throw new Error("Failed to update user details");
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error updating user details:", error);
+      throw error;
     }
-  } 
+  }
 
   static async deleteUser(userID) {
     const response = await fetch(`${DB_HOST}/user/${userID}`, {
@@ -47,7 +45,8 @@ class UserController {
     });
 
     if (response.ok) {
-      return response.json();
+      const data = await response.json();
+      return data;
     } else {
       throw new Error("Failed to delete user");
     }

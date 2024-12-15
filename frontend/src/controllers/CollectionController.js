@@ -20,10 +20,13 @@ class CollectionController {
   }
 
   static async getCollectionPosts(collectionID) {
-    const response = await fetch(`${DB_HOST}/collections/${collectionID}/posts`, {
-      method: "GET",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
+    const response = await fetch(
+      `${DB_HOST}/collections/${collectionID}/posts`,
+      {
+        method: "GET",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      },
+    );
 
     if (response.ok) {
       return response.json();
@@ -32,28 +35,34 @@ class CollectionController {
     }
   }
 
-  static async createCollection({ user_id, title, description, emoji, is_public }) {
+  static async createCollection({
+    user_id,
+    title,
+    description,
+    emoji,
+    is_public,
+  }) {
     const collectionData = {
       user_id,
       title,
       description: description || "",
       emoji,
-      is_public
+      is_public,
     };
-  
+
     const response = await fetch(`${DB_HOST}/collections/`, {
       method: "POST",
       headers: HEADERS_WITH_JWT(this.accessToken),
       body: JSON.stringify(collectionData),
     });
-  
+
     if (response.ok) {
       return response.json();
     } else {
       throw new Error("Failed to create collection");
     }
   }
-  
+
   static async deleteCollection(collectionID) {
     const response = await fetch(`${DB_HOST}/collections/${collectionID}`, {
       method: "DELETE",
@@ -67,12 +76,15 @@ class CollectionController {
     }
   }
 
-  static async updateCollection(collectionID, { title, description, emoji, is_public }) {
+  static async updateCollection(
+    collectionID,
+    { title, description, emoji, is_public },
+  ) {
     const collectionData = {
       title,
       description: description || "",
       emoji,
-      is_public
+      is_public,
     };
 
     const response = await fetch(`${DB_HOST}/collections/${collectionID}`, {
@@ -106,10 +118,13 @@ class CollectionController {
   }
 
   static async removePostFromCollection(collectionID, postID) {
-    const response = await fetch(`${DB_HOST}/collections/${collectionID}/posts/${postID}`, {
-      method: "DELETE",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
+    const response = await fetch(
+      `${DB_HOST}/collections/${collectionID}/posts/${postID}`,
+      {
+        method: "DELETE",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      },
+    );
 
     if (response.ok) {
       return response.json();
