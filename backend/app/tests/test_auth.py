@@ -17,7 +17,6 @@ VALID_USER = {
 @pytest.fixture
 def registered_user(client):
     response = client.post("/api/register", json=VALID_USER)
-    print("response is: ", response.json)
     assert response.status_code == 201
     return VALID_USER
 
@@ -26,8 +25,8 @@ def registered_user(client):
 def test_register_success(client):
     response = client.post("/api/register", json=VALID_USER)
     assert response.status_code == 201
-    assert "access_token" in response.json
-    assert "refresh_token" in response.json
+    assert "access_token" in response.json["data"]
+    assert "refresh_token" in response.json["data"]
 
     # Verify user was created in database
     user = User.query.filter_by(email=VALID_USER["email"]).first()
@@ -58,7 +57,8 @@ def test_register_invalid_inputs(client):
 def test_register_duplicate_user(client, registered_user):
     response = client.post("/api/register", json=VALID_USER)
     assert response.status_code == 400
-    assert "exists" in response.json.get("message", "").lower()
+    assert response.json["status"] == "error"
+    assert "exists" in response.json["message"].lower()
 
 
 # Test successful login
@@ -69,8 +69,8 @@ def test_login_success(client, registered_user):
     }
     response = client.post("/api/login", json=credentials)
     assert response.status_code == 200
-    assert "access_token" in response.json
-    assert "refresh_token" in response.json
+    assert "access_token" in response.json["data"]
+    assert "refresh_token" in response.json["data"]
 
 
 # Test login with invalid credentials"""
@@ -94,7 +94,7 @@ def test_logout(client, registered_user):
         "password": registered_user["password"],
     }
     login_response = client.post("/api/login", json=credentials)
-    access_token = login_response.json["access_token"]
+    access_token = login_response.json["data"]["access_token"]
 
     # Then logout
     response = client.post(
@@ -116,14 +116,14 @@ def test_refresh_token(client, registered_user):
         "password": registered_user["password"],
     }
     login_response = client.post("/api/login", json=credentials)
-    refresh_token = login_response.json["refresh_token"]
+    refresh_token = login_response.json["data"]["refresh_token"]
 
     # Use refresh token to get new access token
     response = client.post(
         "/api/refresh", headers={"Authorization": f"Bearer {refresh_token}"}
     )
     assert response.status_code == 200
-    assert "access_token" in response.json
+    assert "access_token" in response.json["data"]
 
 
 # Test accessing protected endpoints without token
@@ -150,7 +150,7 @@ def test_token_expiration(client, registered_user):
     with patch("flask_jwt_extended.utils.create_access_token") as mock_create_token:
         # Login to get the user_id
         login_response = client.post("/api/login", json=credentials)
-        user_id = decode_token(login_response.json["access_token"])["sub"]
+        user_id = decode_token(login_response.json["data"]["access_token"])["sub"]
 
         # Create a token that's already expired
         expired_token = create_access_token(
@@ -163,7 +163,9 @@ def test_token_expiration(client, registered_user):
             "/api/logout", headers={"Authorization": f"Bearer {expired_token}"}
         )
         assert response.status_code == 401
-        assert "token has expired" in response.json.get("msg", "").lower()
+        # Note that there was no error handling here so it does not follow the same response format as the other tests
+        # This is the same for all token expiration tests
+        assert "token has expired" in response.json["msg"].lower()
 
     # Test with a token that's about to expire
     with patch("flask_jwt_extended.utils.create_access_token") as mock_create_token:
@@ -189,7 +191,7 @@ def test_token_expiration(client, registered_user):
             "/api/logout", headers={"Authorization": f"Bearer {short_lived_token}"}
         )
         assert response.status_code == 401
-        assert "token has expired" in response.json.get("msg", "").lower()
+        assert "token has expired" in response.json["msg"].lower()
 
 
 # Test refresh token expiration
@@ -202,7 +204,7 @@ def test_refresh_token_expiration(client, registered_user):
     with patch("flask_jwt_extended.utils.create_refresh_token") as mock_create_refresh:
         # Login to get the user_id
         login_response = client.post("/api/login", json=credentials)
-        user_id = decode_token(login_response.json["refresh_token"])["sub"]
+        user_id = decode_token(login_response.json["data"]["refresh_token"])["sub"]
 
         # Create an expired refresh token
         expired_refresh_token = create_access_token(
@@ -215,4 +217,5 @@ def test_refresh_token_expiration(client, registered_user):
             "/api/refresh", headers={"Authorization": f"Bearer {expired_refresh_token}"}
         )
         assert response.status_code == 401
-        assert "token has expired" in response.json.get("msg", "").lower()
+        assert "token has expired" in response.json["msg"].lower() 
+        

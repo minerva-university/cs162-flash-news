@@ -42,11 +42,11 @@ def test_get_comments(client):
 
     response = client.get(f"/api/comments/{post.post_id}")
     assert response.status_code == 200
-    assert len(response.json["comments"]) == 3
-    assert response.json["total_comments"] == 3
+    assert len(response.json["data"]["comments"]) == 3
+    assert response.json["data"]["total_comments"] == 3
 
     # Verify comment structure
-    comment = response.json["comments"][0]
+    comment = response.json["data"]["comments"][0]
     assert "comment_id" in comment
     assert "user" in comment
     assert "comment" in comment
@@ -67,11 +67,11 @@ def test_get_comments_pagination(client):
 
     # Test first page (default 10 per page)
     response = client.get(f"/api/comments/{post.post_id}")
-    assert len(response.json["comments"]) == 10
+    assert len(response.json["data"]["comments"]) == 10
 
     # Test second page
     response = client.get(f"/api/comments/{post.post_id}?page=2")
-    assert len(response.json["comments"]) == 5
+    assert len(response.json["data"]["comments"]) == 5
 
 
 # Test that getting comments from a non-existent post throws an error
@@ -95,10 +95,10 @@ def test_create_comment(client):
     data = {"comment": "New test comment"}
     response = client.post(f"/api/comments/{post.post_id}", json=data)
     assert response.status_code == 201
-    assert "comment_id" in response.json
+    assert "comment_id" in response.json["data"]
 
     # Verify comment was created
-    comment = Comment.query.get(response.json["comment_id"])
+    comment = Comment.query.get(response.json["data"]["comment_id"])
     assert comment is not None
     assert comment.content == "New test comment"
 
