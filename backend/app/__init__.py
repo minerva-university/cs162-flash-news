@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -118,13 +119,13 @@ def create_app():
     app.register_blueprint(og_blueprint, url_prefix="/api/")
 
     # Add a health check route
-    @app.route('/health')
+    @app.route("/health")
     def health_check():
         try:
             # Test database connection
-            db.session.execute('SELECT 1')
-            return jsonify({'status': 'healthy'}), 200
-            
+            db.session.execute(text("SELECT 1"))
+            return jsonify({"status": "healthy"}), 200
+
         except Exception as e:
             return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
