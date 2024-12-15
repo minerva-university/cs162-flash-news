@@ -414,8 +414,6 @@ const CollectionDetailModal = () => {
     return <Typography>Loading...</Typography>;
   }
 
-  console.log("what is being passed as user articles:", userArticles);
-
   return (
     <Box
       sx={{
@@ -707,7 +705,7 @@ const CollectionDetailModal = () => {
                 </Button>
               </Box>
             ))}
-          </Box>            
+          </Box>
         </Box>
       ) : (
         // If there is only one article in the collection
