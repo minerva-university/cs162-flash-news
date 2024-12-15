@@ -84,7 +84,7 @@ const CollectionDetailModal = () => {
         parseInt(collection.collection_id),
       );
 
-      setCollectionArticles(collectionArticles);
+      setCollectionArticles(collectionArticles.data);
       return collectionArticles;
     } catch (error) {
       console.error("Error fetching collection articles:", error.message);
@@ -236,7 +236,6 @@ const CollectionDetailModal = () => {
         PostController.getUserPosts(profileData.user_id),
       ]);
 
-      setCollectionArticles(updatedCollectionArticles);
       setUserArticles(
         userArticlesData.posts.filter(
           (post) =>
@@ -345,7 +344,6 @@ const CollectionDetailModal = () => {
 
       // On error, refresh the collection articles to ensure consistency
       const updatedCollectionArticles = await fetchCollectionArticles();
-      setCollectionArticles(updatedCollectionArticles);
 
       setSnackbar({
         open: true,
@@ -377,7 +375,6 @@ const CollectionDetailModal = () => {
       if (response.ok) {
         // After successful deletion, fetch updated collection articles
         const updatedCollectionArticles = await fetchCollectionArticles();
-        setCollectionArticles(updatedCollectionArticles);
 
         // Update userArticles
         const updatedUserArticles = userArticles.filter(
@@ -448,7 +445,7 @@ const CollectionDetailModal = () => {
         }}
       >
         <Button
-          onClick={() => navigate(`/user/${username}/collections`)}
+          onClick={() => navigate(`/user/collections/${username}`)}
           variant="contained"
           sx={{
             backgroundColor: "#5F848C",

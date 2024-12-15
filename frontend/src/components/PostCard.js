@@ -81,7 +81,7 @@ export default function PostCard({ post }) {
         <Box
           sx={{
             backgroundColor: "#fcf8ec",
-            minHeight: 200,
+            minHeight: 300,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
