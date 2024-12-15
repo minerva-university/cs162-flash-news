@@ -47,7 +47,7 @@ const CollectionDetailModal = () => {
         const postsData = await response.json();
 
         // Transform posts data to articles data
-        const articlesData = postsData
+        const articlesData = postsData.data
           .map((post) => ({
             title: post.article.title,
             source: post.article.source,
