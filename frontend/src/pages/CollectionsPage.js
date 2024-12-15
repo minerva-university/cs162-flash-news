@@ -343,7 +343,7 @@ const CollectionsPage = () => {
         >
           {profileData?.profile_picture ? (
             <img
-              src={profileData.profile_picture}
+              src={`${DB_HOST}${profileData.profile_picture}`}
               alt="Profile"
               style={{ width: "100%", height: "100%", borderRadius: "50%" }}
             />
