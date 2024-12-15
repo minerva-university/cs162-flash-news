@@ -347,7 +347,7 @@ const PostDetailPage = () => {
                       />
                     }
                     subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
-                    // @TODO: Only show if the current comment belongs to the currently logged in user
+                    // Only show if the current comment belongs to the currently logged in user
                     action={
                       comment.user.username === CURRENT_USERNAME && (
                         <EditDeleteMenu

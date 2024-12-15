@@ -235,11 +235,10 @@ Runs on every push or pull request. Uses tools like eslint for JavaScript.
 Executes unit and integration tests for both backend and frontend.
 Tests are written using pytest for Python. Runs in isolated environments to ensure clean builds.
 
-@TODO: Look at using Jest for React components.
 
-#### Deployment Pipeline: @TODO: Look at this one after deployment
+#### Deployment Pipeline:
 
-Automatically deploys to the staging environment upon merging into the main branch.Uses tools like Docker and cloud hosting (e.g., AWS or Heroku) for deployment.
+Automatically deploys to the production environment upon merging into the main branch. Uses Railway for backend deployment, Vercel for frontend deployment.
 
 ---
 
