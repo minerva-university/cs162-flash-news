@@ -7,12 +7,15 @@ import {
   CircularProgress,
   Divider,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
 import { DB_HOST } from "../controllers/config.js";
 import FollowButton from "../components/FollowButton";
+import PostController from "../controllers/PostController";
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -22,6 +25,15 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [sharedPosts, setSharedPosts] = useState([]);
   const [collections, setCollections] = useState([]);
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
 
   // Handle collection click event (navigate to collection page)
   const handleCollectionClick = (collection) => {
@@ -165,9 +177,91 @@ const ProfilePage = () => {
     }
   }, [profileData]);
 
-  const handlePostUpdate = () => {
-    fetchSharedPosts(); // Re-fetch posts after update/deleting
+  // Handle edit post
+  const handleEditPost = async (postId, updatedData) => {
+    try {
+      setLoading(true);
+      
+      // Ensure we're sending the right data to the backend
+      const dataToUpdate = {
+        post_description: updatedData.description,
+        categories: updatedData.categories || []
+      };
+  
+      const response = await PostController.updatePost(postId, dataToUpdate);
+  
+      // Update state while preserving ALL post data
+      setSharedPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.post_id === postId 
+            ? {
+                ...post,                    // Keep all existing post data
+                description: updatedData.description,  // Update description
+                categories: updatedData.categories || [], // Update categories
+                article: post.article,      // Explicitly preserve article data
+                user: post.user,           // Explicitly preserve user data
+                posted_at: post.posted_at, // Preserve timestamp
+                comments_count: post.comments_count,
+                likes_count: post.likes_count,
+                is_liked: post.is_liked
+              }
+            : post
+        )
+      );
+  
+      setSnackbar({
+        open: true,
+        message: "Post updated successfully!",
+        severity: "success"
+      });
+  
+    } catch (error) {
+      console.error("Error updating post:", error);
+      setSnackbar({
+        open: true,
+        message: error.message || "Failed to update post",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Handle delete post
+  const handleDelete = async (postId) => {
+    try {
+      setLoading(true);
+      
+      // Optimistically update UI
+      setSharedPosts(prev => 
+        prev.filter(post => post.post_id !== postId)
+      );
+  
+      await PostController.deletePost(postId);
+  
+      setSnackbar({
+        open: true,
+        message: "Post deleted successfully!",
+        severity: "success"
+      });
+  
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      
+      // Revert changes on error by refetching posts
+      await fetchSharedPosts();
+      
+      setSnackbar({
+        open: true,
+        message: error.message || "Failed to delete post",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -202,6 +296,22 @@ const ProfilePage = () => {
         minHeight: "100vh",
       }}
     >
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000} // Lasts 5 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
       {/* Profile Header */}
       <Box
         sx={{
@@ -347,7 +457,7 @@ const ProfilePage = () => {
                   margin: "0 10px",
                 }}
               >
-                <PostCard key={index} post={post} />
+                <PostCard key={index} post={post} username={username} />
               </Box>
             ))
           ) : (
@@ -492,26 +602,32 @@ const ProfilePage = () => {
           <Box
             sx={{
               maxWidth: "1200px",
-              justifyContent: "center",
+              display: "flex",  // Changed from grid to flex
+              flexWrap: "wrap", // Allow wrapping
+              justifyContent: "center", // Center items horizontally
+              gap: "20px",      // Reduced gap
               padding: "20px 0",
               marginTop: "40px",
-              alignItems: "center",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              justifyTracks: "center",
-              flexWrap: "wrap",
-              gap: "20px",
-              margin: "0 auto",
+              margin: "0 auto",  // Center the container
             }}
           >
             {sharedPosts.length ? (
               sharedPosts.map((post, index) => (
-                <ArticleCard
+                <Box
                   key={index}
-                  post={post}
-                  username={username}
-                  onPostUpdate={handlePostUpdate}
-                />
+                  sx={{
+                    width: "300px",  // Fixed width for each article
+                    margin: "0 10px 20px",  // Add some margin
+                  }}
+                >
+                  <ArticleCard
+                    key={index}
+                    post={post}
+                    username={username}
+                    onEdit={(postId, updatedData) => handleEditPost(postId, updatedData)}
+                    onDelete={(postId) => handleDelete(postId)}
+                  />
+                </Box>
               ))
             ) : (
               <Typography sx={{ color: "gray", textAlign: "center" }}>

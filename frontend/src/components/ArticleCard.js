@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-//import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -19,24 +18,19 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { DB_HOST } from "../controllers/config.js";
+import PostController from "../controllers/PostController";
+// ALWAYS EXPECTS A POST OBJECT
 
-// TODO: Fix the styling of the card
-
-const ArticleCard = ({ post, username, onPostUpdate }) => {
-  //const navigate = useNavigate();
+const ArticleCard = ({ post, username, onEdit, onDelete }) => {
   const loggedInUsername = localStorage.getItem("username");
-  const accessToken = localStorage.getItem("access_token");
   const isOwner = username === loggedInUsername;
-
-  console.log("Initializing ArticleCard with post:", post);
+  const [categories, setCategories] = useState([]);
 
   // Initialize edit form state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    title: post.article.title || "",
-    description: post.description || "",
-    link: post.article.link || "",
-    categories: post.categories || [],
+    description: post?.description || "", 
+    categories: post?.categories || [],
   });
 
   // Open and close edit modal
@@ -44,105 +38,62 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
     console.log("Opening modal for editing");
     setEditModalOpen(true);
   };
+
   const handleCloseModal = () => {
     console.log("Closing modal");
     setEditModalOpen(false);
   };
 
+  // Handle Save Changes by calling onEdit function in parent component
+  const handleSave = () => {
+    console.log("Edit form data before save:", editFormData);
+    onEdit(post.post_id, editFormData); 
+    handleCloseModal();
+  };
+
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Handling input change for ${name}:`, value);
     setEditFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  // Handle category selection change
+  // Handle category selection
   const handleCategoryChange = (event) => {
-    console.log("Selected new categories:", event.target.value);
+    const selectedCategories = event.target.value;
+    console.log("Selected categories:", selectedCategories);
     setEditFormData((prev) => ({
       ...prev,
-      categories: event.target.value,
+      categories: selectedCategories,
     }));
   };
 
-  // Handle post edit
-  const handleEditPost = async () => {
-    console.log("Submitting edit with data:", editFormData);
-    console.log("Post ID:", post.post_id);
-    console.log("Post title:", editFormData.title);
-    console.log("Post description:", editFormData.description);
-    console.log("Post link:", editFormData.link);
-    console.log("Post categories:", editFormData.categories);
-    try {
-      const response = await fetch(`${DB_HOST}/posts/${post.post_id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          article_link: editFormData.link.trim(),
-          title: editFormData.title.trim(),
-          description: editFormData.description.trim(),
-          categories: editFormData.categories,
-        }),
-      });
+  // Fetch categories when component mounts
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await PostController.getCategories();
+        console.log("Raw categories response:", response);
+        
+        // Extract just the category_id values from the categories array
 
-      console.log(
-        "body",
-        JSON.stringify({
-          article_link: editFormData.link.trim(),
-          title: editFormData.title.trim(),
-          description: editFormData.description.trim(),
-          categories: editFormData.categories,
-        }),
-      );
-
-      if (response.ok) {
-        console.log("Edit successful");
-        handleCloseModal();
-        //navigate(0); // Refresh the page
-        //if (onPostUpdate) onPostUpdate(); // Refresh parent data
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to update post:", errorData);
-        alert(errorData.error || "Failed to update the post.");
+        const categoryValues = response.categories.map(cat => cat.category_id);
+        console.log("Processed categories:", categoryValues);
+        setCategories(categoryValues);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
       }
-    } catch (error) {
-      console.error("Error editing post:", error);
-      alert("An error occurred while editing the post.");
-    }
-  };
+    };
 
-  // Handle post deletion
-  const handleDeletePost = async () => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
-    console.log("Attempting to delete post:", post.post_id);
+    fetchCategories();
+  }, []);
 
-    try {
-      const response = await fetch(`${DB_HOST}/posts/${post.post_id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (response.ok) {
-        console.log("Deletion successful");
-        alert("Post deleted successfully!");
-        if (onPostUpdate) onPostUpdate(); // Refresh parent data
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to delete post:", errorData);
-        alert(errorData.error || "Failed to delete the post.");
-      }
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("An error occurred while deleting the post.");
-    }
+  // Handle deleting for parent component
+  const handleDelete = () => {
+    onDelete(post.post_id);
   };
 
   return (
@@ -156,23 +107,51 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
         overflow: "hidden",
         boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
         maxWidth: 300,
-        height: "100%",
+        height: "400px",
         margin: "5px 8px",
       }}
     >
-      {/* Article Image */}
+      {/* Handle Missing Preview */}
+      
       <Box
-        component="img"
-        src={post.article.preview || "https://via.placeholder.com/300x150"}
-        alt={post.article.title}
         sx={{
           width: "100%",
-          height: "150px",
-          objectFit: "cover",
-          backgroundColor: "#D0E8F2",
+          height: "200px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: post.article.preview ? "transparent" : "#f0f0f0", // Placeholder background
+          color: "#888", // Placeholder text color
+          fontSize: "16px", // Placeholder text size
+          borderRadius: "8px", // Consistent border radius
+          overflow: "hidden", // Prevent overflow if the image doesn't fit
         }}
-      />
+      >
+        {post.article.preview ? (
+          <img
+            src={post.article.preview}
+            alt={post.article.title || "Untitled Article"}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "8px", // Match the card's border radius
+            }}
+          />
+        ) : (
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: "14px",
+              color: "#888",
+            }}
+          >
+            No Image Available
+          </Typography>
+        )}
+      </Box>
 
+      
       {/* Article Content */}
       <CardContent
         sx={{
@@ -191,7 +170,7 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
             fontFamily: "Roboto",
           }}
         >
-          {post.article.title}
+          {post.article.title || "Untitled Article"}
         </Typography>
         <Typography
           variant="body2"
@@ -222,7 +201,7 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
             alignItems: "center",
           }}
         >
-          {post.categories.map((category, index) => (
+           {(post?.categories || []).map((category, index) => (
             <Chip
               key={index}
               label={category}
@@ -279,7 +258,7 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleDeletePost}
+            onClick={handleDelete}
             sx={{
               color: "#5F848C",
               "&:hover": { color: "#A94442" },
@@ -289,26 +268,6 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
           </IconButton>
         </Box>
       )}
-
-      {/* Read More Button */}
-      <Button
-        variant="contained"
-        href={post.article.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        sx={{
-          backgroundColor: "#5F848C",
-          color: "#FCF8EC",
-          fontWeight: "bold",
-          borderRadius: "0 0 8px 8px",
-          margin: "0",
-          "&:hover": {
-            backgroundColor: "#266a7a",
-          },
-        }}
-      >
-        Read More
-      </Button>
 
       {/* Edit Modal */}
       <Modal open={editModalOpen} onClose={handleCloseModal}>
@@ -326,28 +285,12 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
           }}
         >
           <Typography variant="h6" sx={{ marginBottom: "16px" }}>
-            Edit Post
+            Edit Article
           </Typography>
-          <TextField
-            label="Title"
-            name="title"
-            value={editFormData.title || ""}
-            onChange={handleInputChange}
-            fullWidth
-            sx={{ marginBottom: "16px" }}
-          />
           <TextField
             label="Description"
             name="description"
             value={editFormData.description || ""}
-            onChange={handleInputChange}
-            fullWidth
-            sx={{ marginBottom: "16px" }}
-          />
-          <TextField
-            label="Link"
-            name="link"
-            value={editFormData.link || ""}
             onChange={handleInputChange}
             fullWidth
             sx={{ marginBottom: "16px" }}
@@ -362,12 +305,11 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
               onChange={handleCategoryChange}
               renderValue={(selected) => selected.join(", ")}
             >
-              {["Science", "Technology", "Health", "Politics", "Education"].map(
-                (category) => (
+              {categories.map((category) => (
                   <MenuItem key={category} value={category}>
-                    {category}
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
                   </MenuItem>
-                ),
+                )
               )}
             </Select>
           </FormControl>
@@ -378,7 +320,7 @@ const ArticleCard = ({ post, username, onPostUpdate }) => {
               gap: "8px",
             }}
           >
-            <Button variant="contained" onClick={handleEditPost}>
+            <Button variant="contained" onClick={handleSave}>
               Save
             </Button>
             <Button variant="outlined" onClick={handleCloseModal}>
