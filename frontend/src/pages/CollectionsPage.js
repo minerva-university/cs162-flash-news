@@ -121,7 +121,7 @@ const CollectionsPage = () => {
         },
       });
 
-      if (!userResponse.ok) throw new Error(userData.message);
+      if (!userResponse.ok) throw new Error(userResponse.message);
 
       const userData = await userResponse.json();
       const profile = userData.data;
@@ -159,7 +159,7 @@ const CollectionsPage = () => {
   // Fetch collections on initial load
   useEffect(() => {
     fetchCollections();
-  }, [username, isOwner]); // Ensure dependencies are correct
+  }, [username, isOwner]);
 
   // Handle create collection
   const handleCreateCollection = async () => {
@@ -201,11 +201,6 @@ const CollectionsPage = () => {
       });
       setAddOpenModal(false);
 
-      // if (newCollection.is_public) {
-      //   setPublicCollections((prev) => [...prev, newCollection]);
-      // } else {
-      //   setPrivateCollections((prev) => [...prev, newCollection]);
-      // }
       fetchCollections();
     } catch (error) {
       console.error("Error creating collection:", error);
@@ -722,7 +717,7 @@ const CollectionsPage = () => {
           <FormControlLabel
             control={
               <Switch
-                checked={Boolean(editFormData.isPublic)} // Ensure controlled behavior
+                checked={Boolean(editFormData.isPublic)}
                 onChange={() =>
                   setEditFormData((prev) => ({
                     ...prev,

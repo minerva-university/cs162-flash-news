@@ -19,6 +19,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { DB_HOST } from "../controllers/config.js";
 import PostController from "../controllers/PostController";
+
 // ALWAYS EXPECTS A POST OBJECT
 
 const ArticleCard = ({ post, username, onEdit, onDelete }) => {
@@ -114,11 +115,11 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: post.article.preview ? "transparent" : "#f0f0f0", // Placeholder background
-          color: "#888", // Placeholder text color
-          fontSize: "16px", // Placeholder text size
-          borderRadius: "8px", // Consistent border radius
-          overflow: "hidden", // Prevent overflow if the image doesn't fit
+          backgroundColor: post.article.preview ? "transparent" : "#f0f0f0",
+          color: "#888",
+          fontSize: "16px",
+          borderRadius: "8px",
+          overflow: "hidden",
         }}
       >
         {post.article.preview ? (
@@ -129,7 +130,7 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              borderRadius: "8px", // Match the card's border radius
+              borderRadius: "8px",
             }}
           />
         ) : (

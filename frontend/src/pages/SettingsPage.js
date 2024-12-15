@@ -19,6 +19,8 @@ import {
 import { DB_HOST } from "../controllers/config.js";
 import UserController from "../controllers/UserController.js";
 
+// TODO: Implement controller functions for updating user details
+
 const SettingsPage = () => {
   const { username } = useParams();
   const navigate = useNavigate();

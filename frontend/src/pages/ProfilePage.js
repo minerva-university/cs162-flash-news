@@ -183,30 +183,39 @@ const ProfilePage = () => {
 
       const response = await PostController.updatePost(postId, dataToUpdate);
 
-      // Update state while preserving ALL post data
-      setSharedPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.post_id === postId
-            ? {
-                ...post, // Keep all existing post data
-                description: updatedData.description, // Update description
-                categories: updatedData.categories || [], // Update categories
-                article: post.article, // Explicitly preserve article data
-                user: post.user, // Explicitly preserve user data
-                posted_at: post.posted_at, // Preserve timestamp
-                comments_count: post.comments_count,
-                likes_count: post.likes_count,
-                is_liked: post.is_liked,
-              }
-            : post,
-        ),
-      );
+      if (!response.ok) {
+        setSnackbar({
+          open: true,
+          message: response.message || "Failed to update post",
+          severity: "error",
+        });
+        return;
+      } else {
+        // Update state while preserving ALL post data
+        setSharedPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.post_id === postId
+              ? {
+                  ...post, // Keep all existing post data
+                  description: updatedData.description,
+                  categories: updatedData.categories || [],
+                  article: post.article,
+                  user: post.user,
+                  posted_at: post.posted_at,
+                  comments_count: post.comments_count,
+                  likes_count: post.likes_count,
+                  is_liked: post.is_liked,
+                }
+              : post,
+          ),
+        );
 
-      setSnackbar({
-        open: true,
-        message: "Post updated successfully!",
-        severity: "success",
-      });
+        setSnackbar({
+          open: true,
+          message: "Post updated successfully!",
+          severity: "success",
+        });
+      }
     } catch (error) {
       console.error("Error updating post:", error);
       setSnackbar({
@@ -224,7 +233,7 @@ const ProfilePage = () => {
     try {
       setLoading(true);
 
-      // Optimistically update UI
+      // Update state by removing the deleted post
       setSharedPosts((prev) => prev.filter((post) => post.post_id !== postId));
 
       await PostController.deletePost(postId);
@@ -554,7 +563,7 @@ const ProfilePage = () => {
         )}
 
         {/* See More Collections Button */}
-        {collections.length > 4 && ( // Show the button only if more than 4 collections exist
+        {collections.length > 4 && (
           <Box sx={{ textAlign: "center", marginTop: "40px" }}>
             <Button
               variant="outlined"
@@ -605,13 +614,13 @@ const ProfilePage = () => {
           <Box
             sx={{
               maxWidth: "1200px",
-              display: "flex", // Changed from grid to flex
-              flexWrap: "wrap", // Allow wrapping
-              justifyContent: "center", // Center items horizontally
-              gap: "20px", // Reduced gap
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "20px",
               padding: "20px 0",
               marginTop: "40px",
-              margin: "0 auto", // Center the container
+              margin: "0 auto",
             }}
           >
             {sharedPosts.length ? (
@@ -619,8 +628,8 @@ const ProfilePage = () => {
                 <Box
                   key={index}
                   sx={{
-                    width: "300px", // Fixed width for each article
-                    margin: "0 10px 20px", // Add some margin
+                    width: "300px",
+                    margin: "0 10px 20px",
                   }}
                 >
                   <ArticleCard

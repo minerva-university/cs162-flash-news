@@ -53,21 +53,6 @@ class PostController {
     }
   }
 
-  static async getUserPosts(userID) {
-    const response = await fetch(`${DB_HOST}/posts/user/${userID}`, {
-      method: "GET",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
-
-    const responseBody = await response.json();
-    if (response?.ok) {
-      const { data } = responseBody;
-      return data;
-    } else {
-      throw new Error(`${responseBody.message}`);
-    }
-  }
-
   static async getPost(postID) {
     const response = await fetch(`${DB_HOST}/posts/${postID}`, {
       method: "GET",

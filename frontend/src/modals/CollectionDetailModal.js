@@ -484,7 +484,7 @@ const CollectionDetailModal = () => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: collectionArticles.length > 0 ? "row" : "column", // Row for articles, column otherwise
+          flexDirection: collectionArticles.length > 0 ? "row" : "column", // Row for keeping features article, column otherwise
           justifyContent: "space-between",
           alignItems: "stretch",
           gap: "48px",
@@ -850,4 +850,4 @@ const CollectionDetailModal = () => {
     </Box>
   );
 };
-export default CollectionDetailModal; 
+export default CollectionDetailModal;
