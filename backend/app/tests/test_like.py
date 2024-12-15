@@ -52,10 +52,10 @@ def test_get_likes(client):
 
     response = client.get(f"/api/likes/{post.post_id}")
     assert response.status_code == 200
-    assert response.json["total_likes"] == 4
+    assert response.json["data"]["total_likes"] == 4
 
     # Verify like structure
-    like = response.json["likes"][0]
+    like = response.json["data"]["likes"][0]
     assert "user_id" in like
     assert "username" in like
     assert "profile_picture" in like
@@ -86,11 +86,11 @@ def test_get_likes_pagination(client):
 
     # Test first page (default 10 per page)
     response = client.get(f"/api/likes/{post.post_id}")
-    assert len(response.json["likes"]) == 10
+    assert len(response.json["data"]["likes"]) == 10
 
     # Test second page
     response = client.get(f"/api/likes/{post.post_id}?page=2")
-    assert len(response.json["likes"]) == 5
+    assert len(response.json["data"]["likes"]) == 5
 
 
 # Verify that you can't get likes for non-existent post

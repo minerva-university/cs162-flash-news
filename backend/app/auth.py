@@ -61,14 +61,14 @@ def register():
     is_valid_email, email_message = validate_email(email)
     if not is_valid_email:
         return create_error_response(
-            "Is not valid email", email_message, status_code=400
+            "Is not valid email", details=email_message, status_code=400
         )
 
     # Validate password
     is_valid_password, password_message = validate_password(password)
     if not is_valid_password:
         return create_error_response(
-            "Is not valid password", password_message, status_code=400
+            "Is not valid password", details=password_message, status_code=400
         )
 
     hashed_password = generate_password_hash(
