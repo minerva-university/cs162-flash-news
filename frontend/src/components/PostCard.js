@@ -21,9 +21,9 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { DB_HOST } from "../controllers/config.js";
 
-export default function PostCard({ post }) {
-  dayjs.extend(relativeTime);
+dayjs.extend(relativeTime);
 
+export default function PostCard({ post }) {
   const [expanded, setExpanded] = React.useState(false);
   const [liked, setLiked] = React.useState(post.is_liked);
   const navigate = useNavigate();
@@ -39,7 +39,14 @@ export default function PostCard({ post }) {
   };
 
   return (
-    <Card sx={{ width: "90%", maxWidth: "555px", margin: "0 auto 2rem" }}>
+    <Card
+      sx={{
+        width: "90%",
+        maxWidth: "555px",
+        margin: "0 auto 2rem",
+        height: "530px",
+      }}
+    >
       <Link
         href={`/profile/${post.user.username}`}
         title="View Profile"
@@ -74,7 +81,7 @@ export default function PostCard({ post }) {
         <Box
           sx={{
             backgroundColor: "#fcf8ec",
-            minHeight: 200,
+            minHeight: 300,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

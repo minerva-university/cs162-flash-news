@@ -56,10 +56,10 @@ function LoginPage() {
         }),
       });
 
-      const { data } = await response.json();
+      const { data, message } = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to log in");
+        throw new Error(message || "Failed to log in");
       }
 
       // Store the tokens
