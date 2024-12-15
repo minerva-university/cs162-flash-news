@@ -160,6 +160,22 @@ class PostController {
       throw new Error(`${responseBody.message}`);
     }
   }
+
+  // Get all categories
+  static async getCategories() {
+    try {
+      const response = await fetch(`${DB_HOST}/posts/categories`, {
+        method: "GET",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      throw error;
+    }
+  }
 }
 
 export default PostController;
