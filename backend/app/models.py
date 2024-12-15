@@ -1,9 +1,11 @@
 from sqlalchemy import Enum, Index
 import enum
 from datetime import datetime, timezone
+from dataclasses import dataclass
 from . import db
 
 
+@dataclass
 class User(db.Model):  # Removed UserMixin
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -54,6 +56,7 @@ class User(db.Model):  # Removed UserMixin
     )
 
 
+@dataclass
 class Article(db.Model):  # Seperated this from Post considering 3NF.
     article_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     link = db.Column(db.String, nullable=False)
@@ -71,6 +74,7 @@ class Article(db.Model):  # Seperated this from Post considering 3NF.
     )  # Indexing the link column for when searching if the article already exists.
 
 
+@dataclass
 class Post(db.Model):
     post_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
@@ -107,11 +111,13 @@ class CategoryEnum(enum.Enum):
     ENVIRONMENT = "Environment"
 
 
+@dataclass
 class PostCategory(db.Model):  # Many to Many relationship between posts and categories
     post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), primary_key=True)
     category = db.Column(Enum(CategoryEnum), primary_key=True)
 
 
+@dataclass
 class Collection(db.Model):
     collection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
@@ -140,6 +146,7 @@ class Collection(db.Model):
     )
 
 
+@dataclass
 class CollectionPost(
     db.Model
 ):  # Many to Many relationship between posts and collections
@@ -149,6 +156,7 @@ class CollectionPost(
     )
 
 
+@dataclass
 class Comment(db.Model):  # Cannot have nested comments
     comment_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
@@ -159,12 +167,14 @@ class Comment(db.Model):  # Cannot have nested comments
     )
 
 
+@dataclass
 class Like(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), primary_key=True)
     liked_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
 
 
+@dataclass
 class Follow(db.Model):
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.user_id"), primary_key=True
@@ -175,6 +185,7 @@ class Follow(db.Model):
     followed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 
+@dataclass
 class RevokedToken(db.Model):  # For JWT token revocation
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     jti = db.Column(db.String(120), index=True)
