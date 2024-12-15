@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from .utils import parse_opengraph_tags, create_success_response, create_error_response
 
 opengraph_bp = Blueprint("opengraph", __name__)

@@ -13,7 +13,8 @@ class CollectionController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }
@@ -111,7 +112,8 @@ class CollectionController {
 
     const responseBody = await response.json();
     if (response?.ok) {
-      return responseBody;
+      const { data } = responseBody;
+      return data;
     } else {
       throw new Error(`${responseBody.message}`);
     }

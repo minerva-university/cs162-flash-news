@@ -192,7 +192,7 @@ const CollectionsPage = () => {
         throw new Error(error.message || "Error creating collection.");
       }
 
-      const newCollection = await response.json();
+      // const newCollection = await response.json();
       setAddFormData({
         title: "",
         description: "",
@@ -201,11 +201,11 @@ const CollectionsPage = () => {
       });
       setAddOpenModal(false);
 
-      if (newCollection.is_public) {
-        setPublicCollections((prev) => [...prev, newCollection]);
-      } else {
-        setPrivateCollections((prev) => [...prev, newCollection]);
-      }
+      // if (newCollection.is_public) {
+      //   setPublicCollections((prev) => [...prev, newCollection]);
+      // } else {
+      //   setPrivateCollections((prev) => [...prev, newCollection]);
+      // }
       fetchCollections();
     } catch (error) {
       console.error("Error creating collection:", error);

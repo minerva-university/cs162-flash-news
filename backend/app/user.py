@@ -1,11 +1,11 @@
-from flask import Blueprint, request, jsonify, send_from_directory
+from flask import Blueprint, request, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import SQLAlchemyError
 import json
 import os
 from werkzeug.utils import secure_filename
 from .config import Config
-
+from .utils import create_success_response, create_error_response
 from . import db
 from .models import User, Follow
 
@@ -29,19 +29,6 @@ def allowed_file(filename):
 def uploaded_file(filename):
     """Serve uploaded files"""
     return send_from_directory(Config.UPLOAD_FOLDER, filename)
-
-
-# Utility function for consistent success handling
-def create_success_response(message, status_code=200, data=None):
-    return jsonify({"status": "success", "message": message, "data": data}), status_code
-
-
-# Utility function for consistent error handling
-def create_error_response(message, status_code=400, details=None):
-    return (
-        jsonify({"status": "error", "message": message, "details": details}),
-        status_code,
-    )
 
 
 # Get (view) user's profile
@@ -120,17 +107,7 @@ def update_profile():
             if existing_user:
                 return create_error_response("Username already exists", status_code=400)
 
-        # Commenting this out because users should not be able to change their email
-        # new_email = data.get('email', user.email)
-
-        """
-        # Check if the new email already exists
-        if new_email != user.email:
-            existing_email_user = User.query.filter_by(email=new_email).first()
-            if existing_email_user:
-                return create_error_response('Email already exists', status_code=400)
-        """
-
+        # Profile Picture Upload
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_FOLDER, filename))
@@ -369,21 +346,3 @@ def search_users():
 
     except Exception as e:
         return create_error_response("An unexpected error occurred.", 500, str(e))
-
-
-"""USER 2 REMAINING"""
-
-"""
-Commenting this out because it is duplicated on post.py
-@user_bp.route('/feed', methods=['GET'])
-@jwt_required()
-def get_user_feed():
-    # Get feed for current user (posts from followed users)
-    # Changed to match the Follow model structure
-    current_user = User.query.get(get_jwt_identity())
-    followed_user_ids = [follow.user_id for follow in current_user.followings]
-
-    # @TODO: Implement actual feed retrieval from Post model
-
-    return jsonify({"followed_user_ids": followed_user_ids})
-"""

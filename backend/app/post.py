@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from datetime import datetime, timedelta, timezone
 from . import db
 from .models import Post, Article, PostCategory, CategoryEnum, User
@@ -319,32 +319,6 @@ def get_user_posts(user_id):
 @posts.route("/categories", methods=["GET"])
 @jwt_required()
 def get_categories():
-    """
-    # No need for pagination given that we are dealing with only few categories (fixed)
-
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
-
-    paginated_categories = CategoryEnum.query.paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-
-    categories_data = [
-        {"category_id": category} for category in paginated_categories.items
-    ]
-
-    return (
-        jsonify(
-            {
-                "total_categories": paginated_categories.total,
-                "page": paginated_categories.page,
-                "per_page": paginated_categories.per_page,
-                "categories": categories_data,
-            }
-        ),
-        200,
-    )
-    """
     categories_data = [{"category_id": category.value} for category in CategoryEnum]
 
     return create_success_response(

@@ -66,10 +66,10 @@ function SignupPage() {
         }),
       });
 
-      const data = await response.json();
+      const { data, message } = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to register");
+        throw new Error(message || "Failed to register");
       }
 
       // Store the tokens
