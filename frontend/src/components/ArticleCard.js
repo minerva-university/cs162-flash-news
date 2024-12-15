@@ -5,6 +5,7 @@ import {
   Typography,
   Chip,
   Avatar,
+  Link,
   Box,
   Button,
   IconButton,
@@ -74,7 +75,7 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
         const response = await PostController.getCategories();
 
         const categoryValues = response.categories.map(
-          (cat) => cat.category_id,
+          (cat) => cat.category_id
         );
         setCategories(categoryValues);
       } catch (error) {
@@ -122,28 +123,34 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
           overflow: "hidden",
         }}
       >
-        {post.article.preview ? (
-          <img
-            src={post.article.preview}
-            alt={post.article.title || "Untitled Article"}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              borderRadius: "8px",
-            }}
-          />
-        ) : (
-          <Typography
-            variant="h6"
-            sx={{
-              fontSize: "14px",
-              color: "#888",
-            }}
-          >
-            No Image Available
-          </Typography>
-        )}
+        <Link
+          href={`/post/${post.post_id}`}
+          title="View post details"
+          underline="none"
+        >
+          {post.article.preview ? (
+            <img
+              src={post.article.preview}
+              alt={post.article.title || "Untitled Article"}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "8px",
+              }}
+            />
+          ) : (
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "14px",
+                color: "#888",
+              }}
+            >
+              No Image Available
+            </Typography>
+          )}
+        </Link>
       </Box>
 
       {/* Article Content */}
@@ -176,6 +183,30 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
         >
           {post.article.source}
         </Typography>
+        {/* Author */}
+        <Box
+          sx={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}
+        >
+          <Avatar
+            src={
+              post.user.profile_picture
+                ? `${DB_HOST}/${post.user.profile_picture}`
+                : ""
+            }
+            alt={post.user.username}
+            sx={{ bgcolor: "#D0E8F2", width: 30, height: 30 }}
+          />
+          <Typography
+            variant="body2"
+            sx={{
+              marginLeft: "10px",
+              color: "#21242A",
+              fontFamily: "Roboto",
+            }}
+          >
+            {post.user.username}
+          </Typography>
+        </Box>
         <Typography
           variant="body2"
           sx={{
@@ -191,8 +222,9 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "flex-start",
             alignItems: "center",
+            flexWrap: "wrap",
           }}
         >
           {(post?.categories || []).map((category, index) => (
@@ -203,31 +235,11 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
               sx={{
                 backgroundColor: "#79A3B1",
                 color: "#FCF8EC",
-                marginRight: "4px",
+                marginRight: "0.5rem",
+                marginBottom: "0.5rem",
               }}
             />
           ))}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Avatar
-              src={
-                post.user.profile_picture
-                  ? `${DB_HOST}/${post.user.profile_picture}`
-                  : ""
-              }
-              alt={post.user.username}
-              sx={{ bgcolor: "#D0E8F2", width: 30, height: 30 }}
-            />
-            <Typography
-              variant="body2"
-              sx={{
-                marginLeft: "10px",
-                color: "#21242A",
-                fontFamily: "Roboto",
-              }}
-            >
-              {post.user.username}
-            </Typography>
-          </Box>
         </Box>
       </CardContent>
 

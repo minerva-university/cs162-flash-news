@@ -4,6 +4,7 @@ import {
   Typography,
   Button,
   Box,
+  Link,
   Modal,
   Snackbar,
   Alert,
@@ -80,7 +81,7 @@ const CollectionDetailModal = () => {
     try {
       setLoading(true);
       const collectionArticles = await CollectionController.getCollectionPosts(
-        parseInt(collection.collection_id),
+        parseInt(collection.collection_id)
       );
 
       setCollectionArticles(collectionArticles);
@@ -114,12 +115,12 @@ const CollectionDetailModal = () => {
 
       // Create a Set of post IDs that are in the collection
       const existingPostIds = new Set(
-        currentCollectionArticles.map((article) => article.post_id),
+        currentCollectionArticles.map((article) => article.post_id)
       );
 
       // Filter out articles that are already in the collection
       const filteredArticles = userArticlesData.posts.filter(
-        (post) => !existingPostIds.has(post.post_id),
+        (post) => !existingPostIds.has(post.post_id)
       );
 
       setUserArticles(filteredArticles);
@@ -146,7 +147,7 @@ const CollectionDetailModal = () => {
       // Add the article
       await CollectionController.addPostToCollection(
         collection.collection_id,
-        selectedArticle.post_id,
+        selectedArticle.post_id
       );
 
       // Update local state immediately
@@ -154,7 +155,7 @@ const CollectionDetailModal = () => {
 
       // Remove the added article from userArticles
       setUserArticles((prev) =>
-        prev.filter((article) => article.post_id !== selectedArticle.post_id),
+        prev.filter((article) => article.post_id !== selectedArticle.post_id)
       );
 
       setSnackbar({
@@ -177,9 +178,9 @@ const CollectionDetailModal = () => {
         userArticlesData.posts.filter(
           (post) =>
             !updatedCollectionArticles.some(
-              (collectionPost) => collectionPost.post_id === post.post_id,
-            ),
-        ),
+              (collectionPost) => collectionPost.post_id === post.post_id
+            )
+        )
       );
 
       setSnackbar({
@@ -199,12 +200,12 @@ const CollectionDetailModal = () => {
 
       // Find the article being removed
       const removedArticle = collectionArticles.find(
-        (article) => article.post_id === articleID,
+        (article) => article.post_id === articleID
       );
 
       // Update collection articles
       setCollectionArticles((prev) =>
-        prev.filter((article) => article.post_id !== articleID),
+        prev.filter((article) => article.post_id !== articleID)
       );
 
       // Add the removed article back to userArticles if it belongs to the current user
@@ -218,7 +219,7 @@ const CollectionDetailModal = () => {
       // Remove the article from the collection in the database
       await CollectionController.removePostFromCollection(
         collection.collection_id,
-        articleID,
+        articleID
       );
 
       setSnackbar({
@@ -240,9 +241,9 @@ const CollectionDetailModal = () => {
         userArticlesData.posts.filter(
           (post) =>
             !updatedCollectionArticles.some(
-              (collectionPost) => collectionPost.post_id === post.post_id,
-            ),
-        ),
+              (collectionPost) => collectionPost.post_id === post.post_id
+            )
+        )
       );
 
       setSnackbar({
@@ -267,14 +268,14 @@ const CollectionDetailModal = () => {
             PostController.getUserPosts(profile.user_id),
           ]);
 
-          setCollectionArticles(collectionArticles);
+          setCollectionArticles(collectionArticles.data);
 
           // Filter user articles in one go
           const filteredUserArticles = userArticlesData.posts.filter(
             (post) =>
-              !collectionArticles.some(
-                (collectionPost) => collectionPost.post_id === post.post_id,
-              ),
+              !collectionArticles.data.some(
+                (collectionPost) => collectionPost.post_id === post.post_id
+              )
           );
 
           setUserArticles(filteredUserArticles);
@@ -300,7 +301,7 @@ const CollectionDetailModal = () => {
 
       // Find the post to edit
       const postToEdit = collectionArticles.find(
-        (article) => article.post_id === postId,
+        (article) => article.post_id === postId
       );
       if (!postToEdit) {
         throw new Error("Post not found");
@@ -315,8 +316,8 @@ const CollectionDetailModal = () => {
       // Update the frontend state
       setCollectionArticles((prev) =>
         prev.map((article) =>
-          article.post_id === postId ? updatedPost : article,
-        ),
+          article.post_id === postId ? updatedPost : article
+        )
       );
 
       // Update the post in the database
@@ -380,7 +381,7 @@ const CollectionDetailModal = () => {
 
         // Update userArticles
         const updatedUserArticles = userArticles.filter(
-          (article) => article.post_id !== postId,
+          (article) => article.post_id !== postId
         );
         setUserArticles(updatedUserArticles);
 
@@ -586,18 +587,24 @@ const CollectionDetailModal = () => {
 
             {/* Check if preview exists */}
             {collectionArticles[0]?.article.preview ? (
-              <Box
-                component="img"
-                src={collectionArticles[0].article.preview}
-                alt={`Featured ${collectionArticles[0].article.title}`}
-                sx={{
-                  width: "100%",
-                  height: "auto",
-                  maxHeight: "200px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
-              />
+              <Link
+                href={`/post/${collectionArticles[0].post_id}`}
+                title="View post details"
+                underline="none"
+              >
+                <Box
+                  component="img"
+                  src={collectionArticles[0].article.preview}
+                  alt={`Featured ${collectionArticles[0].article.title}`}
+                  sx={{
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "200px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                  }}
+                />
+              </Link>
             ) : (
               <Typography variant="h6" sx={{ marginBottom: "16px" }}>
                 No preview image available

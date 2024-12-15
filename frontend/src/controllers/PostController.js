@@ -154,7 +154,7 @@ class PostController {
         headers: HEADERS_WITH_JWT(this.accessToken),
       });
 
-      const data = await response.json();
+      const { data } = await response.json();
       return data;
     } catch (error) {
       console.error("Error fetching categories:", error);

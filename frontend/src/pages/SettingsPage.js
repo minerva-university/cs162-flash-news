@@ -133,7 +133,7 @@ const SettingsPage = () => {
       if (!response.ok) {
         if (responseData.message === "Username already exists") {
           throw new Error(
-            "The username is already taken. Please choose another.",
+            "The username is already taken. Please choose another."
           );
         } else {
           throw new Error("Failed to save changes.");
@@ -142,7 +142,10 @@ const SettingsPage = () => {
 
       // Update localStorage with the new username and profile picture
       localStorage.setItem("username", responseData.data.username);
-      localStorage.setItem("profile_picture", responseData.data.profile_picture);
+      localStorage.setItem(
+        "profile_picture",
+        responseData.data.profile_picture
+      );
 
       // Update userData state with the returned data
       setUserData((prevState) => ({
@@ -156,9 +159,11 @@ const SettingsPage = () => {
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
       // Update localstorage with new profile picture and username
-      const { data } = await response.json();
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("profile_picture", data.profile_picture);
+      localStorage.setItem("username", responseData.data.username);
+      localStorage.setItem(
+        "profile_picture",
+        responseData.data.profile_picture
+      );
 
       // Redirect to the user's profile page
       navigate(`/profile/${responseData.data.username}`);
@@ -262,7 +267,9 @@ const SettingsPage = () => {
           src={
             profilePicture
               ? URL.createObjectURL(profilePicture)
-              : `${DB_HOST}/${userData.profile_picture}`
+              : userData.profile_picture
+                ? `${DB_HOST}/${userData.profile_picture}`
+                : ""
           }
           alt={userData.username}
           sx={{

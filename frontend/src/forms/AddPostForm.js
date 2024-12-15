@@ -5,7 +5,6 @@ import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 import Avatar from "@mui/material/Avatar";
 import { Box, Button, Modal, TextField } from "@mui/material";
 import MultipleSelectChip from "../components/MultipleSelectChip";
-import TagController from "../controllers/TagController";
 import PostController from "../controllers/PostController";
 import UserController from "../controllers/UserController";
 import CollectionController from "../controllers/CollectionController";
@@ -57,7 +56,7 @@ export default function AddPostForm({ onPostAdded }) {
     setSelectedCategories([]);
 
     // Get all tags in the database
-    const availableCategories = await TagController.getAll();
+    const availableCategories = await PostController.getCategories();
     if (
       availableCategories &&
       availableCategories.categories &&

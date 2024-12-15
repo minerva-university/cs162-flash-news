@@ -117,7 +117,7 @@ def update_profile():
         user.username = new_username
         user.bio_description = data.get('bio_description', user.bio_description) or None
         user.profile_picture = data.get('profile_picture', user.profile_picture) or None
-        tags = data.get('tags', '[]')  # Default to an empty list
+        tags = data.get('tags', '[]') or '[]'  # Default to an empty list
         user.tags = json.dumps(json.loads(tags))  # Ensure JSON format
         db.session.commit()
 
