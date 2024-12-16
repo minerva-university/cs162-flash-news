@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
@@ -49,9 +49,25 @@ def create_app():
     app = Flask(__name__)
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URI", "sqlite:///db.sqlite"
-    )
+    # Case 1: Testing environment
+    if app.config.get("TESTING", False):
+        if os.getenv("CI"):  # GitHub Actions
+            app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+                "DATABASE_URI",
+                "postgresql://testuser:testpassword@localhost:5432/testdb",
+            )
+        else:  # Local testing
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+
+    # Case 2: Production environment (Vercel/Docker) or CI
+    elif os.getenv("prod") or os.getenv("CI"):
+        app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+            "DATABASE_URI", "postgresql://postgres:password@localhost:5432/flashnews"
+        )
+
+    # Case 3: Local development (default)
+    else:
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         hours=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_HOURS", 12))
@@ -116,6 +132,17 @@ def create_app():
     api.add_namespace(like_ns, path="/api/likes")
     api.add_namespace(collection_ns, path="/api/collections")
     api.add_namespace(og_ns, path="/api/og")
+
+    # Add a health check route
+    @app.route("/health")
+    def health_check():
+        try:
+            # Test database connection
+            db.session.execute(text("SELECT 1"))
+            return jsonify({"status": "healthy"}), 200
+
+        except Exception as e:
+            return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
     # Avoids circular imports by importing models in this format
     with app.app_context():
