@@ -121,8 +121,8 @@ const ProfilePage = () => {
         await CollectionController.getAllCollectionsForUser(
           profileData.user_id,
         );
-      if (collectionsData.data.status !== "success")
-        throw new Error(collectionsData.data.message);
+      if (collectionsData.status !== "success")
+        throw new Error(collectionsData.message);
 
       // Sort collections based on a date
       const sortedCollections = (collectionsData?.data.public || []).sort(

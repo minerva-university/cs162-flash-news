@@ -133,11 +133,11 @@ const CollectionsPage = () => {
       const collectionsResponse =
         await CollectionController.getAllCollectionsForUser(profile.user_id);
 
-      if (collectionsResponse.data.status !== "success") {
+      if (collectionsResponse.status !== "success") {
         setSnackbar({
           open: true,
           message:
-            collectionsResponse.data.message || "Failed to fetch collections.",
+            collectionsResponse.message || "Failed to fetch collections.",
           severity: "error",
         });
       }
