@@ -13,11 +13,10 @@ import {
   TextField,
 } from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
-import { DB_HOST } from "../controllers/config.js";
 import CollectionController from "../controllers/CollectionController.js";
 import PostController from "../controllers/PostController.js";
+import UserController from "../controllers/UserController.js";
 
-// TODO: Change to controller
 const CollectionDetailModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -48,24 +47,20 @@ const CollectionDetailModal = () => {
   // Fetch profile data
   const fetchProfileData = async () => {
     try {
-      const accessToken = localStorage.getItem("access_token");
-      if (!accessToken) throw new Error("Access token missing. Please log in.");
-
-      const response = await fetch(`${DB_HOST}/user/${username}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
+      const response = await UserController.getCurrentUserDetails(username);
+      
+      if (response.status !== "success") {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch profile data.");
+        setSnackbar({
+          open: true,
+          message: errorData.message || "Failed to fetch profile data.",
+          severity: "error",
+        });
+        return;
       }
 
-      const result = await response.json();
-      const profile = result.data;
+      // Set profile data and check if the user is the owner
+      const profile = response.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
       return profile;
@@ -270,7 +265,7 @@ const CollectionDetailModal = () => {
           setCollectionArticles(collectionArticles.data);
 
           // Filter user articles in one go
-          const filteredUserArticles = userArticlesData.posts.filter(
+          const filteredUserArticles = userArticlesData.data.posts.filter(
             (post) =>
               !collectionArticles.data.some(
                 (collectionPost) => collectionPost.post_id === post.post_id,
@@ -319,20 +314,7 @@ const CollectionDetailModal = () => {
         ),
       );
 
-      // Update the post in the database
-      const response = await fetch(`${DB_HOST}/posts/${postId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update the post.");
-      }
+      await PostController.updatePost(postId, updatedData);
 
       setSnackbar({
         open: true,
@@ -341,9 +323,6 @@ const CollectionDetailModal = () => {
       });
     } catch (error) {
       console.error("Error editing post:", error.message);
-
-      // On error, refresh the collection articles to ensure consistency
-      const updatedCollectionArticles = await fetchCollectionArticles();
 
       setSnackbar({
         open: true,
@@ -360,44 +339,21 @@ const CollectionDetailModal = () => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
 
     try {
-      const accessToken = localStorage.getItem("access_token");
-      if (!accessToken) {
-        throw new Error("Access token missing. Please log in.");
-      }
+      await PostController.deletePost(postId);
 
-      const response = await fetch(`${DB_HOST}/posts/${postId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+      // Update userArticles
+      const updatedUserArticles = userArticles.filter(
+        (article) => article.post_id !== postId,
+      );
+      setUserArticles(updatedUserArticles);
+
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: "Post deleted successfully!",
+        severity: "success",
       });
-
-      if (response.ok) {
-        // After successful deletion, fetch updated collection articles
-        const updatedCollectionArticles = await fetchCollectionArticles();
-
-        // Update userArticles
-        const updatedUserArticles = userArticles.filter(
-          (article) => article.post_id !== postId,
-        );
-        setUserArticles(updatedUserArticles);
-
-        // Show success message
-        setSnackbar({
-          open: true,
-          message: "Post deleted successfully!",
-          severity: "success",
-        });
-      } else {
-        const errorData = await response.json();
-
-        // Show error message
-        setSnackbar({
-          open: true,
-          message: errorData.error || "Failed to delete the post.",
-          severity: "error",
-        });
-      }
+      
     } catch (error) {
       setSnackbar({
         open: true,

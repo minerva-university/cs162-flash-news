@@ -19,8 +19,6 @@ import {
 import { DB_HOST } from "../controllers/config.js";
 import UserController from "../controllers/UserController.js";
 
-// TODO: Implement controller functions for updating user details
-
 const SettingsPage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
@@ -97,8 +95,7 @@ const SettingsPage = () => {
     fetchUserData();
   }, [username]);
 
-  // Save all changes
-  // TODO: Change to use UserController.updateUserDetails (was not working)
+  // Save all changes to user details
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -120,18 +117,10 @@ const SettingsPage = () => {
         formData.append("profile_picture", profilePicture);
       }
 
-      const response = await fetch(`${DB_HOST}/user/`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const response = await UserController.updateUserDetails(formData);
 
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        if (responseData.message === "Username already exists") {
+      if (response.status !== "success") {
+        if (response.message === "Username already exists") {
           throw new Error(
             "The username is already taken. Please choose another.",
           );
@@ -141,32 +130,22 @@ const SettingsPage = () => {
       }
 
       // Update localStorage with the new username and profile picture
-      localStorage.setItem("username", responseData.data.username);
-      localStorage.setItem(
-        "profile_picture",
-        responseData.data.profile_picture,
-      );
+      localStorage.setItem("username", response.data.username);
+      localStorage.setItem("profile_picture", response.data.profile_picture);
 
       // Update userData state with the returned data
       setUserData((prevState) => ({
         ...prevState,
-        username: responseData.data.username,
-        bio_description: responseData.data.bio_description,
-        tags: responseData.data.tags,
-        profile_picture: responseData.data.profile_picture,
+        username: response.data.username,
+        bio_description: response.data.bio_description,
+        tags: response.data.tags,
+        profile_picture: response.data.profile_picture,
       }));
 
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
-      // Update localstorage with new profile picture and username
-      localStorage.setItem("username", responseData.data.username);
-      localStorage.setItem(
-        "profile_picture",
-        responseData.data.profile_picture,
-      );
-
       // Redirect to the user's profile page
-      navigate(`/profile/${responseData.data.username}`);
+      navigate(`/profile/${response.data.username}`);
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     } finally {

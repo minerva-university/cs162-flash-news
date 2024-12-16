@@ -11,7 +11,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { DB_HOST } from "../controllers/config.js";
+import AuthController from "../controllers/AuthController.js";
 
 function SignupPage() {
   const [formData, setFormData] = useState({
@@ -47,36 +47,26 @@ function SignupPage() {
     if (!agreeToTerms) {
       setSnackbar({
         open: true,
-        message: "You must agree to the Terms and Conditions.",
+        message: "You must agree to the Terms and Conditions.", // Display terms and conditions for future reference (would lead to a popup document)
         severity: "error",
       });
       return;
     }
 
     try {
-      const response = await fetch(`${DB_HOST}/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: name,
-          email: email,
-          password: password,
-        }),
-      });
+      const dataSignup = {
+        username: name,
+        email: email,
+        password: password,
+      };
 
-      const { data, message } = await response.json();
-
-      if (!response.ok) {
-        throw new Error(message || "Failed to register");
-      }
+      const response = await AuthController.signUp(dataSignup);
 
       // Store the tokens
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("profile_picture", data.profile_picture || "");
+      localStorage.setItem("access_token", response.access_token);
+      localStorage.setItem("refresh_token", response.refresh_token);
+      localStorage.setItem("username", response.username);
+      localStorage.setItem("profile_picture", response.profile_picture || "");
 
       setSnackbar({
         open: true,
@@ -87,8 +77,8 @@ function SignupPage() {
 
       // Delay navigation to allow Snackbar to display
       setTimeout(() => {
-        navigate("/settings/" + data.username);
-      }, 3000); // Redirect after 3 seconds
+        navigate("/settings/" + response.username);
+      }, 1500); // Redirect after 1.5 seconds
 
       setFormData({
         name: "",
