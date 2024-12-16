@@ -68,6 +68,7 @@ def create_app():
     # Case 3: Local development (default)
     else:
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         hours=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_HOURS", 12))
