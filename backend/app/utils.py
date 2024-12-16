@@ -2,25 +2,24 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta, timezone
 from flask_jwt_extended import get_jwt_identity
-from flask import jsonify
+from flask import jsonify, make_response
 
 
 def check_post_24h(post):
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
 
     # Remove the timezone because SQLite datetime isn't timezone-aware
-    time_threshold_naive = time_threshold.replace(tzinfo=None)
+    # time_threshold_naive = time_threshold.replace(tzinfo=None)
 
     # Some unauthenticated endpoints still use this function, so we need handle the case where there is no identity
-    
+
     try:
         user_id = int(get_jwt_identity())
     except:
         user_id = None
 
-    return (
-        user_id != post.user_id and post.posted_at < time_threshold_naive
-    )
+    # Using timezone-aware datetime objects since deployment is done in Postgres
+    return user_id != post.user_id and post.posted_at < time_threshold
 
 
 # ChatGPT-generated function to parse OpenGraph tags from HTML content
@@ -64,7 +63,11 @@ def create_success_response(message, status_code=200, data=None):
     Returns:
         tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
     """
-    return jsonify({"status": "success", "message": message, "data": data}), status_code
+    response = jsonify({"status": "success", "message": message, "data": data})
+    return make_response(
+        response,
+        status_code,
+    )
 
 
 # Utility function for consistent error handling
@@ -80,7 +83,8 @@ def create_error_response(message, status_code=400, details=None):
     Returns:
         tuple: A tuple containing a JSON response (dict) and the HTTP status code (int).
     """
-    return (
-        jsonify({"status": "error", "message": message, "details": details}),
+    response = jsonify({"status": "error", "message": message, "details": details})
+    return make_response(
+        response,
         status_code,
     )

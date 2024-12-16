@@ -31,7 +31,7 @@ const PostDetailPage = () => {
   const navigate = useNavigate();
   const CURRENT_USERNAME = localStorage.getItem("username");
   const CURRENT_PROFILE_PICTURE = localStorage.getItem("profile_picture");
-  const { id } = useParams(); // from URL params
+  const { id } = useParams();
   const [post, setPost] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -128,8 +128,12 @@ const PostDetailPage = () => {
 
     // Get all tags in the database
     PostController.getCategories().then((response) => {
-      if (response && response.categories && response.categories.length > 0)
-        setCategories(response?.categories?.map((c) => c.category_id));
+      if (
+        response &&
+        response.data.categories &&
+        response.data.categories.length > 0
+      )
+        setCategories(response?.data.categories.map((c) => c.category_id));
     });
   }, [id]);
 

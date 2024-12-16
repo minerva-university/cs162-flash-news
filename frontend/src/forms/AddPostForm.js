@@ -1,9 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Card, CardHeader, Typography } from "@mui/material";
+import {
+  Card,
+  CardHeader,
+  Typography,
+  Avatar,
+  Box,
+  Button,
+  Modal,
+  TextField,
+  Alert,
+  Snackbar,
+} from "@mui/material";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
-
-import Avatar from "@mui/material/Avatar";
-import { Box, Button, Modal, TextField } from "@mui/material";
 import MultipleSelectChip from "../components/MultipleSelectChip";
 import PostController from "../controllers/PostController";
 import UserController from "../controllers/UserController";
@@ -50,6 +58,15 @@ export default function AddPostForm({ onPostAdded }) {
       mainTextareaRef.current.value = "";
   };
 
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
+
   const handleOpen = async () => {
     // Reset inputs
     setOpen(true);
@@ -59,10 +76,12 @@ export default function AddPostForm({ onPostAdded }) {
     const availableCategories = await PostController.getCategories();
     if (
       availableCategories &&
-      availableCategories.categories &&
-      availableCategories.categories.length > 0
+      availableCategories.data.categories &&
+      availableCategories.data.categories.length > 0
     )
-      setCategories(availableCategories?.categories?.map((c) => c.category_id));
+      setCategories(
+        availableCategories?.data.categories?.map((c) => c.category_id),
+      );
 
     // Get all collections for the user
     const collectionResponse =
@@ -71,18 +90,18 @@ export default function AddPostForm({ onPostAdded }) {
     // display this in multiple select chip
     if (
       collectionResponse &&
-      (collectionResponse.private.length > 0 ||
-        collectionResponse.public.length > 0)
+      (collectionResponse.data.private.length > 0 ||
+        collectionResponse.data.public.length > 0)
     ) {
       const collectionsKeyedByTitle = {};
 
       const finalCollections = [
-        ...collectionResponse.private.map((c) => {
+        ...collectionResponse.data.private.map((c) => {
           const title = `(Private) ${c.title}`;
           collectionsKeyedByTitle[title] = c.collection_id;
           return title;
         }),
-        ...collectionResponse.public.map((c) => {
+        ...collectionResponse.data.public.map((c) => {
           const title = `(Public) ${c.title}`;
           collectionsKeyedByTitle[title] = c.collection_id;
           return title;
@@ -111,7 +130,11 @@ export default function AddPostForm({ onPostAdded }) {
 
   const handleSave = async () => {
     if (!mainTextareaRef.current.value) {
-      alert("Please type a few meaningful words!");
+      setSnackbar({
+        open: true,
+        message: "Please type a few meaningful words!",
+        severity: "error",
+      });
       return;
     }
 
@@ -188,6 +211,20 @@ export default function AddPostForm({ onPostAdded }) {
 
   return (
     <Card sx={{ width: "50%", maxWidth: "555px", margin: "0 auto 3rem" }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000} // Lasts 5 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       <CardHeader
         avatar={
           <Avatar

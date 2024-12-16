@@ -74,7 +74,9 @@ const ArticleCard = ({ post, username, onEdit, onDelete }) => {
       try {
         const response = await PostController.getCategories();
 
-        const categoryValues = response.categories.map(
+        console.log("Categories:", response);
+
+        const categoryValues = response.data.categories.map(
           (cat) => cat.category_id,
         );
         setCategories(categoryValues);

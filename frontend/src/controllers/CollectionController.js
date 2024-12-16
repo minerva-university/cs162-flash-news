@@ -6,17 +6,17 @@ class CollectionController {
   }
 
   static async getAllCollectionsForUser(id) {
-    const response = await fetch(`${DB_HOST}/collections/user/${id}`, {
-      method: "GET",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
+    try {
+      const response = await fetch(`${DB_HOST}/collections/user/${id}`, {
+        method: "GET",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
 
-    const responseBody = await response.json();
-    if (response?.ok) {
-      const { data } = responseBody;
+      const data = await response.json();
       return data;
-    } else {
-      throw new Error(`${responseBody.message}`);
+    } catch (error) {
+      console.error("CollectionController error:", error);
+      throw error;
     }
   }
 

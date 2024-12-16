@@ -151,10 +151,11 @@ def test_unlike_nonexistent_like(client):
     assert response.status_code == 404
 
 
-def test_like_after_24h(client):
+def test_like_after_24h(client, create_test_user):
+    other_user = create_test_user(2, "other@test.com", "other_user")
     # Create old post
     post = create_test_post(db)
-    post.user_id = 2  # Different user's post
+    post.user_id = other_user.user_id  # Different user's post
     post.posted_at = datetime.now(timezone.utc) - timedelta(hours=25)
     db.session.commit()
 

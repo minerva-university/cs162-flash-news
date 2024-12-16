@@ -80,3 +80,19 @@ def client(app_dict, test_user):
     yield client
     # Cleanup
     db.session.rollback()
+
+
+@pytest.fixture
+def create_test_user(app_dict):
+    def _create_user(user_id, email, username):
+        db = app_dict["db"]
+        user = User(
+            user_id=user_id,
+            email=email,
+            username=username,
+            password=generate_password_hash("password123")
+        )
+        db.session.add(user)
+        db.session.commit()
+        return user
+    return _create_user
