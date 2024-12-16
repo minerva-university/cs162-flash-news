@@ -4,3 +4,5 @@ flash_env/
 backend/venv/
 *.db
 .env
+*.sqlite
+instance/*

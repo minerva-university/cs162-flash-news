@@ -151,16 +151,16 @@ class ModifyUserProfile(Resource):
             user.profile_picture = (
                 data.get("profile_picture", user.profile_picture) or None
             )
-            tags = data.get("tags", "[]")  # Default to an empty list
+            tags = data.get("tags", "[]") or "[]"  # Default to an empty list
             user.tags = json.dumps(json.loads(tags))  # Ensure JSON format
             db.session.commit()
 
             updated_user_data = {
                 "user_id": user.user_id,
-                "username": new_username,
+                "username": user.username,
                 "email": user.email,
                 "bio_description": user.bio_description,
-                "profile_picture": f"/user/uploads/{user.profile_picture}",  # Hard-Coded for now
+                "profile_picture": f"/user/uploads/{user.profile_picture}",  # Return relative URL
                 "created_at": user.created_at,
             }
 

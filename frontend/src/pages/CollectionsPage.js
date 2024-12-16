@@ -15,6 +15,8 @@ import CollectionCard from "../components/CollectionCard";
 import EmojiPicker from "emoji-picker-react";
 import { DB_HOST } from "../controllers/config.js";
 
+// TODO: Change to controller
+
 const CollectionsPage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
@@ -67,6 +69,41 @@ const CollectionsPage = () => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
+  const fetchProfileData = async () => {
+    try {
+      const accessToken = localStorage.getItem("access_token");
+
+      if (!accessToken) {
+        throw new Error("Access token missing. Please log in.");
+      }
+
+      const response = await fetch(`${DB_HOST}/user/${username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch profile data.");
+      }
+
+      const result = await response.json();
+
+      const profile = result.data;
+      setProfileData(profile);
+      setIsOwner(profile.is_owner);
+    } catch (error) {
+      console.error("Error in fetchProfileData:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfileData();
+  }, [username]);
+
   // Fetch user data and collections
   const fetchCollections = async () => {
     try {
@@ -84,20 +121,18 @@ const CollectionsPage = () => {
         },
       });
 
+      if (!userResponse.ok) throw new Error(userResponse.message);
+
       const userData = await userResponse.json();
-      if (!userResponse.ok) throw new Error(userData.message);
+      const profile = userData.data;
 
-      console.log("User data:", userData.data);
-
-      setProfileData(userData.data);
-
-      // Check ownership
-      const isPageOwner = userData.data.is_owner;
-      setIsOwner(isPageOwner);
+      // Set profile data and check ownership
+      setProfileData(profile);
+      setIsOwner(profile.is_owner);
 
       // Fetch collections
       const collectionsResponse = await fetch(
-        `${DB_HOST}/collections/user/${userData.data.user_id}`,
+        `${DB_HOST}/collections/user/${profile.user_id}`,
         {
           method: "GET",
           headers: {
@@ -106,12 +141,13 @@ const CollectionsPage = () => {
           },
         },
       );
+
       const collectionsData = await collectionsResponse.json();
       if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
       // Set public and private collections
       setPublicCollections(collectionsData.data.public || []);
-      if (isPageOwner) {
+      if (isOwner) {
         setPrivateCollections(collectionsData.data.private || []);
       }
     } catch (error) {
@@ -121,10 +157,10 @@ const CollectionsPage = () => {
     }
   };
 
-  //
+  // Fetch collections on initial load
   useEffect(() => {
     fetchCollections();
-  }, [username]);
+  }, [username, isOwner]);
 
   // Handle create collection
   const handleCreateCollection = async () => {
@@ -166,11 +202,6 @@ const CollectionsPage = () => {
       });
       setAddOpenModal(false);
 
-      // if (newCollection.is_public) {
-      //   setPublicCollections((prev) => [...prev, newCollection]);
-      // } else {
-      //   setPrivateCollections((prev) => [...prev, newCollection]);
-      // }
       fetchCollections();
     } catch (error) {
       console.error("Error creating collection:", error);
@@ -188,21 +219,12 @@ const CollectionsPage = () => {
       isPublic: collection.is_public,
     });
 
-    console.log("Edit form data initialized:", {
-      collection_id: collection.collection_id,
-      title: collection.title || "",
-      description: collection.description || "",
-      emoji: collection.emoji || "",
-      isPublic: collection.is_public,
-    });
     setEditModalOpen(true);
   };
 
   // Submit Updated Collection
   const submitEditCollection = async () => {
     try {
-      console.log("Submitting edit with data:", editFormData);
-
       if (!editFormData.title || !editFormData.emoji) {
         alert("Please fill in all required fields.");
         return;
@@ -282,8 +304,6 @@ const CollectionsPage = () => {
 
   // Handle collection click
   const handleCollectionClick = (collection) => {
-    console.log("Clicked collection:", collection);
-
     const formattedTitle = collection.title?.toLowerCase().replace(/\s+/g, "-");
     navigate(`/collections/${collection.collection_id}/${formattedTitle}`, {
       state: { collection, username },
@@ -311,7 +331,27 @@ const CollectionsPage = () => {
           gap: "16px",
         }}
       >
-        <Avatar sx={{ width: 80, height: 80, bgcolor: "#79A3B1" }} />
+        <Avatar
+          sx={{
+            width: 80,
+            height: 80,
+            bgcolor: "#79A3B1",
+            color: "#fff",
+            fontSize: 20,
+            fontWeight: "bold",
+          }}
+        >
+          {profileData?.profile_picture ? (
+            <img
+              src={`${DB_HOST}${profileData.profile_picture}`}
+              alt="Profile"
+              style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+            />
+          ) : (
+            profileData?.username?.charAt(0).toUpperCase() || "?"
+          )}
+        </Avatar>
+
         <Box>
           <Typography
             variant="h4"
@@ -678,7 +718,7 @@ const CollectionsPage = () => {
           <FormControlLabel
             control={
               <Switch
-                checked={Boolean(editFormData.isPublic)} // Ensure controlled behavior
+                checked={Boolean(editFormData.isPublic)}
                 onChange={() =>
                   setEditFormData((prev) => ({
                     ...prev,

@@ -5,7 +5,6 @@ import { TextareaAutosize } from "@mui/base/TextareaAutosize";
 import Avatar from "@mui/material/Avatar";
 import { Box, Button, Modal, TextField } from "@mui/material";
 import MultipleSelectChip from "../components/MultipleSelectChip";
-import TagController from "../controllers/TagController";
 import PostController from "../controllers/PostController";
 import UserController from "../controllers/UserController";
 import CollectionController from "../controllers/CollectionController";
@@ -57,7 +56,7 @@ export default function AddPostForm({ onPostAdded }) {
     setSelectedCategories([]);
 
     // Get all tags in the database
-    const availableCategories = await TagController.getAll();
+    const availableCategories = await PostController.getCategories();
     if (
       availableCategories &&
       availableCategories.categories &&
@@ -182,8 +181,8 @@ export default function AddPostForm({ onPostAdded }) {
 
   useEffect(() => {
     UserController.getCurrentUserDetails(username).then((data) => {
-      setUserID(data.user_id);
-      setProfilePicture(`${DB_HOST}${data.profile_picture}`);
+      setUserID(data.data.user_id);
+      setProfilePicture(`${DB_HOST}${data.data.profile_picture}`);
     });
   }, []);
 
@@ -202,6 +201,22 @@ export default function AddPostForm({ onPostAdded }) {
         title="What's new and interesting?"
         sx={{ cursor: "pointer", userSelect: "none" }}
         onClick={handleOpen}
+        action={
+          <Typography
+            variant="body2"
+            sx={{
+              fontStyle: "italic",
+              color: "gray",
+              whiteSpace: "nowrap",
+              marginRight: "1rem",
+              alignItems: "center",
+              marginTop: "14px",
+              height: "90%",
+            }}
+          >
+            Make Post
+          </Typography>
+        }
       />
 
       {/* New Post Modal */}

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 import CommentController from "../controllers/CommentController";
 import PostController from "../controllers/PostController";
-import TagController from "../controllers/TagController";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 
 import {
@@ -128,7 +127,7 @@ const PostDetailPage = () => {
       .catch((error) => console.log(error));
 
     // Get all tags in the database
-    TagController.getAll().then((response) => {
+    PostController.getCategories().then((response) => {
       if (response && response.categories && response.categories.length > 0)
         setCategories(response?.categories?.map((c) => c.category_id));
     });
@@ -348,7 +347,7 @@ const PostDetailPage = () => {
                       />
                     }
                     subheader={`commented on ${dayjs(comment.commented_at).format("MMM D, YYYY")}`}
-                    // @TODO: Only show if the current comment belongs to the currently logged in user
+                    // Only show if the current comment belongs to the currently logged in user
                     action={
                       comment.user.username === CURRENT_USERNAME && (
                         <EditDeleteMenu
