@@ -9,7 +9,7 @@ def check_post_24h(post):
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
 
     # Remove the timezone because SQLite datetime isn't timezone-aware
-    time_threshold_naive = time_threshold.replace(tzinfo=None)
+    # time_threshold_naive = time_threshold.replace(tzinfo=None)
 
     # Some unauthenticated endpoints still use this function, so we need handle the case where there is no identity
 
@@ -18,8 +18,9 @@ def check_post_24h(post):
     except:
         user_id = None
 
+    posted_at = post.posted_at.replace(tzinfo=timezone.utc)
     # Using timezone-aware datetime objects since deployment is done in Postgres
-    return user_id != post.user_id and post.posted_at < time_threshold
+    return user_id != post.user_id and posted_at < time_threshold
 
 
 # ChatGPT-generated function to parse OpenGraph tags from HTML content
