@@ -20,36 +20,18 @@ class PostController {
     }
   }
 
-  // TODO: Remove this
-  // I am pretty sure this is not used anywhere
-  // Would this refer to feed or user posts? Either case there are functions already
-  static async getAll() {
-    const response = await fetch(`${DB_HOST}/posts`, {
-      method: "GET",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
-
-    const responseBody = await response.json();
-    if (response?.ok) {
-      const { data } = responseBody;
-      return data;
-    } else {
-      throw new Error(`${responseBody.message}`);
-    }
-  }
-
   static async getUserPosts(userID) {
-    const response = await fetch(`${DB_HOST}/posts/user/${userID}`, {
-      method: "GET",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
+    try {
+      const response = await fetch(`${DB_HOST}/posts/user/${userID}`, {
+        method: "GET",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
 
-    const responseBody = await response.json();
-    if (response?.ok) {
-      const { data } = responseBody;
+      const data = await response.json();
       return data;
-    } else {
-      throw new Error(`${responseBody.message}`);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+      throw error;
     }
   }
 
@@ -85,28 +67,47 @@ class PostController {
   }
 
   static async updatePost(postID, newPost) {
-    const response = await fetch(`${DB_HOST}/posts/${postID}`, {
-      method: "PUT",
-      body: JSON.stringify(newPost),
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
+    try {
+      const response = await fetch(`${DB_HOST}/posts/${postID}`, {
+        method: "PUT",
+        body: JSON.stringify(newPost),
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
 
-    const responseBody = await response.json();
-    return responseBody;
+      if (!response.ok) {
+        const responseBody = await response.json();
+        console.error("Error response:", responseBody);
+        throw new Error(`${responseBody.message}`);
+      }
+  
+      const data = await response.json(); 
+      return data; 
+
+    } catch (error) {
+      console.error("Error updating post:", error);
+      throw error;
+    }
   }
-
+   
   static async deletePost(postID) {
-    const response = await fetch(`${DB_HOST}/posts/${postID}`, {
-      method: "DELETE",
-      headers: HEADERS_WITH_JWT(this.accessToken),
-    });
+    try { 
+      const response = await fetch(`${DB_HOST}/posts/${postID}`, {
+        method: "DELETE",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
 
-    const responseBody = await response.json();
-    if (response?.ok) {
-      const { data } = responseBody;
-      return data;
-    } else {
-      throw new Error(`${responseBody.message}`);
+      if (!response.ok) {
+        const responseBody = await response.json();
+        console.error("Error response:", responseBody);
+        throw new Error(`${responseBody.message}`);
+      }
+
+      const data = await response.json(); 
+      return data; 
+
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      throw error;
     }
   }
 
@@ -149,7 +150,7 @@ class PostController {
         headers: HEADERS_WITH_JWT(this.accessToken),
       });
 
-      const { data } = await response.json();
+      const data = await response.json();
       return data;
     } catch (error) {
       console.error("Error fetching categories:", error);
