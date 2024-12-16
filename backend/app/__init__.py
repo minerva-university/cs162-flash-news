@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 from flask_cors import CORS  # https://stackoverflow.com/a/78849992/11620221
 from flask_restx import Api
+import logging
 
 
 # Load environment variables from .env file
@@ -47,27 +48,38 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 
 def create_app():
     app = Flask(__name__)
-
+    app.logger.setLevel(logging.INFO)  # Set logging level
+    
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
+    
     # Case 1: Testing environment
     if app.config.get("TESTING", False):
-        if os.getenv("CI"):  # GitHub Actions
+        if os.getenv("CI"):
+            app.logger.info("Using TESTING environment with CI configuration")
             app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
                 "DATABASE_URI",
                 "postgresql://testuser:testpassword@localhost:5432/testdb",
             )
-        else:  # Local testing
+        else:
+            app.logger.info("Using TESTING environment with local configuration")
             app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
 
     # Case 2: Production environment (Vercel/Docker) or CI
     elif os.getenv("prod") or os.getenv("CI"):
+        app.logger.info("Using PRODUCTION environment")
+        app.logger.info(f"prod env: {os.getenv('prod')}")
+        app.logger.info(f"CI env: {os.getenv('CI')}")
         app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
             "DATABASE_URI", "postgresql://postgres:password@localhost:5432/flashnews"
         )
 
     # Case 3: Local development (default)
     else:
+        app.logger.info("Using LOCAL DEVELOPMENT environment")
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+
+    # Log the final database URI (TO BE REMOVED)
+    app.logger.info(f"Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
