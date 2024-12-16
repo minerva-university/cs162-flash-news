@@ -6,17 +6,49 @@ class UserController {
   }
 
   static async getCurrentUserDetails(username) {
-    const response = await fetch(`${DB_HOST}/user/${username}`, {
-      method: "GET",
+    try {
+      const response = await fetch(`${DB_HOST}/user/${username}`, {
+        method: "GET",
+        headers: HEADERS_WITH_JWT(this.accessToken),
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("UserController error:", error);
+      throw error;
+    }
+  }
+
+  static async updateUserDetails(formData) {
+    try {
+      const response = await fetch(`${DB_HOST}/user`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error updating user details:", error);
+      throw error;
+    }
+  }
+
+  static async deleteUser() {
+    const response = await fetch(`${DB_HOST}/user/`, {
+      method: "DELETE",
       headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
-    const responseBody = await response.json();
-    if (response?.ok) {
-      const { data } = responseBody;
+    if (response.ok) {
+      const data = await response.json();
       return data;
     } else {
-      throw new Error(`${responseBody.message}`);
+      throw new Error("Failed to delete user");
     }
   }
 }

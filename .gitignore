@@ -3,4 +3,6 @@ flash_env/
 *.DS_Store
 backend/venv/
 *.db
-*.env.*
+.env
+*.sqlite
+instance/*

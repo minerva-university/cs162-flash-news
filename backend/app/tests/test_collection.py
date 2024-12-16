@@ -13,7 +13,7 @@ def test_create_collection_all_fields(client):
     }
     response = client.post("/api/collections/", json=data)
     assert response.status_code == 201
-    assert "collection_id" in response.json
+    assert "collection_id" in response.json["data"]
 
 
 def test_create_collection_required_fields(client):
@@ -22,7 +22,7 @@ def test_create_collection_required_fields(client):
     assert response.status_code == 201
 
     # Verify default is_public value
-    collection = Collection.query.get(response.json["collection_id"])
+    collection = Collection.query.get(response.json["data"]["collection_id"])
     assert collection.is_public
 
 
@@ -56,8 +56,8 @@ def test_get_own_collections(client):
 
     response = client.get(f"/api/collections/user/{user.user_id}")
     assert response.status_code == 200
-    assert len(response.json["public"]) == 1
-    assert len(response.json["private"]) == 1
+    assert len(response.json["data"]["public"]) == 1
+    assert len(response.json["data"]["private"]) == 1
 
 
 def test_get_other_user_collections(client):
@@ -73,8 +73,8 @@ def test_get_other_user_collections(client):
 
     response = client.get(f"/api/collections/user/{other_user.user_id}")
     assert response.status_code == 200
-    assert len(response.json["public"]) == 1
-    assert "private" not in response.json
+    assert len(response.json["data"]["public"]) == 1
+    assert "private" not in response.json["data"]
 
 
 def test_get_nonexistent_user_collections(client):
@@ -95,8 +95,6 @@ def test_get_collection_posts(client):
     collection = Collection(title="Test", user_id=1)
     db.session.add(collection)
     db.session.commit()
-
-    # Create a post
 
     # Create a test article first
     article_data = {
@@ -130,7 +128,7 @@ def test_get_collection_posts(client):
 
     response = client.get(f"/api/collections/{collection.collection_id}/posts")
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json["data"]) == 2
 
 
 def test_add_post_to_collection(client):

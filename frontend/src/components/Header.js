@@ -15,7 +15,7 @@ function Header() {
   const navigate = useNavigate();
   const pages = [
     { name: "Home", path: "/feed" },
-    { name: "Collections", path: `/user/${username}/collections` },
+    { name: "Collections", path: `/user/collections/${username}` },
     { name: "Profile", path: `/profile/${username}` },
   ];
 

@@ -37,7 +37,7 @@ function App() {
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
           <Route
-            path="/user/:username/collections"
+            path="/user/collections/:username"
             element={<CollectionsPage />}
           />
           <Route

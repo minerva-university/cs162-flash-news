@@ -14,10 +14,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Snackbar,
 } from "@mui/material";
 import { DB_HOST } from "../controllers/config.js";
+import UserController from "../controllers/UserController.js";
 
-// TODO: Add tags as dropdown
+// TODO: Implement controller functions for updating user details
 
 const SettingsPage = () => {
   const { username } = useParams();
@@ -36,34 +38,14 @@ const SettingsPage = () => {
   const [alert, setAlert] = useState({ message: "", severity: "" });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Fetch user data
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        const accessToken = localStorage.getItem("access_token");
-        console.log(accessToken);
-        const response = await fetch(`${DB_HOST}/user/${username}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
-        if (!response.ok) throw new Error("Failed to fetch user data");
-
-        const data = await response.json();
-        setUserData(data.data);
-      } catch (error) {
-        setAlert({ message: error.message, severity: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [username]);
+  const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
 
   // Handle input changes
   const handleChange = (e) => {
@@ -81,7 +63,42 @@ const SettingsPage = () => {
     }
   };
 
+  // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await UserController.getCurrentUserDetails(username);
+
+        if (response.status === "success") {
+          setUserData({
+            username: response.data.username,
+            bio_description: response.data.bio_description || "",
+            tags: response.data.tags || [],
+            profile_picture: response.data.profile_picture,
+            id: response.data.user_id,
+          });
+        } else {
+          setSnackbar({
+            open: true,
+            message: "Failed to fetch user data",
+            severity: "error",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to fetch user data: " + error.message,
+          severity: "error",
+        });
+      }
+    };
+
+    fetchUserData();
+  }, [username]);
+
   // Save all changes
+  // TODO: Change to use UserController.updateUserDetails (was not working)
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -103,7 +120,7 @@ const SettingsPage = () => {
         formData.append("profile_picture", profilePicture);
       }
 
-      const response = await fetch(`${DB_HOST}/user`, {
+      const response = await fetch(`${DB_HOST}/user/`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -111,9 +128,10 @@ const SettingsPage = () => {
         body: formData,
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.message === "Username already exists") {
+        if (responseData.message === "Username already exists") {
           throw new Error(
             "The username is already taken. Please choose another.",
           );
@@ -122,15 +140,33 @@ const SettingsPage = () => {
         }
       }
 
+      // Update localStorage with the new username and profile picture
+      localStorage.setItem("username", responseData.data.username);
+      localStorage.setItem(
+        "profile_picture",
+        responseData.data.profile_picture,
+      );
+
+      // Update userData state with the returned data
+      setUserData((prevState) => ({
+        ...prevState,
+        username: responseData.data.username,
+        bio_description: responseData.data.bio_description,
+        tags: responseData.data.tags,
+        profile_picture: responseData.data.profile_picture,
+      }));
+
       setAlert({ message: "Changes saved successfully", severity: "success" });
 
       // Update localstorage with new profile picture and username
-      const { data } = await response.json();
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("profile_picture", data.profile_picture);
+      localStorage.setItem("username", responseData.data.username);
+      localStorage.setItem(
+        "profile_picture",
+        responseData.data.profile_picture,
+      );
 
       // Redirect to the user's profile page
-      navigate(`/profile/${userData.username}`);
+      navigate(`/profile/${responseData.data.username}`);
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     } finally {
@@ -141,26 +177,27 @@ const SettingsPage = () => {
   // Handle account deletion
   const handleDeleteAccount = async () => {
     try {
-      const accessToken = localStorage.getItem("access_token");
-      const response = await fetch(`${DB_HOST}/user`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await UserController.deleteUser();
 
-      if (!response.ok) {
+      if (response.status === "success") {
+        setSnackbar({
+          open: true,
+          message: "Account deleted successfully!",
+          severity: "success",
+        });
+
+        // Clear local storage and redirect to home page
+        localStorage.clear();
+        navigate("/");
+      } else {
         throw new Error("Failed to delete account.");
       }
-
-      setAlert({
-        message: "Account deleted successfully!",
-        severity: "success",
-      });
-      localStorage.clear(); // Clear local storage after account deletion
-      navigate("/signup"); // Redirect to the signup page
     } catch (error) {
-      setAlert({ message: error.message, severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Failed to delete account.",
+        severity: "error",
+      });
     } finally {
       setDeleteDialogOpen(false);
     }
@@ -192,6 +229,21 @@ const SettingsPage = () => {
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000} // Lasts 5 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
       <Typography
         variant="h4"
         sx={{ fontWeight: "bold", marginBottom: "16px" }}
@@ -215,7 +267,9 @@ const SettingsPage = () => {
           src={
             profilePicture
               ? URL.createObjectURL(profilePicture)
-              : `${DB_HOST}/${userData.profile_picture}`
+              : userData.profile_picture
+                ? `${DB_HOST}/${userData.profile_picture}`
+                : ""
           }
           alt={userData.username}
           sx={{
@@ -287,7 +341,7 @@ const SettingsPage = () => {
         <TextField
           label="Tags"
           name="tags"
-          value={userData.tags.join(", ") || ""}
+          value={(userData.tags || []).join(", ")}
           onChange={(e) =>
             setUserData((prev) => ({
               ...prev,

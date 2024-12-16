@@ -25,7 +25,7 @@ export default function AddCommentForm({ post, onCommentAdded }) {
 
   return (
     <Card>
-      {/* @TODO: Put the currently logged in user's profile picture */}
+      {/* Put the currently logged in user's profile picture */}
       <CardHeader
         avatar={
           profile_picture ? (

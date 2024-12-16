@@ -13,10 +13,10 @@ def test_create_post_success(client):
     }
     response = client.post("/api/posts/", json=data)
     assert response.status_code == 201
-    assert "post_id" in response.json
+    assert "post_id" in response.json["data"]
 
     # Verify post was created
-    post = Post.query.get(response.json["post_id"])
+    post = Post.query.get(response.json["data"]["post_id"])
     assert post.description == "Test post description"
     assert len(post.categories) == 2
 
@@ -60,9 +60,9 @@ def test_get_post_success(client):
 
     response = client.get(f"/api/posts/{post.post_id}")
     assert response.status_code == 200
-    assert response.json["description"] == "Test post"
-    assert "user" in response.json
-    assert "article" in response.json
+    assert response.json["data"]["description"] == "Test post"
+    assert "user" in response.json["data"]
+    assert "article" in response.json["data"]
 
 
 # Test that retrieving a non-existent posts returns an error
@@ -147,9 +147,9 @@ def test_get_feed(client):
     response = client.get("/api/posts/feed")
 
     assert response.status_code == 200
-    assert "posts" in response.json
-    assert "total_posts" in response.json
-    assert "page" in response.json
+    assert "posts" in response.json["data"]
+    assert "total_posts" in response.json["data"]
+    assert "page" in response.json["data"]
 
 
 # Test getting user's posts
@@ -174,18 +174,18 @@ def test_get_user_posts(client):
 
     response = client.get(f"/api/posts/user/{user.user_id}")
     assert response.status_code == 200
-    assert "posts" in response.json
-    assert len(response.json["posts"]) == 3
+    assert "posts" in response.json["data"]
+    assert len(response.json["data"]["posts"]) == 3
 
 
 # Test retrieving all the categories
 def test_get_categories(client):
     response = client.get("/api/posts/categories")
     assert response.status_code == 200
-    assert "categories" in response.json
+    assert "categories" in response.json["data"]
 
     # Verify all categories were received
-    categories = response.json["categories"]
+    categories = response.json["data"]["categories"]
     assert len(categories) == len(CategoryEnum)
 
 

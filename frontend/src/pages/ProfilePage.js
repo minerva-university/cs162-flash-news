@@ -7,12 +7,17 @@ import {
   CircularProgress,
   Divider,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
 import PostCard from "../components/PostCard";
 import { DB_HOST } from "../controllers/config.js";
 import FollowButton from "../components/FollowButton";
+import PostController from "../controllers/PostController";
+
+// TODO: Change to controller
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -22,6 +27,15 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [sharedPosts, setSharedPosts] = useState([]);
   const [collections, setCollections] = useState([]);
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
 
   // Handle collection click event (navigate to collection page)
   const handleCollectionClick = (collection) => {
@@ -48,18 +62,15 @@ const ProfilePage = () => {
         },
       });
 
-      if (!response.ok) {
+      if (!response?.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch profile data.");
       }
 
       const result = await response.json();
-      console.log("Fetched Profile Data:", result);
-
       const profile = result.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
-      console.log(isOwner);
     } catch (error) {
       console.error("Error in fetchProfileData:", error);
     }
@@ -90,36 +101,26 @@ const ProfilePage = () => {
         },
       );
 
-      if (!response.ok) {
+      if (!response?.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch shared posts.");
       }
 
       const { data } = await response.json();
-      console.log("Fetched Shared Posts Raw Data:", data);
 
       // Ensure the response is an array
       const postsArray = data.posts || [];
-      console.log("Posts Array:", postsArray);
 
       // Sort posts by `posted_at` in descending order
       const sortedPosts = postsArray.sort(
         (a, b) => new Date(b.posted_at) - new Date(a.posted_at),
       );
 
-      console.log("Processed Shared Posts:", sortedPosts);
-
       setSharedPosts(sortedPosts);
     } catch (error) {
       console.error("Error fetching shared posts:", error);
     }
   };
-
-  useEffect(() => {
-    if (profileData && profileData.user_id) {
-      fetchSharedPosts();
-    }
-  }, [profileData]);
 
   // Fetch user collections
   const fetchCollections = async () => {
@@ -140,15 +141,11 @@ const ProfilePage = () => {
         },
       );
 
-      const response = await collectionsResponse.json();
-      if (!collectionsResponse.ok) throw new Error(response.message);
-
-      const collectionsData = response.data;
-      console.log("Fetched collections:", collectionsData);
-      console.log("Public Collections:", collectionsData.public);
+      const collectionsData = await collectionsResponse.json();
+      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
 
       // Sort collections based on a date
-      const sortedCollections = (collectionsData?.public || []).sort(
+      const sortedCollections = (collectionsData?.data.public || []).sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
 
@@ -164,11 +161,97 @@ const ProfilePage = () => {
   useEffect(() => {
     if (profileData && profileData.user_id) {
       fetchCollections();
+      fetchSharedPosts();
     }
   }, [profileData]);
 
-  const handlePostUpdate = () => {
-    fetchSharedPosts(); // Re-fetch posts after update/deleting
+  // Handle edit post
+  const handleEditPost = async (postId, updatedData) => {
+    try {
+      setLoading(true);
+
+      // Ensure we're sending the right data to the backend
+      const dataToUpdate = {
+        post_description: updatedData.description,
+        categories: updatedData.categories || [],
+      };
+
+      const response = await PostController.updatePost(postId, dataToUpdate);
+
+      if (response.status != "success") {
+        setSnackbar({
+          open: true,
+          message: response.message || "Failed to update post",
+          severity: "error",
+        });
+        return;
+      } else {
+        // Update state while preserving ALL post data
+        setSharedPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.post_id === postId
+              ? {
+                  ...post, // Keep all existing post data
+                  description: updatedData.description,
+                  categories: updatedData.categories || [],
+                  article: post.article,
+                  user: post.user,
+                  posted_at: post.posted_at,
+                  comments_count: post.comments_count,
+                  likes_count: post.likes_count,
+                  is_liked: post.is_liked,
+                }
+              : post,
+          ),
+        );
+
+        setSnackbar({
+          open: true,
+          message: "Post updated successfully!",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating post:", error);
+      setSnackbar({
+        open: true,
+        message: error.message || "Failed to update post",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle delete post
+  const handleDelete = async (postId) => {
+    try {
+      setLoading(true);
+
+      // Update state by removing the deleted post
+      setSharedPosts((prev) => prev.filter((post) => post.post_id !== postId));
+
+      await PostController.deletePost(postId);
+
+      setSnackbar({
+        open: true,
+        message: "Post deleted successfully!",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting post:", error);
+
+      // Revert changes on error by refetching posts
+      await fetchSharedPosts();
+
+      setSnackbar({
+        open: true,
+        message: error.message || "Failed to delete post",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -204,6 +287,21 @@ const ProfilePage = () => {
         minHeight: "100vh",
       }}
     >
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000} // Lasts 5 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
       {/* Profile Header */}
       <Box
         sx={{
@@ -225,24 +323,44 @@ const ProfilePage = () => {
           }}
         >
           <Avatar
-            sx={{ width: 80, height: 80, bgcolor: "#fff" }}
-            src={
-              profileData.profile_picture
-                ? `${DB_HOST}/${profileData.profile_picture}`
-                : "https://via.placeholder.com/150"
-            }
-            alt={profileData.username[0]}
-          />
+            sx={{
+              width: 80,
+              height: 80,
+              bgcolor: "#79A3B1",
+              color: "#fff",
+              fontSize: 20,
+              fontWeight: "bold",
+            }}
+          >
+            {profileData.profile_picture ? (
+              <img
+                src={`${DB_HOST}${profileData.profile_picture}`}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+                onError={(e) => {
+                  setSnackbar({
+                    open: true,
+                    message: "Error loading image",
+                    severity: "error",
+                  });
+                  e.target.src = null;
+                }}
+              />
+            ) : profileData.username ? (
+              profileData.username.charAt(0).toUpperCase()
+            ) : (
+              "?"
+            )}
+          </Avatar>
           <Box>
             <Typography
               variant="h5"
               sx={{
                 fontWeight: "bold",
-                color: "#D9EAF3",
+                color: "#e2f2fb",
               }}
             >
-              {username[0].toLocaleUpperCase()}
-              {username.slice(1).toLowerCase()}
+              {username}
             </Typography>
             {profileData.bio_description ? (
               <Typography
@@ -272,7 +390,7 @@ const ProfilePage = () => {
                   <Typography
                     key={index}
                     sx={{
-                      backgroundColor: "#D9EAF3",
+                      backgroundColor: "#e2f2fb",
                       color: "#5F848C",
                       borderRadius: "12px",
                       padding: "4px 8px",
@@ -346,7 +464,7 @@ const ProfilePage = () => {
                   margin: "0 10px",
                 }}
               >
-                <PostCard key={index} post={post} />
+                <PostCard key={index} post={post} username={username} />
               </Box>
             ))
           ) : (
@@ -440,7 +558,7 @@ const ProfilePage = () => {
         )}
 
         {/* See More Collections Button */}
-        {collections.length > 4 && ( // Show the button only if more than 4 collections exist
+        {collections.length > 4 && (
           <Box sx={{ textAlign: "center", marginTop: "40px" }}>
             <Button
               variant="outlined"
@@ -491,26 +609,34 @@ const ProfilePage = () => {
           <Box
             sx={{
               maxWidth: "1200px",
+              display: "flex",
+              flexWrap: "wrap",
               justifyContent: "center",
+              gap: "20px",
               padding: "20px 0",
               marginTop: "40px",
-              alignItems: "center",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              justifyTracks: "center",
-              flexWrap: "wrap",
-              gap: "20px",
               margin: "0 auto",
             }}
           >
             {sharedPosts.length ? (
               sharedPosts.map((post, index) => (
-                <ArticleCard
+                <Box
                   key={index}
-                  post={post}
-                  username={username}
-                  onPostUpdate={handlePostUpdate}
-                />
+                  sx={{
+                    width: "300px",
+                    margin: "0 10px 20px",
+                  }}
+                >
+                  <ArticleCard
+                    key={index}
+                    post={post}
+                    username={username}
+                    onEdit={(postId, updatedData) =>
+                      handleEditPost(postId, updatedData)
+                    }
+                    onDelete={(postId) => handleDelete(postId)}
+                  />
+                </Box>
               ))
             ) : (
               <Typography sx={{ color: "gray", textAlign: "center" }}>

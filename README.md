@@ -235,11 +235,10 @@ Runs on every push or pull request. Uses tools like eslint for JavaScript.
 Executes unit and integration tests for both backend and frontend.
 Tests are written using pytest for Python. Runs in isolated environments to ensure clean builds.
 
-@TODO: Look at using Jest for React components.
 
-#### Deployment Pipeline: @TODO: Look at this one after deployment
+#### Deployment Pipeline:
 
-Automatically deploys to the staging environment upon merging into the main branch.Uses tools like Docker and cloud hosting (e.g., AWS or Heroku) for deployment.
+Automatically deploys to the production environment upon merging into the main branch. Uses Railway for backend deployment, Vercel for frontend deployment.
 
 ---
 
@@ -251,15 +250,15 @@ Watch the  demonstration of Flash News to see its features and usability.
 
 Screenshots of main pages:
 
+![Welcome Page](images/welcome-page.png)
 ![Feed Page](images/feed-page.png)
 ![Collections Page](images/collections-page.png)
 ![Profile Page](images/profile-page.png)
 ![Settings Page](images/settings-page.png)
-![Collection Modal Page](images/collection-modal-page.png)
-![Post Detail Page](images/post-modal-page.png)
+![Collection Detail Page](images/collection-detail-page.png)
+![Post Detail Page](images/post-detail-page.png)
 ![Login Page](images/login-page.png)
-![Sign Up Page](images/collections-page.png)
-![Welcome Page](images/welcome-page.png)
+![Sign Up Page](images/signup-page.png)
 
 ---
 
