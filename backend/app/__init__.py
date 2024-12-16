@@ -49,9 +49,26 @@ def create_app():
     app = Flask(__name__)
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URI", "sqlite:///db.sqlite"
-    )
+    
+    # Case 1: Testing environment
+    if app.config.get("TESTING", False):
+        if os.getenv('CI'):  # GitHub Actions
+            app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+                "DATABASE_URL", "postgresql://testuser:testpassword@localhost:5432/testdb"
+            )
+        else:  # Local testing
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+    
+    # Case 2: Production environment (Vercel/Docker) or CI
+    elif os.getenv("prod") or os.getenv("CI"):
+        app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+            "DATABASE_URL", "postgresql://postgres:password@localhost:5432/flashnews"
+        )
+    
+    # Case 3: Local development (default)
+    else:
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         hours=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_HOURS", 12))
