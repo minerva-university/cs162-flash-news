@@ -146,17 +146,6 @@ def create_app():
     api.add_namespace(collection_ns, path="/api/collections")
     api.add_namespace(og_ns, path="/api/og")
 
-    # Add a health check route
-    @app.route("/health")
-    def health_check():
-        try:
-            # Test database connection
-            db.session.execute(text("SELECT 1"))
-            return jsonify({"status": "healthy"}), 200
-
-        except Exception as e:
-            return jsonify({"status": "unhealthy", "error": str(e)}), 500
-
     # Avoids circular imports by importing models in this format
     with app.app_context():
         from .models import User, RevokedToken  # Import models lazily
