@@ -48,7 +48,7 @@ const CollectionDetailModal = () => {
   const fetchProfileData = async () => {
     try {
       const response = await UserController.getCurrentUserDetails(username);
-      
+
       if (response.status !== "success") {
         const errorData = await response.json();
         setSnackbar({
@@ -353,7 +353,6 @@ const CollectionDetailModal = () => {
         message: "Post deleted successfully!",
         severity: "success",
       });
-      
     } catch (error) {
       setSnackbar({
         open: true,

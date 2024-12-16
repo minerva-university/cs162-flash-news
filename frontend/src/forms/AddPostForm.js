@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { 
-  Card, 
-  CardHeader, 
-  Typography, 
+import {
+  Card,
+  CardHeader,
+  Typography,
   Avatar,
   Box,
   Button,
@@ -67,7 +67,6 @@ export default function AddPostForm({ onPostAdded }) {
 
   const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
 
-
   const handleOpen = async () => {
     // Reset inputs
     setOpen(true);
@@ -80,7 +79,9 @@ export default function AddPostForm({ onPostAdded }) {
       availableCategories.data.categories &&
       availableCategories.data.categories.length > 0
     )
-      setCategories(availableCategories?.data.categories?.map((c) => c.category_id));
+      setCategories(
+        availableCategories?.data.categories?.map((c) => c.category_id),
+      );
 
     // Get all collections for the user
     const collectionResponse =

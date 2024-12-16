@@ -93,7 +93,7 @@ const CollectionsPage = () => {
         });
         return;
       }
-      
+
       // Set profile data and check if the user is the owner
       const profile = response.data;
       setProfileData(profile);
@@ -130,12 +130,14 @@ const CollectionsPage = () => {
       setProfileData(profile);
       setIsOwner(profile.is_owner);
 
-      const collectionsResponse = await CollectionController.getAllCollectionsForUser(profile.user_id);
+      const collectionsResponse =
+        await CollectionController.getAllCollectionsForUser(profile.user_id);
 
       if (collectionsResponse.status !== "success") {
         setSnackbar({
           open: true,
-          message: collectionsResponse.message || "Failed to fetch collections.",
+          message:
+            collectionsResponse.message || "Failed to fetch collections.",
           severity: "error",
         });
       }
@@ -173,7 +175,8 @@ const CollectionsPage = () => {
         is_public: addFormData.isPublic,
       };
 
-      const response = await CollectionController.createCollection(collectionData);
+      const response =
+        await CollectionController.createCollection(collectionData);
 
       if (response.status !== "success") {
         setSnackbar({
@@ -221,15 +224,18 @@ const CollectionsPage = () => {
         return;
       }
 
-      const updatedCollection = { 
+      const updatedCollection = {
         title: editFormData.title,
         description: editFormData.description,
         emoji: editFormData.emoji,
         is_public: editFormData.isPublic,
       };
 
-      await CollectionController.updateCollection(editFormData.collection_id, updatedCollection);
-      
+      await CollectionController.updateCollection(
+        editFormData.collection_id,
+        updatedCollection,
+      );
+
       setEditModalOpen(false);
       fetchCollections();
 
@@ -238,7 +244,6 @@ const CollectionsPage = () => {
         message: "Collection updated successfully.",
         severity: "success",
       });
-      
     } catch (error) {
       console.error("Error updating collection:", error);
       alert("An error occurred. Please try again.");
@@ -252,14 +257,13 @@ const CollectionsPage = () => {
 
     try {
       await CollectionController.deleteCollection(collection_id);
-    
+
       fetchCollections();
       setSnackbar({
         open: true,
         message: "Collection deleted successfully.",
         severity: "success",
       });
-
     } catch (error) {
       console.error("Error deleting collection:", error);
     }

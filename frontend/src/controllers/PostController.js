@@ -79,18 +79,17 @@ class PostController {
         console.error("Error response:", responseBody);
         throw new Error(`${responseBody.message}`);
       }
-  
-      const data = await response.json(); 
-      return data; 
 
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error("Error updating post:", error);
       throw error;
     }
   }
-   
+
   static async deletePost(postID) {
-    try { 
+    try {
       const response = await fetch(`${DB_HOST}/posts/${postID}`, {
         method: "DELETE",
         headers: HEADERS_WITH_JWT(this.accessToken),
@@ -102,9 +101,8 @@ class PostController {
         throw new Error(`${responseBody.message}`);
       }
 
-      const data = await response.json(); 
-      return data; 
-
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error("Error deleting post:", error);
       throw error;
