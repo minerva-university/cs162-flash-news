@@ -9,6 +9,7 @@ import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useNavigate } from "react-router-dom";
 import { DB_HOST } from "../controllers/config.js";
+import AuthController from "../controllers/AuthController.js";
 
 function Header() {
   const username = localStorage.getItem("username"); // Get username from local storage to be used in the header
@@ -59,7 +60,9 @@ function Header() {
     setUserSuggestions([]);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const _ = await AuthController.logOut();
+
     // Clear tokens and user data from localStorage
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");

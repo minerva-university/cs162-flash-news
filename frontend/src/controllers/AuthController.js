@@ -38,8 +38,8 @@ class AuthController {
   }
 
   static async logOut() {
-    const response = await fetch(`${DB_HOST}/login`, {
-      method: "GET",
+    const response = await fetch(`${DB_HOST}/logout`, {
+      method: "POST",
       headers: HEADERS_WITH_JWT(this.accessToken),
     });
 
