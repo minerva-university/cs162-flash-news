@@ -114,7 +114,7 @@ const CollectionDetailModal = () => {
       );
 
       // Filter out articles that are already in the collection
-      const filteredArticles = userArticlesData.posts.filter(
+      const filteredArticles = userArticlesData.data.posts.filter(
         (post) => !existingPostIds.has(post.post_id),
       );
 
@@ -170,7 +170,7 @@ const CollectionDetailModal = () => {
 
       setCollectionArticles(updatedCollectionArticles);
       setUserArticles(
-        userArticlesData.posts.filter(
+        userArticlesData.data.posts.filter(
           (post) =>
             !updatedCollectionArticles.some(
               (collectionPost) => collectionPost.post_id === post.post_id,
@@ -232,7 +232,7 @@ const CollectionDetailModal = () => {
       ]);
 
       setUserArticles(
-        userArticlesData.posts.filter(
+        userArticlesData.data.posts.filter(
           (post) =>
             !updatedCollectionArticles.some(
               (collectionPost) => collectionPost.post_id === post.post_id,
