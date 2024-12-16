@@ -31,7 +31,7 @@ function getStyles(name, selected, theme) {
 export default function MultipleSelectChip({
   id,
   label,
-  options,
+  options = [], 
   max = -1,
   onChange,
   sx,
