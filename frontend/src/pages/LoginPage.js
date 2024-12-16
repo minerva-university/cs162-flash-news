@@ -11,7 +11,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { DB_HOST } from "../controllers/config.js";
+import AuthController from "../controllers/AuthController.js";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
@@ -45,28 +45,18 @@ function LoginPage() {
     const { email, password } = formData;
 
     try {
-      const response = await fetch(`${DB_HOST}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
+      const loginData = {
+        email: email,
+        password: password,
+      };
 
-      const { data, message } = await response.json();
-
-      if (!response.ok) {
-        throw new Error(message || "Failed to log in");
-      }
+      const response = await AuthController.logIn(loginData);
 
       // Store the tokens
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("profile_picture", data.profile_picture || "");
+      localStorage.setItem("access_token", response.access_token);
+      localStorage.setItem("refresh_token", response.refresh_token);
+      localStorage.setItem("username", response.username);
+      localStorage.setItem("profile_picture", response.profile_picture || "");
 
       // Display success message
       setSnackbar({
@@ -78,7 +68,7 @@ function LoginPage() {
       // Navigate to a protected page (e.g., dashboard) after a delay
       setTimeout(() => {
         navigate("/feed");
-      }, 3000);
+      }, 1500);
     } catch (error) {
       setSnackbar({
         open: true,

@@ -10,12 +10,14 @@ import {
   Modal,
   FormControlLabel,
   Switch,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import CollectionCard from "../components/CollectionCard";
 import EmojiPicker from "emoji-picker-react";
 import { DB_HOST } from "../controllers/config.js";
-
-// TODO: Change to controller
+import UserController from "../controllers/UserController";
+import CollectionController from "../controllers/CollectionController.js";
 
 const CollectionsPage = () => {
   const { username } = useParams();
@@ -42,6 +44,15 @@ const CollectionsPage = () => {
     emoji: "",
     isPublic: false,
   });
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
 
   // Emoji picker handler
   const handleEmojiClick = (emoji) => {
@@ -71,28 +82,20 @@ const CollectionsPage = () => {
 
   const fetchProfileData = async () => {
     try {
-      const accessToken = localStorage.getItem("access_token");
+      const response = await UserController.getCurrentUserDetails(username);
 
-      if (!accessToken) {
-        throw new Error("Access token missing. Please log in.");
-      }
-
-      const response = await fetch(`${DB_HOST}/user/${username}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
+      if (response.status !== "success") {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch profile data.");
+        setSnackbar({
+          open: true,
+          message: errorData.message || "Failed to fetch profile data.",
+          severity: "error",
+        });
+        return;
       }
 
-      const result = await response.json();
-
-      const profile = result.data;
+      // Set profile data and check if the user is the owner
+      const profile = response.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
     } catch (error) {
@@ -109,46 +112,40 @@ const CollectionsPage = () => {
     try {
       setLoading(true);
 
-      const accessToken = localStorage.getItem("access_token");
-      if (!accessToken) throw new Error("Access token missing. Please log in.");
-
       // Fetch user data
-      const userResponse = await fetch(`${DB_HOST}/user/${username}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await UserController.getCurrentUserDetails(username);
 
-      if (!userResponse.ok) throw new Error(userResponse.message);
+      if (response.status !== "success") {
+        const errorData = await response.json();
+        setSnackbar({
+          open: true,
+          message: errorData.message || "Failed to fetch profile data.",
+          severity: "error",
+        });
+        return;
+      }
 
-      const userData = await userResponse.json();
-      const profile = userData.data;
-
-      // Set profile data and check ownership
+      // Set profile data and check if the user is the owner
+      const profile = response.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
 
-      // Fetch collections
-      const collectionsResponse = await fetch(
-        `${DB_HOST}/collections/user/${profile.user_id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const collectionsResponse =
+        await CollectionController.getAllCollectionsForUser(profile.user_id);
 
-      const collectionsData = await collectionsResponse.json();
-      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
+      if (collectionsResponse.status !== "success") {
+        setSnackbar({
+          open: true,
+          message:
+            collectionsResponse.message || "Failed to fetch collections.",
+          severity: "error",
+        });
+      }
 
       // Set public and private collections
-      setPublicCollections(collectionsData.data.public || []);
+      setPublicCollections(collectionsResponse.data.public || []);
       if (isOwner) {
-        setPrivateCollections(collectionsData.data.private || []);
+        setPrivateCollections(collectionsResponse.data.private || []);
       }
     } catch (error) {
       console.error("Error fetching collections:", error);
@@ -170,27 +167,24 @@ const CollectionsPage = () => {
         return;
       }
 
-      // Fetch access token and send request
-      const accessToken = localStorage.getItem("access_token");
+      const collectionData = {
+        user_id: profileData.user_id,
+        title: addFormData.title,
+        description: addFormData.description || "",
+        emoji: addFormData.emoji,
+        is_public: addFormData.isPublic,
+      };
 
-      const response = await fetch(`${DB_HOST}/collections/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: profileData.user_id,
-          title: addFormData.title,
-          description: addFormData.description || "",
-          emoji: addFormData.emoji,
-          is_public: addFormData.isPublic,
-        }),
-      });
+      const response =
+        await CollectionController.createCollection(collectionData);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error creating collection.");
+      if (response.status !== "success") {
+        setSnackbar({
+          open: true,
+          message: response.message || "Failed to create collection.",
+          severity: "error",
+        });
+        return;
       }
 
       // const newCollection = await response.json();
@@ -230,32 +224,26 @@ const CollectionsPage = () => {
         return;
       }
 
-      const accessToken = localStorage.getItem("access_token");
+      const updatedCollection = {
+        title: editFormData.title,
+        description: editFormData.description,
+        emoji: editFormData.emoji,
+        is_public: editFormData.isPublic,
+      };
 
-      const response = await fetch(
-        `${DB_HOST}/collections/${editFormData.collection_id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: editFormData.title,
-            description: editFormData.description,
-            emoji: editFormData.emoji,
-            is_public: editFormData.isPublic,
-          }),
-        },
+      await CollectionController.updateCollection(
+        editFormData.collection_id,
+        updatedCollection,
       );
 
-      if (response.ok) {
-        setEditModalOpen(false);
-        fetchCollections();
-      } else {
-        const error = await response.json();
-        alert(error.message || "Failed to update collection");
-      }
+      setEditModalOpen(false);
+      fetchCollections();
+
+      setSnackbar({
+        open: true,
+        message: "Collection updated successfully.",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error updating collection:", error);
       alert("An error occurred. Please try again.");
@@ -268,24 +256,14 @@ const CollectionsPage = () => {
       return;
 
     try {
-      const accessToken = localStorage.getItem("access_token");
+      await CollectionController.deleteCollection(collection_id);
 
-      const response = await fetch(`${DB_HOST}/collections/${collection_id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+      fetchCollections();
+      setSnackbar({
+        open: true,
+        message: "Collection deleted successfully.",
+        severity: "success",
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        fetchCollections();
-      } else {
-        alert(data.error || "Error deleting collection.");
-      }
     } catch (error) {
       console.error("Error deleting collection:", error);
     }
@@ -322,6 +300,20 @@ const CollectionsPage = () => {
         backgroundColor: "#f4f3ef",
       }}
     >
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000} // Lasts 5 seconds
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       {/* Profile Section */}
       <Box
         sx={{

@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import PostController from "../controllers/PostController";
 import PostCard from "../components/PostCard";
 import AddPostForm from "../forms/AddPostForm";
+
 const FeedPage = () => {
   const [posts, setPosts] = useState([]);
 

@@ -25,7 +25,7 @@ const FollowButton = ({ userId }) => {
         });
 
         if (response.ok) {
-          const data = await response.json();
+          const { data } = await response.json();
           const followingUsers = data.followed_users.map((user) => user.id);
           setIsFollowing(followingUsers.includes(userId));
         } else {

@@ -10,14 +10,14 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import ArticleCard from "../components/ArticleCard";
 import { Settings } from "@mui/icons-material";
-import PostCard from "../components/PostCard";
 import { DB_HOST } from "../controllers/config.js";
+import ArticleCard from "../components/ArticleCard";
+import PostCard from "../components/PostCard";
 import FollowButton from "../components/FollowButton";
 import PostController from "../controllers/PostController";
-
-// TODO: Change to controller
+import UserController from "../controllers/UserController.js";
+import CollectionController from "../controllers/CollectionController.js";
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -48,27 +48,20 @@ const ProfilePage = () => {
   // Fetch profile data
   const fetchProfileData = async () => {
     try {
-      const accessToken = localStorage.getItem("access_token");
+      const response = await UserController.getCurrentUserDetails(username);
 
-      if (!accessToken) {
-        throw new Error("Access token missing. Please log in.");
-      }
-
-      const response = await fetch(`${DB_HOST}/user/${username}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response?.ok) {
+      if (response.status !== "success") {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch profile data.");
+        setSnackbar({
+          open: true,
+          message: errorData.message || "Failed to fetch profile data.",
+          severity: "error",
+        });
+        return;
       }
 
-      const result = await response.json();
-      const profile = result.data;
+      // Set profile data and check if the user is the owner
+      const profile = response.data;
       setProfileData(profile);
       setIsOwner(profile.is_owner);
     } catch (error) {
@@ -88,28 +81,21 @@ const ProfilePage = () => {
         return;
       }
 
-      const accessToken = localStorage.getItem("access_token");
+      const response = await PostController.getUserPosts(profileData.user_id);
 
-      const response = await fetch(
-        `${DB_HOST}/posts/user/${profileData.user_id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (!response?.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch shared posts.");
+      if (response.status !== "success") {
+        //const errorData = await response.json();
+        setSnackbar({
+          open: true,
+          message: response.message || "Failed to fetch shared posts.",
+          severity: "error",
+        });
       }
 
-      const { data } = await response.json();
+      console.log("Response:", response.data.posts);
 
       // Ensure the response is an array
-      const postsArray = data.posts || [];
+      const postsArray = response.data.posts || [];
 
       // Sort posts by `posted_at` in descending order
       const sortedPosts = postsArray.sort(
@@ -117,6 +103,7 @@ const ProfilePage = () => {
       );
 
       setSharedPosts(sortedPosts);
+      console.log("Shared posts:", sortedPosts);
     } catch (error) {
       console.error("Error fetching shared posts:", error);
     }
@@ -130,19 +117,12 @@ const ProfilePage = () => {
         console.error("Access token missing. Please log in again.");
       }
 
-      const collectionsResponse = await fetch(
-        `${DB_HOST}/collections/user/${profileData.user_id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      const collectionsData = await collectionsResponse.json();
-      if (!collectionsResponse.ok) throw new Error(collectionsData.message);
+      const collectionsData =
+        await CollectionController.getAllCollectionsForUser(
+          profileData.user_id,
+        );
+      if (collectionsData.status !== "success")
+        throw new Error(collectionsData.message);
 
       // Sort collections based on a date
       const sortedCollections = (collectionsData?.data.public || []).sort(
