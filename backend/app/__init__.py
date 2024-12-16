@@ -1,10 +1,11 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
 from flask_cors import CORS  # https://stackoverflow.com/a/78849992/11620221
+from flask_restx import Api
 
 
 # Load environment variables from .env file
@@ -48,9 +49,26 @@ def create_app():
     app = Flask(__name__)
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URI", "sqlite:///db.sqlite"
-    )
+    # Case 1: Testing environment
+    if app.config.get("TESTING", False):
+        if os.getenv("CI"):  # GitHub Actions
+            app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+                "DATABASE_URI",
+                "postgresql://testuser:testpassword@localhost:5432/testdb",
+            )
+        else:  # Local testing
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+
+    # Case 2: Production environment (Vercel/Docker) or CI
+    elif os.getenv("prod") or os.getenv("CI"):
+        app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+            "DATABASE_URI", "postgresql://postgres:password@localhost:5432/flashnews"
+        )
+
+    # Case 3: Local development (default)
+    else:
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         hours=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_HOURS", 12))
@@ -59,6 +77,7 @@ def create_app():
         days=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES_DAYS", 30))
     )
     app.config["debug"] = os.getenv("DEBUG", "true").lower() == "true"
+    app.config["RESTX_MASK_SWAGGER"] = False
 
     # https://stackoverflow.com/a/40365514/11620221
     # Don't be strict about trailing slashes in routes
@@ -82,40 +101,49 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
 
-    # blueprint for auth routes in our app
-    from .auth import auth as auth_blueprint
+    authorizations = {
+        "Bearer Auth": {"type": "apiKey", "in": "header", "name": "Authorization"}
+    }
 
-    app.register_blueprint(auth_blueprint)
+    # Initialize RESTx API
+    api = Api(
+        app,
+        title="Your App API",
+        version="1.0",
+        description="Comprehensive API documentation for your Flask app",
+        doc="/",
+        authorizations=authorizations,
+        security="Bearer Auth",
+    )
 
-    # blueprint for user routes in our app
-    from .user import user_bp as user_blueprint
+    # Import namespaces
+    from .auth import api as auth_ns
+    from .user import api as user_ns
+    from .post import api as post_ns
+    from .comment import api as comment_ns
+    from .like import api as like_ns
+    from .collection import api as collection_ns
+    from .og import api as og_ns
 
-    app.register_blueprint(user_blueprint)
+    # Add namespaces to the API
+    api.add_namespace(auth_ns, path="/api")
+    api.add_namespace(user_ns, path="/api/user")
+    api.add_namespace(post_ns, path="/api/posts")
+    api.add_namespace(comment_ns, path="/api/comments")
+    api.add_namespace(like_ns, path="/api/likes")
+    api.add_namespace(collection_ns, path="/api/collections")
+    api.add_namespace(og_ns, path="/api/og")
 
-    # blueprint for post routes in our app
-    from .post import posts as posts_blueprint
+    # Add a health check route
+    @app.route("/health")
+    def health_check():
+        try:
+            # Test database connection
+            db.session.execute(text("SELECT 1"))
+            return jsonify({"status": "healthy"}), 200
 
-    app.register_blueprint(posts_blueprint)
-
-    # blueprint for comment routes in our app
-    from .comment import comments as comments_blueprint
-
-    app.register_blueprint(comments_blueprint)
-
-    # blueprint for like routes in our app
-    from .like import likes as likes_blueprint
-
-    app.register_blueprint(likes_blueprint)
-
-    # blueprint for collection routes in our app
-    from .collection import collections as collections_blueprint
-
-    app.register_blueprint(collections_blueprint)
-
-    # blueprint for OpenGraph routes in our app
-    from .og import opengraph_bp as og_blueprint
-
-    app.register_blueprint(og_blueprint, url_prefix="/api/")
+        except Exception as e:
+            return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
     # Avoids circular imports by importing models in this format
     with app.app_context():

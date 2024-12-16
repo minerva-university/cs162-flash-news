@@ -68,6 +68,8 @@ backend/
 │   ├── test_post.py
 │   ├── test_user.py
 ├── uploads/
+├── .env.example          # Example environment variables file
+├── railway.json          # Railway deployment configuration
 ├── README.md             # Backend documentation
 ├── requirements.txt      # Python dependencies
 ```
@@ -148,7 +150,13 @@ frontend/
   &nbsp; &nbsp;
   <a href="https://www.sqlite.org/" target="_blank" rel="noreferrer"> 
     <img src="https://www.vectorlogo.zone/logos/sqlite/sqlite-icon.svg" alt="SQLite" width="40" height="40"/>
-    <span style="vertical-align:middle; font-weight:bold;">SQLite</span>: Lightweight database to store user and related information, such as collections, followers, posts, etc.
+    <span style="vertical-align:middle; font-weight:bold;">SQLite</span>: Lightweight database to store user and related information, such as collections, followers, posts, etc. 
+  </a>
+
+  &nbsp; &nbsp;
+  <a href="https://www.postgresql.org/" target="_blank" rel="noreferrer"> 
+    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original-wordmark.svg" alt="PostgreSQL" width="40" height="40"/>
+    <span style="vertical-align:middle; font-weight:bold;">PostgreSQL</span>: A powerful, open-source object-relational database system used for storing and managing data.
   </a>
 
   &nbsp; &nbsp;
