@@ -2,14 +2,13 @@ version: '3.8'
 
 services:
   flask:
-    image: flashnews-backend:latest
+    image: flashnews-backend_sqlite:latest
     ports:
-      - "5001:5000"
-    environment:
-      - FLASK_APP=app
-      - FLASK_ENV=production
-      - DATABASE_URI=postgresql://postgres:password@db:5432/flashnews
-      - POSTGRES_PASSWORD=password
+      - "${FLASK_PORT}:5000"
+    env_file:
+      - .env
+    volumes:
+      - sqlite_data:/app/instance
     deploy:
       replicas: 3
       update_config:
@@ -24,24 +23,10 @@ services:
     networks:
       - app-network
 
-  db:
-    image: postgres:13
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=flashnews
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-    networks:
-      - app-network
-
 networks:
   app-network:
     driver: overlay
 
 volumes:
-  postgres_data:
+  sqlite_data:
     driver: local

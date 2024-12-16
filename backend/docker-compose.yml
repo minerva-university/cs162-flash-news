@@ -4,11 +4,11 @@ services:
   flask:
     build: ./backend
     ports:
-      - "5000:5000"
+      - "${FLASK_PORT}:5000"
     environment:
-      - FLASK_APP=app
-      - FLASK_ENV=production
-      - DATABASE_URI=postgresql://postgres:password@db:5432/flashnews
+      - FLASK_APP=${FLASK_APP}
+      - FLASK_ENV=${FLASK_ENV}
+      - DATABASE_URI=${DATABASE_URI}
     depends_on:
       - db
     networks:
@@ -19,7 +19,7 @@ services:
         condition: on-failure
         max_attempts: 3
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${FLASK_PORT}/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -27,7 +27,7 @@ services:
   db:
     image: postgres:13
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - sqlite_data:/var/lib/sqlite/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
@@ -43,4 +43,4 @@ networks:
     driver: overlay
 
 volumes:
-  postgres_data:
+  sqlite_data:
