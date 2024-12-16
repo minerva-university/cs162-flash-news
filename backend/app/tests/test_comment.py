@@ -135,10 +135,12 @@ def test_update_comment(client):
 
 
 # Test that you can't change another user's comment
-def test_update_comment_unauthorized(client):
+def test_update_comment_unauthorized(client, create_test_user):
+
+    other_user = create_test_user(2, "other@test.com", "other_user")
     # Create comment by different user
     post = create_test_post(db)
-    comment = Comment(user_id=2, post_id=post.post_id, content="Other user's comment")
+    comment = Comment(user_id=other_user.user_id, post_id=post.post_id, content="Other user's comment")
     db.session.add(comment)
     db.session.commit()
 

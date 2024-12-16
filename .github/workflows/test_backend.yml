@@ -54,4 +54,4 @@ jobs:
         env:
           CI: true
           DATABASE_URI: postgresql://testuser:testpassword@localhost:5432/testdb
-        run: python -m pytest
+        run: python -m pytest -p no:warnings
