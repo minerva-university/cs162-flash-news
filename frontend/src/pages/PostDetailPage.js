@@ -128,7 +128,11 @@ const PostDetailPage = () => {
 
     // Get all tags in the database
     PostController.getCategories().then((response) => {
-      if (response && response.data.categories && response.data.categories.length > 0)
+      if (
+        response &&
+        response.data.categories &&
+        response.data.categories.length > 0
+      )
         setCategories(response?.data.categories.map((c) => c.category_id));
     });
   }, [id]);
