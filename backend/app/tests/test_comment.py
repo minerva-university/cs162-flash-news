@@ -164,9 +164,10 @@ def test_delete_comment(client):
 
 
 # Test that you can't delete another user's comment
-def test_delete_comment_unauthorized(client):
+def test_delete_comment_unauthorized(client, create_test_user):
+    other_user = create_test_user(2, "other@test.com", "other_user")
     post = create_test_post(db)
-    comment = Comment(user_id=2, post_id=post.post_id, content="Other user's comment")
+    comment = Comment(user_id=other_user.user_id, post_id=post.post_id, content="Other user's comment")
     db.session.add(comment)
     db.session.commit()
 
@@ -175,10 +176,11 @@ def test_delete_comment_unauthorized(client):
 
 
 # Test that you can't see comments on another user's post 24hrs after they posted it
-def test_comment_after_24h(client):
+def test_comment_after_24h(client, create_test_user):
+    other_user = create_test_user(2, "other@test.com", "other_user")
     # Create old post
     post = create_test_post(db)
-    post.user_id = 2  # Different user's post
+    post.user_id = other_user.user_id  # Different user's post
     post.posted_at = datetime.now(timezone.utc) - timedelta(hours=25)
     db.session.commit()
 

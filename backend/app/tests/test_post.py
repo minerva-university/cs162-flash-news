@@ -190,12 +190,13 @@ def test_get_categories(client):
 
 
 # Test that you can't view a post 24hrs after it has been created
-def test_view_post_after_24h(client):
+def test_view_post_after_24h(client, create_test_user):
+    other_user = create_test_user(2, "other@test.com", "other_user")
     article = Article(link="http://example.com/article")
     db.session.add(article)
     db.session.commit()
 
-    post = Post(user_id=2, article_id=article.article_id, description="Test post")
+    post = Post(user_id=other_user.user_id, article_id=article.article_id, description="Test post")
     db.session.add(post)
     db.session.commit()
 
