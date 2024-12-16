@@ -1,9 +1,6 @@
 # Getting Started
 
-This backend powers the Flash News application, providing RESTful APIs for user authentication, post management, collections, comments, and other core functionalities. It is built using Flask and integrates a lightweight SQLite database for data persistence.
-
-@TODO: Change if changing db for deployment.
-
+This backend powers the Flash News application, providing RESTful APIs for user authentication, post management, collections, comments, and other core functionalities. It is built using Flask and it integrates a lightweight SQLite database for development and Postgres for deployment.
 
 ## Local Setup 
 
