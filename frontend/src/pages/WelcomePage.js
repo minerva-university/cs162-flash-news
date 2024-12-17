@@ -55,7 +55,7 @@ function WelcomePage() {
             animation: `${flashAnimation} 2s ease-in-out infinite`, // Apply flash animation
           }}
         >
-          Welcome to NewsFlash
+          Welcome to Flash News
         </Typography>
         <Typography
           variant="h6"
