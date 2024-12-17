@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: flashnews-frontend:latest
+    build:
+      context: ../frontend
+      args:
+        - REACT_APP_API_URL=${FLASK_URL:-http://localhost:5001/api}
+    ports:
+      - published: ${FRONTEND_PORT:-3000}
+        target: 3000
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - app-network
+
+  flask:
+    image: flashnews-backend:latest
+    depends_on:
+      - db
+    ports:
+      - published: ${FLASK_PORT:-5001}
+        target: 5000
+        protocol: tcp
+        mode: ingess
+    environment:
+      - FLASK_APP=${FLASK_APP:-app}
+      - FLASK_ENV=${FLASK_ENV:-prod}
+      - DATABASE_URI=${DATABASE_URI:-postgresql://postgres:password@db:5432/flashnews}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-flashnews}
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: overlay
+
+volumes:
+  postgres_data:
+    driver: local
