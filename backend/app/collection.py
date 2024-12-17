@@ -167,7 +167,7 @@ class GetCollectionPosts(Resource):
 
         for collection in collection_posts:
             post_detail = SinglePostOperations()
-            response_object = post_detail.get(collection.post_id)
+            response_object = post_detail.get(collection.post_id, check_24h=False)
             response, status_code = (
                 response_object.response,
                 response_object.status_code,

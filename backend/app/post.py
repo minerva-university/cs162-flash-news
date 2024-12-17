@@ -117,15 +117,16 @@ class SinglePostOperations(Resource):
     # Get a single post
     @api.doc(security="Bearer Auth")
     @jwt_required()
-    def get(self, post_id):
+    def get(self, post_id, check_24h=True):
         post = Post.query.get(post_id)
         if not post:
             return create_error_response("Post not found", status_code=404)
 
-        if check_post_24h(post=post):
-            return create_error_response(
-                "You are not allowed to view this post", status_code=403
-            )
+        if check_24h:
+            if check_post_24h(post=post):
+                return create_error_response(
+                    "You are not allowed to view this post", status_code=403
+                )
 
         current_user_id = get_jwt_identity()
         is_liked = any(like.user_id == current_user_id for like in post.likes)
