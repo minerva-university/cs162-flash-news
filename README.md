@@ -8,6 +8,8 @@ Flash News addresses the issue of echo chambers and political polarity by allowi
 
 The app is particularly useful for intellectually curious and politically engaged users who wish to share thought-provoking journalism or gain a mental map of the ideologies within their social circles. By fostering an environment for sharing and exploring news, Flash News aims to spark meaningful conversations both online and offline.
 
+> The app is deployed at: https://cs162-flash-news-bdgn.vercel.app/
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -254,7 +256,7 @@ Automatically deploys to the production environment upon merging into the main b
 
 Watch the  demonstration of Flash News to see its features and usability.
 
-- [YouTube Demonstration](https://youtube.com/demo-link)
+- [YouTube Demonstration](https://youtu.be/WXobJgXlc_8)
 
 Screenshots of main pages:
 
